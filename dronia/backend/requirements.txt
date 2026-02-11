@@ -1,0 +1,33 @@
+# YOLOv8 and Computer Vision
+ultralytics>=8.0.0
+opencv-python>=4.8.0
+pillow>=10.0.0
+numpy>=1.24.0
+
+# API Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+pydantic>=2.5.0
+
+# Image Processing
+aiofiles>=23.2.0
+python-jose[cryptography]>=3.3.0
+
+# Database & Auth
+motor>=3.3.0
+pymongo>=4.6.0
+passlib[bcrypt]>=1.7.4
+bcrypt>=4.1.0
+
+# Utilities
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+tqdm>=4.66.0
+
+# Optional: For advanced features
+# Note: PyTorch and torchvision are installed separately in Dockerfile with CPU-only version
+# torch>=2.0.0  # Installed separately as CPU-only
+# torchvision>=0.15.0  # Installed separately as CPU-only
+efficientnet-pytorch>=0.7.1
+

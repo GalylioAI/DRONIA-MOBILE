@@ -1,0 +1,50 @@
+# YOLOv8 Training Configuration
+
+# Model settings
+model:
+  name: "yolov8n"  # Options: yolov8n, yolov8s, yolov8m, yolov8l, yolov8x
+  pretrained: true  # Use pretrained weights
+  num_classes: 38  # Number of plant disease classes (full PlantVillage dataset)
+  
+# EfficientNet settings
+efficientnet:
+  variant: "b0"  # Options: b0, b1, b2, b3
+  num_classes: 38  # Number of plant disease classes
+  dropout_rate: 0.3
+  pretrained: true
+  model_path: "efficientnet_plantvillage_olive_extra_best.pth"  # Specific model file to use
+
+# Training parameters
+training:
+  epochs: 50
+  batch_size: 64
+  img_size: 640  # Image size for training
+  device: "cuda"  # "cuda" or "cpu" (will auto-detect and use CPU if CUDA unavailable)
+  workers: 8  # Matches your 8 CPU cores - optimal for parallel scanning
+  patience: 50  # Early stopping patience
+  
+# Data augmentation
+augmentation:
+  hsv_h: 0.015  # Hue augmentation
+  hsv_s: 0.7    # Saturation augmentation
+  hsv_v: 0.4    # Value augmentation
+  degrees: 10   # Rotation degrees
+  translate: 0.1  # Translation
+  scale: 0.5    # Scale
+  flipud: 0.0   # Vertical flip probability
+  fliplr: 0.5   # Horizontal flip probability
+  mosaic: 1.0   # Mosaic augmentation probability
+  mixup: 0.1    # Mixup augmentation probability
+
+# Validation
+validation:
+  split: 0.2  # Validation split ratio
+  conf_threshold: 0.25
+  iou_threshold: 0.45
+
+# Paths
+paths:
+  datasets_dir: "./datasets"
+  models_dir: "./models"
+  results_dir: "./runs"
+
