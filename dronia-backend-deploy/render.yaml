@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: dronia-backend
+    runtime: python
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: PORT
+        value: 10000
+    healthCheckPath: /
+    plan: free
