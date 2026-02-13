@@ -220,17 +220,13 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       title: Row(
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(8),
-            ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
             child: Image.asset(
-              'assets/images/Drone_Logo.png',
-              fit: BoxFit.contain,
+              'assets/images/Icone.png',
+              width: 36,
+              height: 36,
+              fit: BoxFit.cover,
             ),
           ),
           const SizedBox(width: 10),
@@ -354,16 +350,13 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
             child: Image.asset(
-              'assets/images/Drone_Logo.png',
-              width: 28,
-              height: 28,
+              'assets/images/Icone.png',
+              width: 40,
+              height: 40,
+              fit: BoxFit.cover,
             ),
           ),
           const SizedBox(width: 12),
@@ -442,16 +435,13 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
             child: Image.asset(
-              'assets/images/Drone_Logo.png',
-              width: 28,
-              height: 28,
+              'assets/images/Icone.png',
+              width: 40,
+              height: 40,
+              fit: BoxFit.cover,
             ),
           ),
           const SizedBox(width: 12),

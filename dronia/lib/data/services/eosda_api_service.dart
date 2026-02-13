@@ -614,46 +614,35 @@ function evaluatePixel(sample) {
   // PIXEL-LEVEL VEGETATION INDEX (for heatmap)
   // ============================================================
 
-  /// Get grid-level vegetation index data for heatmap visualization
-  /// Returns a map of grid cell bounds to NDVI values
-  Future<List<Map<String, dynamic>>> getVegetationIndexGrid({
-    required List<LatLng> polygon,
+  /// Query the real vegetation index value at a specific geographic point
+  /// Uses Statistical API with a tiny polygon around the point
+  Future<double?> getIndexValueAtPoint({
+    required LatLng point,
     required VegetationIndex index,
-    int gridSize = 20,
   }) async {
-    final token = await _getAccessToken();
-
-    // Calculate polygon bounds
-    double minLat = double.infinity, maxLat = double.negativeInfinity;
-    double minLng = double.infinity, maxLng = double.negativeInfinity;
-
-    for (final point in polygon) {
-      if (point.latitude < minLat) minLat = point.latitude;
-      if (point.latitude > maxLat) maxLat = point.latitude;
-      if (point.longitude < minLng) minLng = point.longitude;
-      if (point.longitude > maxLng) maxLng = point.longitude;
-    }
-
-    final latRange = maxLat - minLat;
-    final lngRange = maxLng - minLng;
-    final cellLat = latRange / gridSize;
-    final cellLng = lngRange / gridSize;
-
-    final results = <Map<String, dynamic>>[];
-    final dateEnd = DateTime.now();
-    final dateStart = dateEnd.subtract(const Duration(days: 30));
-
-    // Batch cells for API efficiency - query entire polygon first
-    final coords = _toGeoJsonCoords(polygon);
-
     try {
-      // Use Statistical API with finer aggregation
+      final token = await _getAccessToken();
+
+      // Create a small square (~30m) around the point
+      // At equator: 1° ≈ 111320m, so 30m ≈ 0.00027°
+      const offset = 0.00027;
+      final smallPolygon = [
+        [point.longitude - offset, point.latitude - offset],
+        [point.longitude + offset, point.latitude - offset],
+        [point.longitude + offset, point.latitude + offset],
+        [point.longitude - offset, point.latitude + offset],
+        [point.longitude - offset, point.latitude - offset], // close
+      ];
+
+      final dateEnd = DateTime.now();
+      final dateStart = dateEnd.subtract(const Duration(days: 30));
+
       final body = jsonEncode({
         'input': {
           'bounds': {
             'geometry': {
               'type': 'Polygon',
-              'coordinates': [coords],
+              'coordinates': [smallPolygon],
             },
           },
           'data': [
@@ -665,6 +654,7 @@ function evaluatePixel(sample) {
                   'to': '${DateFormat('yyyy-MM-dd').format(dateEnd)}T23:59:59Z',
                 },
                 'maxCloudCoverage': 30,
+                'mosaickingOrder': 'mostRecent',
               },
               'type': 'sentinel-2-l2a',
             },
@@ -683,7 +673,7 @@ function evaluatePixel(sample) {
             'statistics': {
               'default': {
                 'percentiles': {
-                  'k': [25, 50, 75],
+                  'k': [50],
                 },
               },
             },
@@ -701,11 +691,8 @@ function evaluatePixel(sample) {
             },
             body: body,
           )
-          .timeout(const Duration(seconds: 60));
+          .timeout(const Duration(seconds: 15));
 
-      double baseNdvi = 0.5;
-      double minNdvi = 0.1;
-      double maxNdvi = 0.9;
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final dataList = data['data'] as List? ?? [];
@@ -717,93 +704,439 @@ function evaluatePixel(sample) {
           final b0 = bands?['B0'] as Map<String, dynamic>?;
           final stats = b0?['stats'] as Map<String, dynamic>?;
           if (stats != null) {
-            baseNdvi = (stats['mean'] as num?)?.toDouble() ?? 0.5;
-            minNdvi = (stats['min'] as num?)?.toDouble() ?? 0.1;
-            maxNdvi = (stats['max'] as num?)?.toDouble() ?? 0.9;
-            // Ensure realistic range based on actual satellite data
+            final mean = (stats['mean'] as num?)?.toDouble();
             debugPrint(
-              'Real NDVI stats - mean: $baseNdvi, min: $minNdvi, max: $maxNdvi',
+              'Real ${index.code} at (${point.latitude.toStringAsFixed(4)}, ${point.longitude.toStringAsFixed(4)}): $mean',
             );
+            return mean;
           }
         }
       }
+      return null;
+    } catch (e) {
+      debugPrint('Point index query error: $e');
+      return null;
+    }
+  }
 
-      // Generate grid with realistic variation based on actual min/max range
-      final seed =
-          (polygon.first.latitude * 10000 + polygon.first.longitude * 10000)
-              .toInt();
-      final random = DateTime.now().millisecondsSinceEpoch;
+  /// Get grid-level vegetation index data for heatmap visualization
+  /// Uses Process API to get real per-pixel float values as a raw image,
+  /// then samples them into a grid for display
+  Future<List<Map<String, dynamic>>> getVegetationIndexGrid({
+    required List<LatLng> polygon,
+    required VegetationIndex index,
+    int gridSize = 20,
+  }) async {
+    final token = await _getAccessToken();
+    final coords = _toGeoJsonCoords(polygon);
 
-      // Create stress patterns
-      final stressZones = <Map<String, double>>[];
-      final r = random % 100;
-      for (int i = 0; i < 4; i++) {
-        stressZones.add({
-          'lat': minLat + ((r + i * 23) % 100) / 100 * latRange,
-          'lng': minLng + ((r + i * 37) % 100) / 100 * lngRange,
-          'radius': 0.15 + ((r + i * 11) % 30) / 100,
-          'intensity': 0.2 + ((r + i * 17) % 40) / 100,
-        });
-      }
+    // Calculate polygon bounds
+    double minLat = double.infinity, maxLat = double.negativeInfinity;
+    double minLng = double.infinity, maxLng = double.negativeInfinity;
 
-      for (int i = 0; i < gridSize; i++) {
-        for (int j = 0; j < gridSize; j++) {
-          final cellSouth = minLat + i * cellLat;
-          final cellNorth = cellSouth + cellLat;
-          final cellWest = minLng + j * cellLng;
-          final cellEast = cellWest + cellLng;
+    for (final point in polygon) {
+      if (point.latitude < minLat) minLat = point.latitude;
+      if (point.latitude > maxLat) maxLat = point.latitude;
+      if (point.longitude < minLng) minLng = point.longitude;
+      if (point.longitude > maxLng) maxLng = point.longitude;
+    }
 
-          // Cell center
-          final centerLat = (cellSouth + cellNorth) / 2;
-          final centerLng = (cellWest + cellEast) / 2;
+    final latRange = maxLat - minLat;
+    final lngRange = maxLng - minLng;
+    final cellLat = latRange / gridSize;
+    final cellLng = lngRange / gridSize;
 
-          // Check if cell is inside polygon
-          if (!_isPointInPolygon(LatLng(centerLat, centerLng), polygon))
-            continue;
+    final dateEnd = DateTime.now();
+    final dateStart = dateEnd.subtract(const Duration(days: 30));
 
-          // Calculate cell NDVI with realistic variation across the actual range
-          final ndviRange = maxNdvi - minNdvi;
-          double cellNdvi = baseNdvi;
+    try {
+      // Use Process API to get raw float values as bytes
+      // Evalscript returns [indexValue, dataMask] as FLOAT32
+      final bands = _getRequiredBands(index);
+      final formula = _getIndexFormula(index);
+      final bandsJson = bands.map((b) => '"$b"').join(', ');
 
-          // Apply stress zone influence with larger impact
-          for (final zone in stressZones) {
-            final distLat = (centerLat - zone['lat']!) / latRange;
-            final distLng = (centerLng - zone['lng']!) / lngRange;
-            final dist = (distLat * distLat + distLng * distLng);
+      final rawEvalscript =
+          '''
+//VERSION=3
+function setup() {
+  return {
+    input: [{bands: [$bandsJson]}],
+    output: {bands: 1, sampleType: "FLOAT32"}
+  };
+}
+function evaluatePixel(sample) {
+  if (sample.dataMask == 0) return [-9999];
+  let val = $formula;
+  return [val];
+}
+''';
 
-            if (dist < zone['radius']! * zone['radius']!) {
-              // Use full range variation based on actual satellite data
-              final influence =
-                  (1 - dist / (zone['radius']! * zone['radius']!)) *
-                  zone['intensity']! *
-                  ndviRange;
-              cellNdvi -= influence;
+      final body = jsonEncode({
+        'input': {
+          'bounds': {
+            'geometry': {
+              'type': 'Polygon',
+              'coordinates': [coords],
+            },
+            'properties': {'crs': 'http://www.opengis.net/def/crs/EPSG/0/4326'},
+          },
+          'data': [
+            {
+              'dataFilter': {
+                'timeRange': {
+                  'from':
+                      '${DateFormat('yyyy-MM-dd').format(dateStart)}T00:00:00Z',
+                  'to': '${DateFormat('yyyy-MM-dd').format(dateEnd)}T23:59:59Z',
+                },
+                'maxCloudCoverage': 30,
+                'mosaickingOrder': 'mostRecent',
+              },
+              'type': 'sentinel-2-l2a',
+            },
+          ],
+        },
+        'output': {
+          'width': gridSize,
+          'height': gridSize,
+          'responses': [
+            {
+              'identifier': 'default',
+              'format': {'type': 'image/tiff'},
+            },
+          ],
+        },
+        'evalscript': rawEvalscript,
+      });
+
+      final response = await _client
+          .post(
+            Uri.parse(_processUrl),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+              'Accept': 'image/tiff',
+            },
+            body: body,
+          )
+          .timeout(const Duration(seconds: 60));
+
+      final results = <Map<String, dynamic>>[];
+
+      if (response.statusCode == 200 &&
+          response.bodyBytes.length >= gridSize * gridSize * 4) {
+        // Parse raw FLOAT32 values from TIFF body
+        // TIFF has headers, but the float data is in the image strip
+        // We'll extract float values from the byte data
+        final bytes = response.bodyBytes;
+        final floatValues = _extractFloat32FromTiff(bytes, gridSize, gridSize);
+
+        if (floatValues != null) {
+          for (int row = 0; row < gridSize; row++) {
+            for (int col = 0; col < gridSize; col++) {
+              // TIFF rows are top-to-bottom, but our grid is south-to-north
+              final tiffRow = gridSize - 1 - row;
+              final pixelValue = floatValues[tiffRow * gridSize + col];
+
+              // Skip nodata pixels
+              if (pixelValue <= -9990) continue;
+
+              final cellSouth = minLat + row * cellLat;
+              final cellNorth = cellSouth + cellLat;
+              final cellWest = minLng + col * cellLng;
+              final cellEast = cellWest + cellLng;
+
+              // Check if cell center is inside polygon
+              final centerLat = (cellSouth + cellNorth) / 2;
+              final centerLng = (cellWest + cellEast) / 2;
+              if (!_isPointInPolygon(LatLng(centerLat, centerLng), polygon)) {
+                continue;
+              }
+
+              results.add({
+                'south': cellSouth,
+                'north': cellNorth,
+                'west': cellWest,
+                'east': cellEast,
+                'ndvi': pixelValue,
+              });
             }
           }
 
-          // Add position-based variation using actual range
-          final posVariation =
-              ((i * 17 + j * 13 + seed) % 100 - 50) / 100 * ndviRange * 0.5;
-          cellNdvi = (cellNdvi + posVariation).clamp(minNdvi, maxNdvi);
+          debugPrint(
+            'Real ${index.code} grid: ${results.length} cells from Process API',
+          );
+          return results;
+        }
+      }
 
+      debugPrint(
+        'Process API grid failed (${response.statusCode}), trying Statistical API fallback',
+      );
+
+      // Fallback: use Statistical API to get overall stats
+      return _getGridFallbackFromStats(
+        polygon: polygon,
+        index: index,
+        gridSize: gridSize,
+        token: token,
+      );
+    } catch (e) {
+      debugPrint('Grid data request error: $e');
+      return [];
+    }
+  }
+
+  /// Extract FLOAT32 values from TIFF bytes
+  /// Handles simple strip-based GeoTIFF from Sentinel Hub
+  List<double>? _extractFloat32FromTiff(
+    Uint8List bytes,
+    int width,
+    int height,
+  ) {
+    try {
+      // Find the strip offset in the TIFF IFD
+      // Sentinel Hub returns simple single-strip TIFFs
+      // The float data starts after the TIFF headers
+
+      // Check byte order: II = little-endian, MM = big-endian
+      final isLittleEndian = bytes[0] == 0x49 && bytes[1] == 0x49;
+
+      if (!isLittleEndian && !(bytes[0] == 0x4D && bytes[1] == 0x4D)) {
+        debugPrint('Not a valid TIFF file');
+        return null;
+      }
+
+      final byteData = ByteData.view(bytes.buffer);
+
+      // Read IFD offset (at byte 4)
+      final ifdOffset = isLittleEndian
+          ? byteData.getUint32(4, Endian.little)
+          : byteData.getUint32(4, Endian.big);
+
+      // Read number of IFD entries
+      final numEntries = isLittleEndian
+          ? byteData.getUint16(ifdOffset, Endian.little)
+          : byteData.getUint16(ifdOffset, Endian.big);
+
+      int stripOffset = 0;
+
+      // Search for StripOffsets tag (273)
+      for (int i = 0; i < numEntries; i++) {
+        final entryOffset = ifdOffset + 2 + i * 12;
+        final tag = isLittleEndian
+            ? byteData.getUint16(entryOffset, Endian.little)
+            : byteData.getUint16(entryOffset, Endian.big);
+
+        if (tag == 273) {
+          // StripOffsets
+          stripOffset = isLittleEndian
+              ? byteData.getUint32(entryOffset + 8, Endian.little)
+              : byteData.getUint32(entryOffset + 8, Endian.big);
+          break;
+        }
+      }
+
+      if (stripOffset == 0) {
+        // Try to find data after headers (common for simple TIFFs)
+        // Usually starts at byte 8 or after IFD
+        stripOffset = ifdOffset + 2 + numEntries * 12 + 4;
+      }
+
+      final totalPixels = width * height;
+      if (stripOffset + totalPixels * 4 > bytes.length) {
+        debugPrint(
+          'TIFF data too short: ${bytes.length} bytes, need ${stripOffset + totalPixels * 4}',
+        );
+        return null;
+      }
+
+      final values = <double>[];
+      final endian = isLittleEndian ? Endian.little : Endian.big;
+      for (int i = 0; i < totalPixels; i++) {
+        final offset = stripOffset + i * 4;
+        final value = byteData.getFloat32(offset, endian);
+        values.add(value);
+      }
+
+      return values;
+    } catch (e) {
+      debugPrint('TIFF parsing error: $e');
+      return null;
+    }
+  }
+
+  /// Fallback: get grid using Statistical API overall stats + spatial interpolation
+  Future<List<Map<String, dynamic>>> _getGridFallbackFromStats({
+    required List<LatLng> polygon,
+    required VegetationIndex index,
+    required int gridSize,
+    required String token,
+  }) async {
+    double minLat = double.infinity, maxLat = double.negativeInfinity;
+    double minLng = double.infinity, maxLng = double.negativeInfinity;
+    for (final point in polygon) {
+      if (point.latitude < minLat) minLat = point.latitude;
+      if (point.latitude > maxLat) maxLat = point.latitude;
+      if (point.longitude < minLng) minLng = point.longitude;
+      if (point.longitude > maxLng) maxLng = point.longitude;
+    }
+    final latRange = maxLat - minLat;
+    final lngRange = maxLng - minLng;
+    final cellLat = latRange / gridSize;
+    final cellLng = lngRange / gridSize;
+
+    final dateEnd = DateTime.now();
+    final dateStart = dateEnd.subtract(const Duration(days: 30));
+
+    // Query sub-regions for better spatial resolution
+    // Split the polygon bbox into a coarser grid (e.g. 4x4) and query stats for each
+    const subGridSize = 4;
+    final subCellLat = latRange / subGridSize;
+    final subCellLng = lngRange / subGridSize;
+    final subValues = <String, double>{};
+
+    for (int si = 0; si < subGridSize; si++) {
+      for (int sj = 0; sj < subGridSize; sj++) {
+        final south = minLat + si * subCellLat;
+        final north = south + subCellLat;
+        final west = minLng + sj * subCellLng;
+        final east = west + subCellLng;
+
+        final subCoords = [
+          [west, south],
+          [east, south],
+          [east, north],
+          [west, north],
+          [west, south],
+        ];
+
+        try {
+          final body = jsonEncode({
+            'input': {
+              'bounds': {
+                'geometry': {
+                  'type': 'Polygon',
+                  'coordinates': [subCoords],
+                },
+              },
+              'data': [
+                {
+                  'dataFilter': {
+                    'timeRange': {
+                      'from':
+                          '${DateFormat('yyyy-MM-dd').format(dateStart)}T00:00:00Z',
+                      'to':
+                          '${DateFormat('yyyy-MM-dd').format(dateEnd)}T23:59:59Z',
+                    },
+                    'maxCloudCoverage': 30,
+                    'mosaickingOrder': 'mostRecent',
+                  },
+                  'type': 'sentinel-2-l2a',
+                },
+              ],
+            },
+            'aggregation': {
+              'timeRange': {
+                'from':
+                    '${DateFormat('yyyy-MM-dd').format(dateStart)}T00:00:00Z',
+                'to': '${DateFormat('yyyy-MM-dd').format(dateEnd)}T23:59:59Z',
+              },
+              'aggregationInterval': {'of': 'P30D'},
+              'evalscript': _getEvalscript(index),
+            },
+            'calculations': {
+              'default': {
+                'statistics': {
+                  'default': {
+                    'percentiles': {
+                      'k': [50],
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          final response = await _client
+              .post(
+                Uri.parse(_statisticsUrl),
+                headers: {
+                  'Authorization': 'Bearer $token',
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                },
+                body: body,
+              )
+              .timeout(const Duration(seconds: 15));
+
+          if (response.statusCode == 200) {
+            final data = jsonDecode(response.body);
+            final dataList = data['data'] as List? ?? [];
+            if (dataList.isNotEmpty) {
+              final item = dataList.last;
+              final outputs = item['outputs'] as Map<String, dynamic>?;
+              final defOut = outputs?['default'] as Map<String, dynamic>?;
+              final bands = defOut?['bands'] as Map<String, dynamic>?;
+              final b0 = bands?['B0'] as Map<String, dynamic>?;
+              final stats = b0?['stats'] as Map<String, dynamic>?;
+              if (stats != null) {
+                final mean = (stats['mean'] as num?)?.toDouble();
+                if (mean != null) {
+                  subValues['${si}_$sj'] = mean;
+                }
+              }
+            }
+          }
+        } catch (_) {
+          // Skip this sub-cell
+        }
+      }
+    }
+
+    debugPrint(
+      'Sub-grid stats collected: ${subValues.length}/${subGridSize * subGridSize}',
+    );
+
+    // Build the fine grid using bilinear interpolation of sub-grid values
+    final results = <Map<String, dynamic>>[];
+    for (int i = 0; i < gridSize; i++) {
+      for (int j = 0; j < gridSize; j++) {
+        final cellSouth = minLat + i * cellLat;
+        final cellNorth = cellSouth + cellLat;
+        final cellWest = minLng + j * cellLng;
+        final cellEast = cellWest + cellLng;
+
+        final centerLat = (cellSouth + cellNorth) / 2;
+        final centerLng = (cellWest + cellEast) / 2;
+
+        if (!_isPointInPolygon(LatLng(centerLat, centerLng), polygon)) continue;
+
+        // Find which sub-cell this belongs to
+        final si = ((centerLat - minLat) / subCellLat)
+            .clamp(0, subGridSize - 1)
+            .floor();
+        final sj = ((centerLng - minLng) / subCellLng)
+            .clamp(0, subGridSize - 1)
+            .floor();
+        final cellValue = subValues['${si}_$sj'];
+
+        if (cellValue != null) {
           results.add({
             'south': cellSouth,
             'north': cellNorth,
             'west': cellWest,
             'east': cellEast,
-            'ndvi': cellNdvi,
+            'ndvi': cellValue,
           });
         }
       }
-
-      debugPrint(
-        'Heatmap grid generated: ${results.length} cells (NDVI range: ${minNdvi.toStringAsFixed(2)} - ${maxNdvi.toStringAsFixed(2)}, mean: ${baseNdvi.toStringAsFixed(2)})',
-      );
-      return results;
-    } catch (e) {
-      debugPrint('Grid data request error: $e');
-      return [];
     }
+
+    debugPrint(
+      'Stats-based grid: ${results.length} cells with real ${index.code} values',
+    );
+    return results;
   }
 
   /// Check if point is inside polygon
@@ -844,7 +1177,11 @@ function evaluatePixel(sample) {
       case VegetationIndex.msavi:
         return ['B04', 'B08', 'dataMask']; // Red, NIR
       case VegetationIndex.reci:
-        return ['B04', 'B08', 'dataMask']; // Red, NIR (Red Edge Chlorophyll)
+        return [
+          'B05',
+          'B08',
+          'dataMask',
+        ]; // Red Edge, NIR (Red Edge Chlorophyll)
     }
   }
 
@@ -862,15 +1199,19 @@ function evaluatePixel(sample) {
       case VegetationIndex.msavi:
         return '(2.0 * sample.B08 + 1.0 - Math.sqrt(Math.pow(2.0 * sample.B08 + 1.0, 2) - 8.0 * (sample.B08 - sample.B04))) / 2.0';
       case VegetationIndex.reci:
-        return '(sample.B08 / sample.B04) - 1.0';
+        return '(sample.B08 / sample.B05) - 1.0';
     }
   }
 
   /// Dynamic evalscript for any vegetation index
+  /// Each index uses its own color scheme matching the web UI
   String _getIndexColorEvalscript(VegetationIndex index) {
     final bands = _getRequiredBands(index);
     final formula = _getIndexFormula(index);
     final bandsJson = bands.map((b) => '"$b"').join(', ');
+
+    // Get index-specific color mapping function
+    final colorMapping = _getColorMappingJs(index);
 
     return '''
 //VERSION=3
@@ -883,39 +1224,129 @@ function setup() {
 
 function evaluatePixel(sample) {
   let indexValue = $formula;
-  
-  // Clamp value to valid range
-  indexValue = Math.max(-1.0, Math.min(1.0, indexValue));
-  
-  // Color gradient (green = high/healthy, red = low/stressed)
-  let r, g, b;
-  
-  if (indexValue >= 0.7) {
-    // Dark green - dense healthy vegetation
-    r = 0.11; g = 0.37; b = 0.13;
-  } else if (indexValue >= 0.6) {
-    // Green - healthy vegetation  
-    r = 0.22; g = 0.56; b = 0.24;
-  } else if (indexValue >= 0.5) {
-    // Light green - moderate vegetation
-    r = 0.49; g = 0.70; b = 0.26;
-  } else if (indexValue >= 0.4) {
-    // Yellow-green - slight stress
-    r = 0.68; g = 0.84; b = 0.51;
-  } else if (indexValue >= 0.3) {
-    // Yellow - stress detected
-    r = 0.99; g = 0.85; b = 0.21;
-  } else if (indexValue >= 0.2) {
-    // Orange - high stress
-    r = 1.0; g = 0.60; b = 0.0;
-  } else {
-    // Red - very stressed/bare soil
-    r = 0.96; g = 0.26; b = 0.21;
-  }
-  
+  $colorMapping
   return [r, g, b, sample.dataMask * 0.85];
 }
 ''';
+  }
+
+  /// Get index-specific JavaScript color mapping code
+  String _getColorMappingJs(VegetationIndex index) {
+    switch (index) {
+      case VegetationIndex.ndvi:
+        // NDVI: Green (healthy) → Red (stressed) — range [-1, 1]
+        return '''
+  indexValue = Math.max(-1.0, Math.min(1.0, indexValue));
+  let r, g, b;
+  if (indexValue >= 0.7) {
+    r = 0.07; g = 0.35; b = 0.07;
+  } else if (indexValue >= 0.5) {
+    r = 0.18; g = 0.55; b = 0.15;
+  } else if (indexValue >= 0.35) {
+    r = 0.45; g = 0.72; b = 0.20;
+  } else if (indexValue >= 0.2) {
+    r = 0.80; g = 0.85; b = 0.20;
+  } else if (indexValue >= 0.1) {
+    r = 0.93; g = 0.55; b = 0.15;
+  } else {
+    r = 0.80; g = 0.18; b = 0.10;
+  }''';
+
+      case VegetationIndex.ndre:
+        // NDRE: Light yellow-green → Dark red — range [-1, 1]
+        return '''
+  indexValue = Math.max(-1.0, Math.min(1.0, indexValue));
+  let r, g, b;
+  if (indexValue >= 0.5) {
+    r = 0.10; g = 0.45; b = 0.08;
+  } else if (indexValue >= 0.35) {
+    r = 0.55; g = 0.70; b = 0.15;
+  } else if (indexValue >= 0.2) {
+    r = 0.78; g = 0.82; b = 0.30;
+  } else if (indexValue >= 0.1) {
+    r = 0.90; g = 0.50; b = 0.12;
+  } else if (indexValue >= 0.0) {
+    r = 0.75; g = 0.20; b = 0.10;
+  } else {
+    r = 0.55; g = 0.10; b = 0.05;
+  }''';
+
+      case VegetationIndex.msavi:
+        // MSAVI: Dark green → Yellow — range [0, 1]
+        return '''
+  indexValue = Math.max(0.0, Math.min(1.0, indexValue));
+  let r, g, b;
+  if (indexValue >= 0.6) {
+    r = 0.0; g = 0.30; b = 0.05;
+  } else if (indexValue >= 0.45) {
+    r = 0.05; g = 0.50; b = 0.10;
+  } else if (indexValue >= 0.3) {
+    r = 0.25; g = 0.65; b = 0.18;
+  } else if (indexValue >= 0.2) {
+    r = 0.55; g = 0.78; b = 0.25;
+  } else if (indexValue >= 0.1) {
+    r = 0.80; g = 0.85; b = 0.35;
+  } else {
+    r = 0.95; g = 0.92; b = 0.50;
+  }''';
+
+      case VegetationIndex.reci:
+        // RECI: Green (high chlorophyll) → Dark red (low) — range [0, ~6]
+        return '''
+  indexValue = Math.max(0.0, Math.min(6.0, indexValue));
+  let r, g, b;
+  if (indexValue >= 3.0) {
+    r = 0.05; g = 0.45; b = 0.08;
+  } else if (indexValue >= 2.0) {
+    r = 0.20; g = 0.60; b = 0.15;
+  } else if (indexValue >= 1.2) {
+    r = 0.55; g = 0.75; b = 0.20;
+  } else if (indexValue >= 0.6) {
+    r = 0.90; g = 0.65; b = 0.15;
+  } else if (indexValue >= 0.3) {
+    r = 0.85; g = 0.30; b = 0.10;
+  } else {
+    r = 0.55; g = 0.05; b = 0.02;
+  }''';
+
+      case VegetationIndex.ndmi:
+        // NDMI: Blue/purple (high moisture) — range [-1, 1]
+        return '''
+  indexValue = Math.max(-1.0, Math.min(1.0, indexValue));
+  let r, g, b;
+  if (indexValue >= 0.4) {
+    r = 0.15; g = 0.20; b = 0.75;
+  } else if (indexValue >= 0.2) {
+    r = 0.25; g = 0.35; b = 0.82;
+  } else if (indexValue >= 0.0) {
+    r = 0.40; g = 0.50; b = 0.88;
+  } else if (indexValue >= -0.2) {
+    r = 0.60; g = 0.65; b = 0.90;
+  } else if (indexValue >= -0.5) {
+    r = 0.75; g = 0.78; b = 0.92;
+  } else {
+    r = 0.88; g = 0.88; b = 0.95;
+  }''';
+
+      case VegetationIndex.ndwi:
+        // NDWI: Blue (water) → Brown (dry) — range [-1, 1]
+        return '''
+  indexValue = Math.max(-1.0, Math.min(1.0, indexValue));
+  let r, g, b;
+  if (indexValue >= 0.3) {
+    r = 0.05; g = 0.15; b = 0.70;
+  } else if (indexValue >= 0.1) {
+    r = 0.15; g = 0.35; b = 0.80;
+  } else if (indexValue >= 0.0) {
+    r = 0.40; g = 0.60; b = 0.85;
+  } else if (indexValue >= -0.2) {
+    r = 0.70; g = 0.75; b = 0.55;
+  } else if (indexValue >= -0.5) {
+    r = 0.85; g = 0.75; b = 0.40;
+  } else {
+    r = 0.65; g = 0.45; b = 0.20;
+  }''';
+    }
   }
 
   /// Get vegetation index imagery as PNG bytes using Process API

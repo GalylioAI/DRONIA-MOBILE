@@ -252,7 +252,6 @@ class _SplashScreenState extends State<SplashScreen>
       width: 140,
       height: 140,
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(35),
         boxShadow: [
           BoxShadow(
@@ -267,9 +266,9 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Image.asset('assets/images/Drone_Logo.png', fit: BoxFit.contain),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(35),
+        child: Image.asset('assets/images/Icone.png', fit: BoxFit.cover),
       ),
     );
   }

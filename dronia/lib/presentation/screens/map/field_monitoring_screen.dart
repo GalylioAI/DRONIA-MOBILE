@@ -365,19 +365,27 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
   void _selectSavedRegion(Region region) {
     setState(() {
       _selectedRegion = region;
-      _polygonPoints = List.from(region.points);
+      _polygonPoints = List<LatLng>.from(region.points);
       _fieldId = region.id;
       _fieldArea = region.hectares;
+      _isDrawingPolygon = false;
       _indexData.clear();
       _weatherData.clear();
+      _soilMoistureData.clear();
+      _heatmapCellData.clear();
+      _ndviImageBytes = null;
+      _ndviImageBounds = null;
+      _showNdviTooltip = false;
       _errorMessage = null;
     });
 
-    // Zoom to region
-    _zoomToPolygon();
-
-    // Load data for this region
-    _loadAllData();
+    // Delay zoom until the next frame so the map controller is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _polygonPoints.isNotEmpty) {
+        _zoomToPolygon();
+        _loadAllData();
+      }
+    });
   }
 
   Future<void> _showSaveRegionDialog() async {
@@ -533,61 +541,87 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
   }
 
   void _showNdviAtPosition(Offset screenPosition, LatLng geoPosition) {
-    // Find the heatmap cell that was tapped
-    double? cellNdvi;
-
-    for (final cellData in _heatmapCellData) {
-      final south = cellData['south'] as double;
-      final north = cellData['north'] as double;
-      final west = cellData['west'] as double;
-      final east = cellData['east'] as double;
-
-      if (geoPosition.latitude >= south &&
-          geoPosition.latitude <= north &&
-          geoPosition.longitude >= west &&
-          geoPosition.longitude <= east) {
-        cellNdvi = cellData['ndvi'] as double;
-        break;
-      }
-    }
-
-    // If no cell found, use base NDVI
-    if (cellNdvi == null) {
-      final baseNdvi = _indexData.isNotEmpty
-          ? (_indexData.last.average ?? 0.65)
-          : 0.65;
-      cellNdvi = baseNdvi;
-    }
-
-    final ndvi = double.parse(cellNdvi.toStringAsFixed(2));
-
-    // Get label matching the heatmap legend
-    final label = _getNdviLabel(ndvi);
-
+    // Show loading tooltip immediately
     setState(() {
       _showNdviTooltip = true;
       _ndviTooltipPosition = screenPosition;
-      _ndviTooltipValue = ndvi;
-      _ndviTooltipLabel = label;
+      _ndviTooltipValue = -999; // sentinel for "loading"
+      _ndviTooltipLabel = 'Chargement...';
     });
+
+    // Query real satellite value at this point
+    _eosdaService
+        .getIndexValueAtPoint(point: geoPosition, index: _selectedIndex)
+        .then((realValue) {
+          if (!mounted) return;
+
+          if (realValue != null) {
+            final value = double.parse(realValue.toStringAsFixed(2));
+            final label = _getNdviLabel(value);
+            setState(() {
+              _ndviTooltipValue = value;
+              _ndviTooltipLabel = label;
+            });
+          } else {
+            // API returned no data — show a message
+            setState(() {
+              _ndviTooltipValue = 0.0;
+              _ndviTooltipLabel = 'Pas de données satellite';
+            });
+          }
+        });
   }
 
-  /// Get label for NDVI value matching heatmap legend
-  String _getNdviLabel(double ndvi) {
-    if (ndvi >= 0.7) {
-      return 'Dense, healthy vegetation';
-    } else if (ndvi >= 0.6) {
-      return 'Healthy vegetation';
-    } else if (ndvi >= 0.5) {
-      return 'Moderate vegetation';
-    } else if (ndvi >= 0.4) {
-      return 'Slight stress';
-    } else if (ndvi >= 0.3) {
-      return 'Stress detected';
-    } else if (ndvi >= 0.2) {
-      return 'High stress';
-    } else {
-      return 'Very stressed/bare soil';
+  /// Get label for index value based on selected vegetation index
+  String _getNdviLabel(double value) {
+    switch (_selectedIndex) {
+      case VegetationIndex.ndvi:
+        if (value >= 0.7) return 'Dense, healthy vegetation';
+        if (value >= 0.5) return 'Healthy vegetation';
+        if (value >= 0.35) return 'Moderate vegetation';
+        if (value >= 0.2) return 'Slight stress';
+        if (value >= 0.1) return 'Stressed vegetation';
+        return 'Bare soil / No vegetation';
+
+      case VegetationIndex.ndre:
+        if (value >= 0.5) return 'High chlorophyll content';
+        if (value >= 0.35) return 'Good chlorophyll';
+        if (value >= 0.2) return 'Moderate chlorophyll';
+        if (value >= 0.1) return 'Low chlorophyll';
+        if (value >= 0.0) return 'Very low chlorophyll';
+        return 'No vegetation detected';
+
+      case VegetationIndex.msavi:
+        if (value >= 0.6) return 'Dense vegetation';
+        if (value >= 0.45) return 'Healthy vegetation';
+        if (value >= 0.3) return 'Moderate vegetation';
+        if (value >= 0.2) return 'Sparse vegetation';
+        if (value >= 0.1) return 'Very sparse vegetation';
+        return 'Bare soil';
+
+      case VegetationIndex.reci:
+        if (value >= 3.0) return 'Very high chlorophyll';
+        if (value >= 2.0) return 'High chlorophyll';
+        if (value >= 1.2) return 'Moderate chlorophyll';
+        if (value >= 0.6) return 'Low chlorophyll';
+        if (value >= 0.3) return 'Very low chlorophyll';
+        return 'No chlorophyll / Bare soil';
+
+      case VegetationIndex.ndmi:
+        if (value >= 0.4) return 'Very high moisture';
+        if (value >= 0.2) return 'High moisture';
+        if (value >= 0.0) return 'Moderate moisture';
+        if (value >= -0.2) return 'Low moisture';
+        if (value >= -0.5) return 'Very low moisture';
+        return 'Dry / No moisture';
+
+      case VegetationIndex.ndwi:
+        if (value >= 0.3) return 'Water body';
+        if (value >= 0.1) return 'High water content';
+        if (value >= 0.0) return 'Moderate water content';
+        if (value >= -0.2) return 'Low water content';
+        if (value >= -0.5) return 'Dry vegetation';
+        return 'Very dry / Bare soil';
     }
   }
 
@@ -644,132 +678,106 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
       return [PolygonLayer(polygons: heatmapPolygons)];
     }
 
-    // Fallback: Generate grid in-place if API data not available
-    final bounds = LatLngBounds.fromPoints(_polygonPoints);
-    final latRange = bounds.north - bounds.south;
-    final lngRange = bounds.east - bounds.west;
-
-    const gridSize = 50; // Higher resolution for smoother visualization
-    final cellLat = latRange / gridSize;
-    final cellLng = lngRange / gridSize;
-
-    final heatmapPolygons = <Polygon>[];
-    final localCellData = <Map<String, dynamic>>[];
-
-    // Get base NDVI and range from actual data if available
-    final baseNdvi = _indexData.isNotEmpty
-        ? (_indexData.last.average ?? 0.5)
-        : 0.5;
-    final minNdvi = _indexData.isNotEmpty ? (_indexData.last.min ?? 0.1) : 0.15;
-    final maxNdvi = _indexData.isNotEmpty ? (_indexData.last.max ?? 0.9) : 0.85;
-    final ndviRange = maxNdvi - minNdvi;
-
-    final seed =
-        (_polygonPoints.first.latitude * 10000 +
-                _polygonPoints.first.longitude * 10000)
-            .toInt();
-    final random = math.Random(seed);
-
-    final stressZones = <Map<String, double>>[];
-    for (int i = 0; i < 5; i++) {
-      stressZones.add({
-        'lat': bounds.south + random.nextDouble() * latRange,
-        'lng': bounds.west + random.nextDouble() * lngRange,
-        'radius': 0.12 + random.nextDouble() * 0.2,
-        'intensity': 0.3 + random.nextDouble() * 0.5,
-      });
-    }
-
-    for (int i = 0; i < gridSize; i++) {
-      for (int j = 0; j < gridSize; j++) {
-        final cellSouth = bounds.south + i * cellLat;
-        final cellNorth = cellSouth + cellLat;
-        final cellWest = bounds.west + j * cellLng;
-        final cellEast = cellWest + cellLng;
-
-        final centerLat = (cellSouth + cellNorth) / 2;
-        final centerLng = (cellWest + cellEast) / 2;
-        final center = LatLng(centerLat, centerLng);
-
-        if (!_isPointInPolygon(center, _polygonPoints)) continue;
-
-        double cellNdvi = baseNdvi;
-
-        for (final zone in stressZones) {
-          final distLat = (centerLat - zone['lat']!) / latRange;
-          final distLng = (centerLng - zone['lng']!) / lngRange;
-          final dist = math.sqrt(distLat * distLat + distLng * distLng);
-
-          if (dist < zone['radius']!) {
-            final influence =
-                (1 - dist / zone['radius']!) * zone['intensity']! * ndviRange;
-            cellNdvi -= influence;
-          }
-        }
-
-        // Add position-based variation using actual NDVI range
-        final posVariation = (random.nextDouble() - 0.5) * ndviRange * 0.4;
-        cellNdvi = (cellNdvi + posVariation).clamp(minNdvi, maxNdvi);
-
-        final color = _getNdviColor(cellNdvi);
-
-        localCellData.add({
-          'south': cellSouth,
-          'north': cellNorth,
-          'west': cellWest,
-          'east': cellEast,
-          'ndvi': cellNdvi,
-        });
-
-        heatmapPolygons.add(
-          Polygon(
-            points: [
-              LatLng(cellSouth, cellWest),
-              LatLng(cellNorth, cellWest),
-              LatLng(cellNorth, cellEast),
-              LatLng(cellSouth, cellEast),
-            ],
-            color: color.withOpacity(0.8),
-            borderColor: Colors.transparent,
-            borderStrokeWidth: 0,
-            isFilled: true,
-          ),
-        );
-      }
-    }
-
-    // Store for tap lookup if not already set
-    if (_heatmapCellData.isEmpty) {
-      _heatmapCellData = localCellData;
-    }
-
-    return [PolygonLayer(polygons: heatmapPolygons)];
+    // Fallback: No data available — show polygon without heatmap
+    // The tooltip will still query real values via the API when tapped
+    return [];
   }
 
-  /// Get color for NDVI value (green = healthy, red = stressed)
-  Color _getNdviColor(double ndvi) {
-    if (ndvi >= 0.7) {
-      // Dark green - very healthy
-      return const Color(0xFF1B5E20);
-    } else if (ndvi >= 0.6) {
-      // Green - healthy
-      return const Color(0xFF388E3C);
-    } else if (ndvi >= 0.5) {
-      // Light green - moderate
-      return const Color(0xFF7CB342);
-    } else if (ndvi >= 0.4) {
-      // Yellow-green - slight stress
-      return const Color(0xFFAED581);
-    } else if (ndvi >= 0.3) {
-      // Yellow - stress
-      return const Color(0xFFFDD835);
-    } else if (ndvi >= 0.2) {
-      // Orange - high stress
-      return const Color(0xFFFF9800);
-    } else {
-      // Red - very stressed/bare soil
-      return const Color(0xFFF44336);
+  /// Get color for index value based on currently selected vegetation index
+  Color _getNdviColor(double value) {
+    switch (_selectedIndex) {
+      case VegetationIndex.ndvi:
+        return _getNdviColorMap(value);
+      case VegetationIndex.ndre:
+        return _getNdreColorMap(value);
+      case VegetationIndex.msavi:
+        return _getMsaviColorMap(value);
+      case VegetationIndex.reci:
+        return _getReciColorMap(value);
+      case VegetationIndex.ndmi:
+        return _getNdmiColorMap(value);
+      case VegetationIndex.ndwi:
+        return _getNdwiColorMap(value);
     }
+  }
+
+  /// NDVI: Green → Red
+  Color _getNdviColorMap(double v) {
+    if (v >= 0.7) return const Color(0xFF12591C);
+    if (v >= 0.5) return const Color(0xFF2E8C26);
+    if (v >= 0.35) return const Color(0xFF72B833);
+    if (v >= 0.2) return const Color(0xFFCCD933);
+    if (v >= 0.1) return const Color(0xFFED8C26);
+    return const Color(0xFFCC2E1A);
+  }
+
+  /// NDRE: Yellow-green → Dark red
+  Color _getNdreColorMap(double v) {
+    if (v >= 0.5) return const Color(0xFF1A7314);
+    if (v >= 0.35) return const Color(0xFF8CB326);
+    if (v >= 0.2) return const Color(0xFFC7D14D);
+    if (v >= 0.1) return const Color(0xFFE6801F);
+    if (v >= 0.0) return const Color(0xFFC0331A);
+    return const Color(0xFF8C1A0D);
+  }
+
+  /// MSAVI: Dark green → Yellow
+  Color _getMsaviColorMap(double v) {
+    if (v >= 0.6) return const Color(0xFF004D0D);
+    if (v >= 0.45) return const Color(0xFF0D801A);
+    if (v >= 0.3) return const Color(0xFF40A62E);
+    if (v >= 0.2) return const Color(0xFF8CC740);
+    if (v >= 0.1) return const Color(0xFFCCD959);
+    return const Color(0xFFF2EB80);
+  }
+
+  /// RECI: Green → Dark red (range 0–6)
+  Color _getReciColorMap(double v) {
+    if (v >= 3.0) return const Color(0xFF0D7314);
+    if (v >= 2.0) return const Color(0xFF339926);
+    if (v >= 1.2) return const Color(0xFF8CC033);
+    if (v >= 0.6) return const Color(0xFFE6A626);
+    if (v >= 0.3) return const Color(0xFFD94D1A);
+    return const Color(0xFF8C0D05);
+  }
+
+  /// NDMI: Blue/purple shades
+  Color _getNdmiColorMap(double v) {
+    if (v >= 0.4) return const Color(0xFF2633BF);
+    if (v >= 0.2) return const Color(0xFF4059D1);
+    if (v >= 0.0) return const Color(0xFF6680E0);
+    if (v >= -0.2) return const Color(0xFF99A6E6);
+    if (v >= -0.5) return const Color(0xFFBFC7EB);
+    return const Color(0xFFE0E0F2);
+  }
+
+  /// NDWI: Blue → Brown
+  Color _getNdwiColorMap(double v) {
+    if (v >= 0.3) return const Color(0xFF0D26B3);
+    if (v >= 0.1) return const Color(0xFF2659CC);
+    if (v >= 0.0) return const Color(0xFF6699D9);
+    if (v >= -0.2) return const Color(0xFFB3BF8C);
+    if (v >= -0.5) return const Color(0xFFD9BF66);
+    return const Color(0xFFA67333);
+  }
+
+  /// Navigate back to the initial selection page (create new area / saved regions)
+  void _goBackToSelection() {
+    setState(() {
+      _polygonPoints.clear();
+      _isDrawingPolygon = false;
+      _isMapFullscreen = false;
+      _selectedRegion = null;
+      _fieldId = null;
+      _fieldArea = null;
+      _indexData.clear();
+      _weatherData.clear();
+      _soilMoistureData.clear();
+      _heatmapCellData.clear();
+      _ndviImageBytes = null;
+      _ndviImageBounds = null;
+      _errorMessage = null;
+    });
   }
 
   void _startDrawing() {
@@ -948,6 +956,24 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
         bottom: false,
         child: Row(
           children: [
+            // Back to home / parcelle selection
+            InkWell(
+              onTap: _goBackToSelection,
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.tune_rounded,
+                  color: Colors.white70,
+                  size: 18,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
             // App icon with glow effect
             Container(
               padding: const EdgeInsets.all(8),
@@ -1300,22 +1326,38 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      '${_selectedIndex.name.toUpperCase()}: $_ndviTooltipValue',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    if (_ndviTooltipValue == -999) ...[
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white70,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _ndviTooltipLabel,
-                      style: TextStyle(
-                        color: _getTooltipLabelColor(_ndviTooltipValue),
-                        fontSize: 13,
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Chargement...',
+                        style: TextStyle(color: Colors.white54, fontSize: 12),
                       ),
-                    ),
+                    ] else ...[
+                      Text(
+                        '${_selectedIndex.code}: $_ndviTooltipValue',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _ndviTooltipLabel,
+                        style: TextStyle(
+                          color: _getTooltipLabelColor(_ndviTooltipValue),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                     // Arrow pointing down
                     CustomPaint(
                       size: const Size(16, 8),
@@ -1486,10 +1528,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
   }
 
   Color _getTooltipLabelColor(double value) {
-    if (value >= 0.7) return const Color(0xFF4CAF50); // Green - dense
-    if (value >= 0.5) return const Color(0xFFFFC107); // Yellow - moderate
-    if (value >= 0.3) return const Color(0xFFFF9800); // Orange - sparse
-    return const Color(0xFFF44336); // Red - bare/soil
+    // Use the same color as the heatmap for consistency
+    return _getNdviColor(value);
   }
 
   Widget _buildSavedRegionCard(Region region) {

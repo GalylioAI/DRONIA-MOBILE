@@ -249,7 +249,6 @@ class _RegisterScreenState extends State<RegisterScreen>
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -259,11 +258,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                   ),
                 ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(10),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
                 child: Image.asset(
-                  'assets/images/Drone_Logo.png',
-                  fit: BoxFit.contain,
+                  'assets/images/Icone.png',
+                  fit: BoxFit.cover,
                 ),
               ),
             ),

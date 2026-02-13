@@ -195,7 +195,6 @@ class _LoginScreenState extends State<LoginScreen>
         width: 100,
         height: 100,
         decoration: BoxDecoration(
-          color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
@@ -205,11 +204,11 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
           child: Image.asset(
-            'assets/images/Drone_Logo.png',
-            fit: BoxFit.contain,
+            'assets/images/Icone.png',
+            fit: BoxFit.cover,
           ),
         ),
       ),
