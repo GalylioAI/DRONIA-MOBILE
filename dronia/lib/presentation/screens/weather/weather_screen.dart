@@ -33,7 +33,7 @@ class _WeatherScreenState extends State<WeatherScreen>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: Duration(milliseconds: 800),
     );
     _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _animController.forward();
@@ -101,11 +101,10 @@ class _WeatherScreenState extends State<WeatherScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: FadeTransition(
               opacity: _fadeAnim,
               child: _isLoading
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
                         color: Color(0xFF2196F3),
                       ),
@@ -117,18 +116,18 @@ class _WeatherScreenState extends State<WeatherScreen>
                         children: [
                           Icon(
                             Icons.cloud_off,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                             size: 64,
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           Text(
                             _errorMessage!,
-                            style: TextStyle(color: AppColors.textSecondary),
+                            style: TextStyle(color: context.colors.textSecondary),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: _loadWeatherData,
-                            child: const Text('Réessayer'),
+                            child: Text('Réessayer'),
                           ),
                         ],
                       ),
@@ -143,15 +142,15 @@ class _WeatherScreenState extends State<WeatherScreen>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 _buildCurrentWeather(),
-                                const SizedBox(height: 24),
+                                SizedBox(height: 24),
                                 _buildHourlyForecast(),
-                                const SizedBox(height: 24),
+                                SizedBox(height: 24),
                                 _buildWeeklyForecast(),
-                                const SizedBox(height: 24),
+                                SizedBox(height: 24),
                                 _buildAgriculturalAdvisory(),
-                                const SizedBox(height: 24),
+                                SizedBox(height: 24),
                                 _buildWeatherDetails(),
-                                const SizedBox(height: 100),
+                                SizedBox(height: 100),
                               ],
                             ),
                           ),
@@ -164,7 +163,6 @@ class _WeatherScreenState extends State<WeatherScreen>
 
   Widget _buildHeader() {
     return SliverAppBar(
-      backgroundColor: AppColors.backgroundDark,
       floating: true,
       title: Row(
         children: [
@@ -173,19 +171,19 @@ class _WeatherScreenState extends State<WeatherScreen>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF2196F3).withOpacity(0.2),
-                  const Color(0xFF2196F3).withOpacity(0.1),
+                  Color(0xFF2196F3).withOpacity(0.2),
+                  Color(0xFF2196F3).withOpacity(0.1),
                 ],
               ),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(Icons.cloud, color: Color(0xFF2196F3), size: 20),
+            child: Icon(Icons.cloud, color: Color(0xFF2196F3), size: 20),
           ),
-          const SizedBox(width: 12),
-          const Text(
+          SizedBox(width: 12),
+          Text(
             'Météo',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -194,14 +192,14 @@ class _WeatherScreenState extends State<WeatherScreen>
       ),
       actions: [
         IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.location_on_outlined,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           onPressed: () {},
         ),
         IconButton(
-          icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
+          icon: Icon(Icons.refresh, color: context.colors.textSecondary),
           onPressed: _loadWeatherData,
         ),
       ],
@@ -250,7 +248,7 @@ class _WeatherScreenState extends State<WeatherScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [Color(0xFF2196F3), Color(0xFF1565C0)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -258,9 +256,9 @@ class _WeatherScreenState extends State<WeatherScreen>
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2196F3).withOpacity(0.3),
+            color: Color(0xFF2196F3).withOpacity(0.3),
             blurRadius: 20,
-            offset: const Offset(0, 10),
+            offset: Offset(0, 10),
           ),
         ],
       ),
@@ -274,12 +272,12 @@ class _WeatherScreenState extends State<WeatherScreen>
                 children: [
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.location_on,
                         color: Colors.white70,
                         size: 16,
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4),
                       Text(
                         _locationName,
                         style: TextStyle(
@@ -289,10 +287,10 @@ class _WeatherScreenState extends State<WeatherScreen>
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Text(
                     '$temp°',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 72,
                       fontWeight: FontWeight.w200,
@@ -300,7 +298,7 @@ class _WeatherScreenState extends State<WeatherScreen>
                   ),
                   Text(
                     condition,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
@@ -311,7 +309,7 @@ class _WeatherScreenState extends State<WeatherScreen>
               Icon(_getWeatherIcon(condition), color: Colors.amber, size: 80),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -354,10 +352,10 @@ class _WeatherScreenState extends State<WeatherScreen>
     return Column(
       children: [
         Icon(icon, color: Colors.white70, size: 22),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 16,
@@ -378,15 +376,15 @@ class _WeatherScreenState extends State<WeatherScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Prévisions Horaires',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         SizedBox(
           height: 100,
           child: ListView.builder(
@@ -427,13 +425,13 @@ class _WeatherScreenState extends State<WeatherScreen>
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: isNow
-                      ? const Color(0xFF2196F3).withOpacity(0.2)
-                      : AppColors.cardDark,
+                      ? Color(0xFF2196F3).withOpacity(0.2)
+                      : context.colors.card,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isNow
-                        ? const Color(0xFF2196F3).withOpacity(0.5)
-                        : AppColors.dividerColor,
+                        ? Color(0xFF2196F3).withOpacity(0.5)
+                        : context.colors.divider,
                   ),
                 ),
                 child: Column(
@@ -443,21 +441,21 @@ class _WeatherScreenState extends State<WeatherScreen>
                       hour,
                       style: TextStyle(
                         color: isNow
-                            ? const Color(0xFF2196F3)
-                            : AppColors.textSecondary,
+                            ? Color(0xFF2196F3)
+                            : context.colors.textSecondary,
                         fontSize: 12,
                         fontWeight: isNow ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                     Icon(
                       icon,
-                      color: isNow ? Colors.amber : AppColors.textSecondary,
+                      color: isNow ? Colors.amber : context.colors.textSecondary,
                       size: 24,
                     ),
                     Text(
                       temp,
                       style: TextStyle(
-                        color: isNow ? Colors.white : AppColors.textPrimary,
+                        color: isNow ? Colors.white : context.colors.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -492,19 +490,19 @@ class _WeatherScreenState extends State<WeatherScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Prévisions 7 Jours',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             boxShadow: [
@@ -556,8 +554,8 @@ class _WeatherScreenState extends State<WeatherScreen>
                             day,
                             style: TextStyle(
                               color: index == 0
-                                  ? const Color(0xFF2196F3)
-                                  : AppColors.textPrimary,
+                                  ? Color(0xFF2196F3)
+                                  : context.colors.textPrimary,
                               fontWeight: index == 0
                                   ? FontWeight.bold
                                   : FontWeight.normal,
@@ -568,25 +566,25 @@ class _WeatherScreenState extends State<WeatherScreen>
                           icon,
                           color: icon == Icons.wb_sunny
                               ? Colors.amber
-                              : AppColors.textSecondary,
+                              : context.colors.textSecondary,
                           size: 24,
                         ),
-                        const Spacer(),
+                        Spacer(),
                         Text(
                           high,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: context.colors.textPrimary,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: 16),
                         SizedBox(
                           width: 40,
                           child: Text(
                             low,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: context.colors.textSecondary,
                               fontSize: 14,
                             ),
                           ),
@@ -596,7 +594,7 @@ class _WeatherScreenState extends State<WeatherScreen>
                   ),
                   if (index < itemCount - 1)
                     Divider(
-                      color: AppColors.dividerColor.withOpacity(0.5),
+                      color: context.colors.divider.withOpacity(0.5),
                       height: 1,
                     ),
                 ],
@@ -624,7 +622,7 @@ class _WeatherScreenState extends State<WeatherScreen>
       title = 'Reporter l\'irrigation';
       advice =
           'Les prévisions de pluie permettent d\'économiser l\'eau d\'irrigation.';
-      accentColor = const Color(0xFF2196F3);
+      accentColor = Color(0xFF2196F3);
       icon = Icons.water_drop;
     } else if (temp > 30) {
       title = 'Attention Chaleur';
@@ -651,15 +649,15 @@ class _WeatherScreenState extends State<WeatherScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Conseil Agricole',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -682,7 +680,7 @@ class _WeatherScreenState extends State<WeatherScreen>
                 ),
                 child: Icon(icon, color: Colors.white, size: 24),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -695,11 +693,11 @@ class _WeatherScreenState extends State<WeatherScreen>
                         fontSize: 16,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       advice,
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 13,
                       ),
                     ),
@@ -723,15 +721,15 @@ class _WeatherScreenState extends State<WeatherScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Détails',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Row(
           children: [
             Expanded(
@@ -741,7 +739,7 @@ class _WeatherScreenState extends State<WeatherScreen>
                 '$feelsLike°C',
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: _buildDetailCard(
                 Icons.visibility,
@@ -751,13 +749,13 @@ class _WeatherScreenState extends State<WeatherScreen>
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Row(
           children: [
             Expanded(
               child: _buildDetailCard(Icons.speed, 'Pression', '$pressure hPa'),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: _buildDetailCard(Icons.water, 'Humidité', '$humidity%'),
             ),
@@ -771,7 +769,7 @@ class _WeatherScreenState extends State<WeatherScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
@@ -784,23 +782,23 @@ class _WeatherScreenState extends State<WeatherScreen>
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.textSecondary, size: 24),
-          const SizedBox(width: 12),
+          Icon(icon, color: context.colors.textSecondary, size: 24),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
                 Text(
                   value,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: context.colors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),

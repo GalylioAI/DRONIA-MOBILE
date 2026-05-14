@@ -56,23 +56,23 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
 
   // Culture options - Only include crops supported by the EfficientNet model (PlantVillage dataset)
   final List<_CultureOption> _cultures = [
-    _CultureOption(emoji: '🍅', name: 'Tomate', color: const Color(0xFFE53935)),
-    _CultureOption(emoji: '🍇', name: 'Vigne', color: const Color(0xFF7B1FA2)),
-    _CultureOption(emoji: '🌽', name: 'Maïs', color: const Color(0xFFFFB300)),
+    _CultureOption(emoji: '🍅', name: 'Tomate', color: Color(0xFFE53935)),
+    _CultureOption(emoji: '🍇', name: 'Vigne', color: Color(0xFF7B1FA2)),
+    _CultureOption(emoji: '🌽', name: 'Maïs', color: Color(0xFFFFB300)),
     _CultureOption(
       emoji: '🥔',
       name: 'P. de terre',
-      color: const Color(0xFF8D6E63),
+      color: Color(0xFF8D6E63),
     ),
     _CultureOption(
       emoji: '🫑',
       name: 'Poivron',
-      color: const Color(0xFF4CAF50),
+      color: Color(0xFF4CAF50),
     ),
-    _CultureOption(emoji: '🍎', name: 'Pomme', color: const Color(0xFFE53935)),
-    _CultureOption(emoji: '🍊', name: 'Orange', color: const Color(0xFFFF9800)),
-    _CultureOption(emoji: '🍓', name: 'Fraise', color: const Color(0xFFE91E63)),
-    _CultureOption(emoji: '🌾', name: 'Blé', color: const Color(0xFFD4A64A)),
+    _CultureOption(emoji: '🍎', name: 'Pomme', color: Color(0xFFE53935)),
+    _CultureOption(emoji: '🍊', name: 'Orange', color: Color(0xFFFF9800)),
+    _CultureOption(emoji: '🍓', name: 'Fraise', color: Color(0xFFE91E63)),
+    _CultureOption(emoji: '🌾', name: 'Blé', color: Color(0xFFD4A64A)),
   ];
 
   // Regional diseases and pests
@@ -106,7 +106,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: Duration(milliseconds: 500),
       vsync: this,
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -201,7 +201,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
   void _nextStep() {
     if (_currentStep < 2) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
+        duration: Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     }
@@ -210,7 +210,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
   void _previousStep() {
     if (_currentStep > 0) {
       _pageController.previousPage(
-        duration: const Duration(milliseconds: 300),
+        duration: Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     }
@@ -400,7 +400,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Analyse sauvegardée avec succès'),
             backgroundColor: AppColors.success,
           ),
@@ -422,7 +422,6 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: SafeArea(
@@ -433,7 +432,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
               Expanded(
                 child: PageView(
                   controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
+                  physics: NeverScrollableScrollPhysics(),
                   onPageChanged: (index) =>
                       setState(() => _currentStep = index),
                   children: [_buildStep1(), _buildStep2(), _buildStep3()],
@@ -456,14 +455,14 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
               icon: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.cardDark,
+                  color: context.colors.card,
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(Icons.arrow_back_ios_new, size: 16),
+                child: Icon(Icons.arrow_back_ios_new, size: 16),
               ),
               onPressed: _previousStep,
             ),
-          if (_currentStep > 0) const SizedBox(width: 12),
+          if (_currentStep > 0) SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -471,12 +470,12 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                 RichText(
                   text: TextSpan(
                     children: [
-                      const TextSpan(
+                      TextSpan(
                         text: "Mode d'Analyse ",
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                       TextSpan(
@@ -492,9 +491,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                 ),
                 Text(
                   _getStepTitle(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -544,7 +543,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: isActive ? AppColors.primaryGreen : AppColors.cardDark,
+              color: isActive ? AppColors.primaryGreen : context.colors.card,
               shape: BoxShape.circle,
               border: Border.all(
                 color: isCurrent ? AppColors.primaryGreen : Colors.transparent,
@@ -553,27 +552,27 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             ),
             child: Center(
               child: isActive && !isCurrent
-                  ? const Icon(Icons.check, color: AppColors.white, size: 16)
+                  ? Icon(Icons.check, color: AppColors.white, size: 16)
                   : Text(
                       '${step + 1}',
                       style: TextStyle(
                         color: isActive
                             ? AppColors.white
-                            : AppColors.textSecondary,
+                            : context.colors.textSecondary,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
                     ),
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
               fontSize: 10,
               color: isActive
                   ? AppColors.primaryGreen
-                  : AppColors.textSecondary,
+                  : context.colors.textSecondary,
               fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
             ),
             textAlign: TextAlign.center,
@@ -590,7 +589,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       width: 24,
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: isActive ? AppColors.primaryGreen : AppColors.cardDark,
+        color: isActive ? AppColors.primaryGreen : context.colors.card,
         borderRadius: BorderRadius.circular(1),
       ),
     );
@@ -604,15 +603,15 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildModelSelector(),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           _buildImageSection(),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           _buildCultureSection(),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           _buildNotesSection(),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           _buildStep1Button(),
-          const SizedBox(height: 100),
+          SizedBox(height: 100),
         ],
       ),
     );
@@ -622,15 +621,15 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Modèle IA',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         // EfficientNet option
         GestureDetector(
           onTap: () => setState(() => _selectedModel = 'efficientnet'),
@@ -646,13 +645,13 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                     )
                   : null,
               color: _selectedModel != 'efficientnet'
-                  ? AppColors.cardDark
+                  ? context.colors.card
                   : null,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: _selectedModel == 'efficientnet'
                     ? AppColors.primaryGreen
-                    : AppColors.dividerColor,
+                    : context.colors.divider,
                 width: _selectedModel == 'efficientnet' ? 2 : 1,
               ),
             ),
@@ -664,26 +663,26 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                     color: AppColors.primaryGreen.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.auto_awesome,
                     color: AppColors.primaryGreen,
                     size: 24,
                   ),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'EfficientNet (Classification Avancée)',
                         style: TextStyle(
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         '✓ Prédictions réelles • Modèle entraîné • Haute précision',
                         style: TextStyle(
@@ -695,12 +694,12 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                   ),
                 ),
                 if (_selectedModel == 'efficientnet')
-                  const Icon(Icons.check_circle, color: AppColors.primaryGreen),
+                  Icon(Icons.check_circle, color: AppColors.primaryGreen),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         // Demo mode option
         GestureDetector(
           onTap: () => setState(() => _selectedModel = 'demo'),
@@ -708,13 +707,13 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: _selectedModel == 'demo'
-                  ? AppColors.cardDark.withOpacity(0.8)
-                  : AppColors.cardDark,
+                  ? context.colors.card.withOpacity(0.8)
+                  : context.colors.card,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: _selectedModel == 'demo'
-                    ? AppColors.textSecondary
-                    : AppColors.dividerColor,
+                    ? context.colors.textSecondary
+                    : context.colors.divider,
               ),
             ),
             child: Row(
@@ -722,24 +721,24 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppColors.backgroundDark,
+                    color: context.colors.bg,
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.science_outlined,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     size: 24,
                   ),
                 ),
-                const SizedBox(width: 14),
-                const Expanded(
+                SizedBox(width: 14),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Mode Démo (Mock Data)',
                         style: TextStyle(
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
@@ -748,7 +747,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                       Text(
                         '🎭 Données de démonstration',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           fontSize: 11,
                         ),
                       ),
@@ -756,15 +755,15 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                   ),
                 ),
                 if (_selectedModel == 'demo')
-                  const Icon(
+                  Icon(
                     Icons.check_circle,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -774,7 +773,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
           child: Row(
             children: [
               Icon(Icons.info_outline, color: AppColors.primaryGreen, size: 16),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'Utilise EfficientNet pour la classification des maladies avec haute précision',
@@ -794,19 +793,19 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       children: [
         Row(
           children: [
-            const Icon(
+            Icon(
               Icons.photo_camera,
               color: AppColors.primaryGreen,
               size: 20,
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             RichText(
-              text: const TextSpan(
+              text: TextSpan(
                 children: [
                   TextSpan(
                     text: 'Image de la Culture ',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
@@ -824,19 +823,19 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         GestureDetector(
           onTap: _pickImage,
           child: Container(
             width: double.infinity,
             height: 180,
             decoration: BoxDecoration(
-              color: AppColors.cardDark,
+              color: context.colors.card,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: _selectedImage != null
                     ? AppColors.primaryGreen
-                    : AppColors.dividerColor,
+                    : context.colors.divider,
                 style: _selectedImage == null
                     ? BorderStyle.solid
                     : BorderStyle.solid,
@@ -861,7 +860,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                               color: AppColors.error.withOpacity(0.9),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.close,
                               color: AppColors.white,
                               size: 16,
@@ -881,7 +880,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                             color: AppColors.success.withOpacity(0.9),
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
@@ -913,22 +912,22 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                           color: AppColors.primaryGreen.withOpacity(0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.cloud_upload_outlined,
                           size: 36,
                           color: AppColors.primaryGreen,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      const Text(
+                      SizedBox(height: 12),
+                      Text(
                         'Glissez-déposez votre image',
                         style: TextStyle(
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         'ou cliquez pour parcourir',
                         style: TextStyle(
@@ -936,20 +935,20 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                           fontSize: 12,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           _buildFormatChip('PNG'),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6),
                           _buildFormatChip('JPG'),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6),
                           _buildFormatChip('WEBP'),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6),
                           Text(
                             'Max 10MB',
                             style: TextStyle(
-                              color: AppColors.textHint,
+                              color: context.colors.textHint,
                               fontSize: 10,
                             ),
                           ),
@@ -959,14 +958,14 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                   ),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Row(
           children: [
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: _pickImage,
-                icon: const Icon(Icons.photo_library, size: 18),
-                label: const Text('Galerie'),
+                icon: Icon(Icons.photo_library, size: 18),
+                label: Text('Galerie'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.primaryGreen,
                   side: BorderSide(
@@ -979,12 +978,12 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: _takePhoto,
-                icon: const Icon(Icons.camera_alt, size: 18),
-                label: const Text('Caméra'),
+                icon: Icon(Icons.camera_alt, size: 18),
+                label: Text('Caméra'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryGreen,
                   foregroundColor: AppColors.white,
@@ -997,12 +996,12 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         // Tips
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
@@ -1016,8 +1015,8 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                     color: AppColors.success,
                     size: 16,
                   ),
-                  const SizedBox(width: 8),
-                  const Text(
+                  SizedBox(width: 8),
+                  Text(
                     'Conseils pour une bonne photo',
                     style: TextStyle(
                       color: AppColors.success,
@@ -1027,7 +1026,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               _buildTipRow('Photo nette et bien éclairée'),
               _buildTipRow('Feuilles visibles en gros plan'),
               _buildTipRow('Inclure les zones suspectes'),
@@ -1042,14 +1041,14 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColors.backgroundDark,
+        color: context.colors.bg,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Text(
         format,
-        style: const TextStyle(
-          color: AppColors.textHint,
+        style: TextStyle(
+          color: context.colors.textHint,
           fontSize: 10,
           fontWeight: FontWeight.w500,
         ),
@@ -1063,11 +1062,11 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       child: Row(
         children: [
           Icon(Icons.check_circle, color: AppColors.success, size: 14),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Text(
             tip,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontSize: 11,
             ),
           ),
@@ -1082,12 +1081,12 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       children: [
         Row(
           children: [
-            const Icon(Icons.grass, color: AppColors.primaryGreen, size: 20),
-            const SizedBox(width: 8),
-            const Text(
+            Icon(Icons.grass, color: AppColors.primaryGreen, size: 20),
+            SizedBox(width: 8),
+            Text(
               'TYPE DE CULTURE',
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 fontWeight: FontWeight.bold,
                 fontSize: 11,
                 letterSpacing: 1,
@@ -1095,7 +1094,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Wrap(
           spacing: 10,
           runSpacing: 10,
@@ -1111,24 +1110,24 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                 decoration: BoxDecoration(
                   color: isSelected
                       ? culture.color.withOpacity(0.2)
-                      : AppColors.cardDark,
+                      : context.colors.card,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: isSelected ? culture.color : AppColors.dividerColor,
+                    color: isSelected ? culture.color : context.colors.divider,
                     width: isSelected ? 2 : 1,
                   ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(culture.emoji, style: const TextStyle(fontSize: 18)),
-                    const SizedBox(width: 8),
+                    Text(culture.emoji, style: TextStyle(fontSize: 18)),
+                    SizedBox(width: 8),
                     Text(
                       culture.name,
                       style: TextStyle(
                         color: isSelected
                             ? culture.color
-                            : AppColors.textPrimary,
+                            : context.colors.textPrimary,
                         fontWeight: isSelected
                             ? FontWeight.bold
                             : FontWeight.normal,
@@ -1151,12 +1150,12 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       children: [
         Row(
           children: [
-            const Icon(Icons.notes, color: AppColors.textSecondary, size: 20),
-            const SizedBox(width: 8),
-            const Text(
+            Icon(Icons.notes, color: context.colors.textSecondary, size: 20),
+            SizedBox(width: 8),
+            Text(
               'NOTES (OPTIONNEL)',
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 fontWeight: FontWeight.bold,
                 fontSize: 11,
                 letterSpacing: 1,
@@ -1164,28 +1163,28 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         TextField(
           onChanged: (v) => _notes = v,
           maxLines: 3,
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+          style: TextStyle(color: context.colors.textPrimary, fontSize: 14),
           decoration: InputDecoration(
             hintText: 'Décrivez les symptômes observés, date d\'apparition...',
-            hintStyle: const TextStyle(color: AppColors.textHint, fontSize: 13),
+            hintStyle: TextStyle(color: context.colors.textHint, fontSize: 13),
             filled: true,
-            fillColor: AppColors.cardDark,
+            fillColor: context.colors.card,
             contentPadding: const EdgeInsets.all(14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppColors.dividerColor),
+              borderSide: BorderSide(color: context.colors.divider),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppColors.dividerColor),
+              borderSide: BorderSide(color: context.colors.divider),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppColors.primaryGreen),
+              borderSide: BorderSide(color: AppColors.primaryGreen),
             ),
           ),
         ),
@@ -1202,8 +1201,8 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
           backgroundColor: AppColors.primaryGreen,
           foregroundColor: AppColors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          disabledBackgroundColor: AppColors.cardDark,
-          disabledForegroundColor: AppColors.textHint,
+          disabledBackgroundColor: context.colors.card,
+          disabledForegroundColor: context.colors.textHint,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -1213,11 +1212,11 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
           children: [
             Text(
               _canProceedStep1() ? 'Continuer' : 'Sélectionner une image',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             if (_canProceedStep1()) ...[
-              const SizedBox(width: 8),
-              const Icon(Icons.arrow_forward, size: 20),
+              SizedBox(width: 8),
+              Icon(Icons.arrow_forward, size: 20),
             ],
           ],
         ),
@@ -1239,12 +1238,12 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                 RichText(
                   text: TextSpan(
                     children: [
-                      const TextSpan(
+                      TextSpan(
                         text: 'Détails de ',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                       TextSpan(
@@ -1258,53 +1257,53 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                     ],
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   'Analyse calibrée pour vos cultures : $_selectedCulture',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 13,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
 
           // Region/Parcel name
           _buildInputSection(
             'NOM DE LA RÉGION / PARCELLE',
             TextField(
               controller: _regionController,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: context.colors.textPrimary,
                 fontSize: 14,
               ),
               decoration: InputDecoration(
                 hintText: 'ex: Vignoble Sud',
-                hintStyle: const TextStyle(
-                  color: AppColors.textHint,
+                hintStyle: TextStyle(
+                  color: context.colors.textHint,
                   fontSize: 13,
                 ),
                 filled: true,
-                fillColor: AppColors.cardDark,
+                fillColor: context.colors.card,
                 contentPadding: const EdgeInsets.all(14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppColors.dividerColor),
+                  borderSide: BorderSide(color: context.colors.divider),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppColors.dividerColor),
+                  borderSide: BorderSide(color: context.colors.divider),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppColors.primaryGreen),
+                  borderSide: BorderSide(color: AppColors.primaryGreen),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
 
           // Symptoms description
           _buildInputSection(
@@ -1312,31 +1311,31 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             TextField(
               controller: _symptomsController,
               maxLines: 4,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: context.colors.textPrimary,
                 fontSize: 14,
               ),
               decoration: InputDecoration(
                 hintText:
                     'Décrivez les symptômes observés sur les plantes : taches, décoloration, flétrissement, présence d\'insectes, etc.',
-                hintStyle: const TextStyle(
-                  color: AppColors.textHint,
+                hintStyle: TextStyle(
+                  color: context.colors.textHint,
                   fontSize: 12,
                 ),
                 filled: true,
-                fillColor: AppColors.cardDark,
+                fillColor: context.colors.card,
                 contentPadding: const EdgeInsets.all(14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppColors.dividerColor),
+                  borderSide: BorderSide(color: context.colors.divider),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppColors.dividerColor),
+                  borderSide: BorderSide(color: context.colors.divider),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppColors.primaryGreen),
+                  borderSide: BorderSide(color: AppColors.primaryGreen),
                 ),
               ),
             ),
@@ -1352,7 +1351,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             child: Row(
               children: [
                 Icon(Icons.lightbulb_outline, color: AppColors.info, size: 14),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Plus de détails = diagnostic plus précis. Mentionnez la date d\'apparition, la progression, et toute observation pertinente.',
@@ -1362,19 +1361,19 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
 
           // Suspected disease
           _buildDiseaseSelector(),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
 
           // Weather conditions
           _buildWeatherSection(),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
 
           // Action button
           _buildStep2Button(),
-          const SizedBox(height: 100),
+          SizedBox(height: 100),
         ],
       ),
     );
@@ -1387,13 +1386,13 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
         Row(
           children: [
             if (icon != null) ...[
-              Icon(icon, color: AppColors.textSecondary, size: 18),
-              const SizedBox(width: 8),
+              Icon(icon, color: context.colors.textSecondary, size: 18),
+              SizedBox(width: 8),
             ],
             Text(
               label,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: context.colors.textSecondary,
                 fontWeight: FontWeight.bold,
                 fontSize: 11,
                 letterSpacing: 0.5,
@@ -1401,7 +1400,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         input,
       ],
     );
@@ -1414,17 +1413,17 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
         Row(
           children: [
             Flexible(
-              child: const Text(
+              child: Text(
                 'MALADIE OU RAVAGEUR SUSPECTÉ',
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   fontWeight: FontWeight.bold,
                   fontSize: 11,
                   letterSpacing: 0.5,
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             Flexible(
               child: Text(
                 '(Maladies + insectes microscopiques)',
@@ -1434,15 +1433,15 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         // Quick disease chips
         Row(
           children: [
-            const Text(
+            Text(
               'MALADIES & RAVAGEURS RÉGIONAUX:',
-              style: TextStyle(color: AppColors.textHint, fontSize: 9),
+              style: TextStyle(color: context.colors.textHint, fontSize: 9),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -1476,16 +1475,16 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             ),
             Text(
               '+${_regionalDiseasesList.length - 3} autres',
-              style: const TextStyle(color: AppColors.textHint, fontSize: 9),
+              style: TextStyle(color: context.colors.textHint, fontSize: 9),
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         // Dropdown with grouped items
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
@@ -1494,24 +1493,24 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
               value: _selectedDisease,
               hint: Row(
                 children: [
-                  const Icon(Icons.check, color: AppColors.textHint, size: 16),
-                  const SizedBox(width: 8),
-                  const Text(
+                  Icon(Icons.check, color: context.colors.textHint, size: 16),
+                  SizedBox(width: 8),
+                  Text(
                     'Sélectionner une maladie...',
-                    style: TextStyle(color: AppColors.textHint, fontSize: 13),
+                    style: TextStyle(color: context.colors.textHint, fontSize: 13),
                   ),
                 ],
               ),
               isExpanded: true,
-              dropdownColor: AppColors.cardDark,
+              dropdownColor: context.colors.card,
               menuMaxHeight: 400,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: context.colors.textPrimary,
                 fontSize: 14,
               ),
-              icon: const Icon(
+              icon: Icon(
                 Icons.keyboard_arrow_down,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
               items: [
                 // Header: Regional diseases
@@ -1519,11 +1518,11 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                   enabled: false,
                   child: Row(
                     children: [
-                      const Text('🌍 ', style: TextStyle(fontSize: 14)),
+                      Text('🌍 ', style: TextStyle(fontSize: 14)),
                       Text(
                         'Maladies & ravageurs de votre région',
                         style: TextStyle(
-                          color: AppColors.textHint,
+                          color: context.colors.textHint,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -1546,11 +1545,11 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                   enabled: false,
                   child: Row(
                     children: [
-                      const Text('🌱 ', style: TextStyle(fontSize: 14)),
+                      Text('🌱 ', style: TextStyle(fontSize: 14)),
                       Text(
                         'Maladies & ravageurs de vos cultures',
                         style: TextStyle(
-                          color: AppColors.textHint,
+                          color: context.colors.textHint,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -1569,7 +1568,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                   );
                 }),
                 // Other option
-                const DropdownMenuItem(
+                DropdownMenuItem(
                   value: 'Autre / Je ne sais pas',
                   child: Text('Autre / Je ne sais pas'),
                 ),
@@ -1578,11 +1577,11 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Text(
           '* Inclut la détection des maladies et des ravageurs microscopiques (acariens, nématodes, pucerons...) invisibles à l\'œil nu.',
           style: TextStyle(
-            color: AppColors.textHint,
+            color: context.colors.textHint,
             fontSize: 10,
             fontStyle: FontStyle.italic,
           ),
@@ -1595,7 +1594,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -1606,20 +1605,20 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'CONDITIONS ENVIRONNEMENTALES (SOL)',
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   fontWeight: FontWeight.bold,
                   fontSize: 11,
                   letterSpacing: 0.5,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               // Toggle buttons for Auto/Manual
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundDark,
+                  color: context.colors.bg,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -1648,15 +1647,15 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                               size: 14,
                               color: _autoWeather
                                   ? AppColors.white
-                                  : AppColors.textHint,
+                                  : context.colors.textHint,
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: 6),
                             Text(
                               'Auto (API)',
                               style: TextStyle(
                                 color: _autoWeather
                                     ? AppColors.white
-                                    : AppColors.textHint,
+                                    : context.colors.textHint,
                                 fontSize: 12,
                                 fontWeight: _autoWeather
                                     ? FontWeight.bold
@@ -1687,15 +1686,15 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                               size: 14,
                               color: !_autoWeather
                                   ? AppColors.white
-                                  : AppColors.textHint,
+                                  : context.colors.textHint,
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: 6),
                             Text(
                               'Manuel',
                               style: TextStyle(
                                 color: !_autoWeather
                                     ? AppColors.white
-                                    : AppColors.textHint,
+                                    : context.colors.textHint,
                                 fontSize: 12,
                                 fontWeight: !_autoWeather
                                     ? FontWeight.bold
@@ -1711,7 +1710,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           // Info message
           Container(
             padding: const EdgeInsets.all(10),
@@ -1722,7 +1721,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             child: Row(
               children: [
                 Icon(Icons.info_outline, color: AppColors.info, size: 14),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     _autoWeather
@@ -1734,10 +1733,10 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           // Weather cards
           if (_isLoadingWeather)
-            const Center(
+            Center(
               child: Padding(
                 padding: EdgeInsets.all(20),
                 child: CircularProgressIndicator(color: AppColors.primaryGreen),
@@ -1758,7 +1757,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                         : (v) => setState(() => _soilHumidity = v),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: _buildWeatherInputCard(
                     'TEMPÉRATURE DU SOL',
@@ -1789,7 +1788,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.backgroundDark,
+        color: context.colors.bg,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -1797,15 +1796,15 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
         children: [
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textHint,
+            style: TextStyle(
+              color: context.colors.textHint,
               fontSize: 9,
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           if (onChanged != null)
             // Manual input mode - vertical layout to avoid overflow
             Column(
@@ -1819,7 +1818,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
@@ -1829,29 +1828,29 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                       child: Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: AppColors.cardDark,
+                          color: context.colors.card,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.remove,
                           size: 16,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
                     GestureDetector(
                       onTap: () => onChanged(value + 1),
                       child: Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: AppColors.cardDark,
+                          color: context.colors.card,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.add,
                           size: 16,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     ),
@@ -1887,7 +1886,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             borderRadius: BorderRadius.circular(16),
           ),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.play_arrow, size: 20),
@@ -1928,24 +1927,24 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
               color: AppColors.primaryGreen.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const CircularProgressIndicator(
+            child: CircularProgressIndicator(
               color: AppColors.primaryGreen,
               strokeWidth: 3,
             ),
           ),
-          const SizedBox(height: 24),
-          const Text(
+          SizedBox(height: 24),
+          Text(
             'Analyse en cours...',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
-          const Text(
+          SizedBox(height: 8),
+          Text(
             'L\'IA analyse votre image',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+            style: TextStyle(color: context.colors.textSecondary, fontSize: 14),
           ),
         ],
       ),
@@ -1957,24 +1956,24 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, color: AppColors.error, size: 64),
-          const SizedBox(height: 16),
-          const Text(
+          Icon(Icons.error_outline, color: AppColors.error, size: 64),
+          SizedBox(height: 16),
+          Text(
             'Erreur lors de l\'analyse',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: () {
               setState(() => _currentStep = 0);
               _pageController.jumpToPage(0);
             },
-            icon: const Icon(Icons.refresh),
-            label: const Text('Réessayer'),
+            icon: Icon(Icons.refresh),
+            label: Text('Réessayer'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryGreen,
               foregroundColor: AppColors.white,
@@ -2014,31 +2013,31 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
         children: [
           // Header
           _buildResultHeader(isHealthy, confidence, diseaseName, severity),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // Details card
           _buildResultDetailsCard(isHealthy, diseaseName, confidence),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // Stats
           _buildResultStats(isHealthy, affectedSurface),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // Image and metrics
           _buildResultImageAndMetrics(isHealthy, affectedSurface),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // Recommendations
           _buildResultRecommendations(isHealthy, diseaseName),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // Bottom info
           _buildResultBottomInfo(),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
 
           // Action buttons
           _buildResultButtons(),
-          const SizedBox(height: 100),
+          SizedBox(height: 100),
         ],
       ),
     );
@@ -2055,8 +2054,8 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isHealthy
-              ? [AppColors.success.withOpacity(0.2), AppColors.cardDark]
-              : [AppColors.error.withOpacity(0.2), AppColors.cardDark],
+              ? [AppColors.success.withOpacity(0.2), context.colors.card]
+              : [AppColors.error.withOpacity(0.2), context.colors.card],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -2081,13 +2080,13 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                     color: isHealthy ? AppColors.success : AppColors.error,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   isHealthy
                       ? 'Aucune anomalie détectée • Plante en bonne santé'
                       : 'Sévérité: $severity',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -2105,9 +2104,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                   color: isHealthy ? AppColors.success : AppColors.error,
                 ),
               ),
-              const Text(
+              Text(
                 'Confiance IA',
-                style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 10, color: context.colors.textSecondary),
               ),
             ],
           ),
@@ -2124,7 +2123,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isHealthy
@@ -2142,7 +2141,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                 color: isHealthy ? AppColors.success : AppColors.error,
                 size: 20,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Expanded(
                 child: Text(
                   isHealthy
@@ -2157,7 +2156,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           if (isHealthy) ...[
             _buildResultDetailRow(
               'Aucune maladie détectée',
@@ -2200,23 +2199,23 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('• ', style: TextStyle(color: AppColors.textSecondary)),
+          Text('• ', style: TextStyle(color: context.colors.textSecondary)),
           Expanded(
             child: RichText(
               text: TextSpan(
                 children: [
                   TextSpan(
                     text: '$label: ',
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      color: context.colors.textSecondary,
                       fontWeight: FontWeight.w600,
                       fontSize: 12,
                     ),
                   ),
                   TextSpan(
                     text: value,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      color: context.colors.textSecondary,
                       fontSize: 12,
                     ),
                   ),
@@ -2241,7 +2240,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             isHealthy ? AppColors.success : AppColors.error,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Expanded(
           child: _buildResultStatCard(
             '${healthySurface.toStringAsFixed(1)}%',
@@ -2257,7 +2256,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -2271,11 +2270,11 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
               color: color,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontSize: 11,
             ),
           ),
@@ -2294,7 +2293,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
           child: Container(
             height: 180,
             decoration: BoxDecoration(
-              color: AppColors.cardDark,
+              color: context.colors.card,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
@@ -2306,10 +2305,10 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                   if (_selectedImage != null)
                     Image.file(_selectedImage!, fit: BoxFit.cover)
                   else
-                    const Center(
+                    Center(
                       child: Icon(
                         Icons.image,
-                        color: AppColors.textHint,
+                        color: context.colors.textHint,
                         size: 48,
                       ),
                     ),
@@ -2336,10 +2335,10 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                             color: AppColors.white,
                             size: 12,
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4),
                           Text(
                             isHealthy ? 'Saine' : 'Critique',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.white,
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
@@ -2358,13 +2357,13 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.backgroundDark.withOpacity(0.8),
+                        color: context.colors.bg.withOpacity(0.8),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Analyse Smartphone',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           fontSize: 9,
                         ),
                       ),
@@ -2375,7 +2374,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         // Metrics column
         Expanded(
           flex: 1,
@@ -2387,21 +2386,21 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                 isHealthy ? 'Parcelle saine' : 'Basé sur sévérité',
                 isHealthy ? AppColors.success : AppColors.error,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               _buildResultMetricCard(
                 isHealthy ? '0%' : '22%',
                 'Perte Rendement Est.',
                 isHealthy ? 'Aucune perte' : 'Si non traité',
                 isHealthy ? AppColors.success : AppColors.error,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               _buildResultMetricCard(
                 isHealthy ? '+0%' : '+12%',
                 'Propagation/Jour',
                 isHealthy ? 'Nulle' : 'Estimation 5k',
                 isHealthy ? AppColors.success : AppColors.warning,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               _buildResultMetricCard(
                 isHealthy ? 'Faible' : 'Critique',
                 'Niveau de Risque',
@@ -2425,7 +2424,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -2439,16 +2438,16 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
               color: color,
             ),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 8),
+            style: TextStyle(color: context.colors.textSecondary, fontSize: 8),
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
           ),
           Text(
             subtitle,
-            style: const TextStyle(color: AppColors.textHint, fontSize: 7),
+            style: TextStyle(color: context.colors.textHint, fontSize: 7),
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
           ),
@@ -2463,8 +2462,8 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isHealthy
-              ? [AppColors.success.withOpacity(0.15), AppColors.cardDark]
-              : [AppColors.error.withOpacity(0.15), AppColors.cardDark],
+              ? [AppColors.success.withOpacity(0.15), context.colors.card]
+              : [AppColors.error.withOpacity(0.15), context.colors.card],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -2488,13 +2487,13 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
               fontSize: 14,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           if (isHealthy) ...[
-            const Text(
+            Text(
               'Aucun traitement nécessaire. Continuez vos bonnes pratiques.',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Row(
               children: [
                 _buildResultActionChip(
@@ -2502,13 +2501,13 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                   '2-3 sem.',
                   'Prochaine\nanalyse',
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 _buildResultActionChip(
                   Icons.delete_outline,
                   '0€',
                   'Traitement',
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 _buildResultActionChip(
                   Icons.trending_up,
                   '100%',
@@ -2524,7 +2523,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'TRAITEMENT RECOMMANDÉ',
                         style: TextStyle(
                           color: AppColors.error,
@@ -2532,18 +2531,18 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      const Text(
+                      SizedBox(height: 4),
+                      Text(
                         'Fongicides à base de soufre ou bicarbonate de potassium.',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           fontSize: 11,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -2551,8 +2550,8 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                       Row(
                         children: [
                           Icon(Icons.eco, color: AppColors.info, size: 14),
-                          const SizedBox(width: 4),
-                          const Text(
+                          SizedBox(width: 4),
+                          Text(
                             'PRÉVENTION',
                             style: TextStyle(
                               color: AppColors.info,
@@ -2562,11 +2561,11 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      const Text(
+                      SizedBox(height: 4),
+                      Text(
                         'Bonne circulation d\'air, éviter l\'arrosage sur les feuilles.',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           fontSize: 11,
                         ),
                       ),
@@ -2575,7 +2574,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -2585,17 +2584,17 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.warning_amber,
                     color: AppColors.error,
                     size: 18,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           '⏱️ Intervention sous 24-48h',
                           style: TextStyle(
                             color: AppColors.error,
@@ -2603,11 +2602,11 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                             fontSize: 12,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2),
                         Text(
                           'Économie potentielle: traitement ciblé sur ${(_analysisResult!['affected_surface'] ?? 8).toStringAsFixed(0)}% vs 100% de la parcelle',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: context.colors.textSecondary,
                             fontSize: 10,
                           ),
                         ),
@@ -2628,24 +2627,24 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColors.backgroundDark,
+          color: context.colors.bg,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           children: [
-            Icon(icon, color: AppColors.textSecondary, size: 20),
-            const SizedBox(height: 4),
+            Icon(icon, color: context.colors.textSecondary, size: 20),
+            SizedBox(height: 4),
             Text(
               value,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: context.colors.textPrimary,
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
               ),
             ),
             Text(
               label,
-              style: const TextStyle(color: AppColors.textHint, fontSize: 8),
+              style: TextStyle(color: context.colors.textHint, fontSize: 8),
               textAlign: TextAlign.center,
             ),
           ],
@@ -2665,7 +2664,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
           child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.cardDark,
+              color: context.colors.card,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
@@ -2675,12 +2674,12 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                 Row(
                   children: [
                     Icon(Icons.cloud, color: AppColors.info, size: 16),
-                    const SizedBox(width: 8),
-                    const Flexible(
+                    SizedBox(width: 8),
+                    Flexible(
                       child: Text(
                         'MÉTÉO ANALYSE',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
@@ -2689,7 +2688,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -2703,12 +2702,12 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Center(
                   child: Text(
                     '${_weatherData?['current']?['wind_speed_10m']?.toStringAsFixed(0) ?? '15'} km/h',
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      color: context.colors.textSecondary,
                       fontSize: 11,
                     ),
                   ),
@@ -2717,28 +2716,28 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         // Info card
         Expanded(
           child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.cardDark,
+              color: context.colors.card,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'INFORMATIONS D\'ANALYSE',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     fontSize: 9,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 _buildResultInfoRow('Source', 'Smartphone'),
                 _buildResultInfoRow('Appareil', 'Camera'),
                 _buildResultInfoRow('Résolution', 'HD / 4K'),
@@ -2761,7 +2760,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       children: [
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.primaryGreen,
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -2769,7 +2768,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
         ),
         Text(
           label,
-          style: const TextStyle(color: AppColors.textHint, fontSize: 9),
+          style: TextStyle(color: context.colors.textHint, fontSize: 9),
         ),
       ],
     );
@@ -2785,26 +2784,26 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             flex: 2,
             child: Text(
               label,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: context.colors.textSecondary,
                 fontSize: 9,
               ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: 4),
           Flexible(
             flex: 3,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: AppColors.backgroundDark,
+                color: context.colors.bg,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 value,
                 style: TextStyle(
-                  color: valueColor ?? AppColors.textPrimary,
+                  color: valueColor ?? context.colors.textPrimary,
                   fontSize: 9,
                   fontWeight: FontWeight.w600,
                 ),

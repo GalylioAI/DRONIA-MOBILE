@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:provider/provider.dart';
 import 'core/config/environment.dart';
 import 'core/routes/app_routes.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart';
 import 'core/services/navigation_service.dart';
 import 'data/services/service_locator.dart';
 import 'data/services/notification_service.dart';
@@ -23,24 +25,23 @@ void main() async {
   // Initialize notification service for detection alerts
   await NotificationService().initialize();
 
+  // Hydrate persisted theme preference before first frame so we never flash
+  // the wrong theme on cold start.
+  final themeProvider = ThemeProvider();
+  await themeProvider.hydrate();
+
   // Set preferred orientations
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  // Set system UI overlay style
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      statusBarBrightness: Brightness.dark, // For iOS
-      systemNavigationBarColor: Color(0xFF0F172A),
-      systemNavigationBarIconBrightness: Brightness.light,
+  runApp(
+    ChangeNotifierProvider<ThemeProvider>.value(
+      value: themeProvider,
+      child: const DroniaApp(),
     ),
   );
-
-  runApp(const DroniaApp());
 }
 
 /// Main Application Widget
@@ -63,14 +64,44 @@ class _DroniaAppState extends State<DroniaApp> {
     });
   }
 
+  /// Keep the system nav bar and status bar consistent with the current theme.
+  void _applySystemUiOverlay(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor:
+            isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        systemNavigationBarIconBrightness:
+            isDark ? Brightness.light : Brightness.dark,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+
+    // Resolve effective brightness so the system bars match the UI.
+    final platformBrightness = MediaQuery.platformBrightnessOf(context);
+    final effectiveBrightness = switch (themeProvider.themeMode) {
+      ThemeMode.dark => Brightness.dark,
+      ThemeMode.light => Brightness.light,
+      ThemeMode.system => platformBrightness,
+    };
+    _applySystemUiOverlay(effectiveBrightness);
+
     return MaterialApp(
       title: 'Dronia',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
+      themeMode: themeProvider.themeMode,
+      // Smooth cross-fade across the whole app when the theme flips.
+      themeAnimationDuration: const Duration(milliseconds: 350),
+      themeAnimationCurve: Curves.easeInOutCubic,
       // Use the global navigator key for notification navigation
       navigatorKey: NavigationService().navigatorKey,
       // Ensure consistent scroll behavior across platforms

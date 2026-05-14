@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/services/location_service.dart';
 import '../../../core/services/permission_service.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../data/services/storage_service.dart';
 
-/// Modern futuristic splash screen with animations
+/// Elegant splash screen with light/dark support, animated logo and brand
+/// gradient. Navigates to login or home based on auth state.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -15,55 +16,42 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  late AnimationController _mainController;
-  late AnimationController _pulseController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _pulseAnimation;
-  late Animation<double> _slideAnimation;
+  late final AnimationController _mainController;
+  late final AnimationController _pulseController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<double> _scaleAnimation;
+  late final Animation<double> _pulseAnimation;
+  late final Animation<double> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-      ),
-    );
-
     _mainController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1800),
       vsync: this,
     );
-
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _mainController,
-        curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
-      ),
+    _fadeAnimation = CurvedAnimation(
+      parent: _mainController,
+      curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
     );
-
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 0.6, end: 1.0).animate(
       CurvedAnimation(
         parent: _mainController,
         curve: const Interval(0.0, 0.5, curve: Curves.elasticOut),
       ),
     );
-
-    _slideAnimation = Tween<double>(begin: 30.0, end: 0.0).animate(
+    _slideAnimation = Tween<double>(begin: 24.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _mainController,
         curve: const Interval(0.3, 0.7, curve: Curves.easeOut),
       ),
     );
-
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
@@ -73,34 +61,21 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Wait for animations
     await Future.delayed(const Duration(seconds: 2));
-
     if (!mounted) return;
 
-    // Request permissions (camera and location)
-    final permissionService = PermissionService();
-    await permissionService.requestAllPermissions();
-
-    // Initialize location after permissions are granted
-    final locationService = LocationService();
-    await locationService.initializePosition();
-
-    // Short delay after permissions
-    await Future.delayed(const Duration(milliseconds: 500));
-
+    await PermissionService().requestAllPermissions();
+    await LocationService().initializePosition();
+    await Future.delayed(const Duration(milliseconds: 400));
     if (!mounted) return;
 
-    final storageService = StorageService();
-    final isLoggedIn = await storageService.isLoggedIn();
-
+    final isLoggedIn = await StorageService().isLoggedIn();
     if (!mounted) return;
 
-    if (isLoggedIn) {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
-    } else {
-      Navigator.pushReplacementNamed(context, AppRoutes.login);
-    }
+    Navigator.pushReplacementNamed(
+      context,
+      isLoggedIn ? AppRoutes.home : AppRoutes.login,
+    );
   }
 
   @override
@@ -112,81 +87,76 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
+
+    final gradientColors = isDark
+        ? const [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0F172A)]
+        : const [Color(0xFFF8FAFC), Color(0xFFFFFFFF), Color(0xFFE8F5E9)];
+
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF0D0D14), Color(0xFF1A1A2E), Color(0xFF0D0D14)],
-            stops: [0.0, 0.5, 1.0],
+            colors: gradientColors,
+            stops: const [0.0, 0.5, 1.0],
           ),
         ),
         child: Stack(
           children: [
-            // Background decorative elements
-            _buildBackgroundElements(),
-            // Main content
+            _buildBackgroundElements(isDark),
             Center(
               child: AnimatedBuilder(
                 animation: _mainController,
-                builder: (context, child) {
+                builder: (context, _) {
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Logo with glow effect
                       FadeTransition(
                         opacity: _fadeAnimation,
                         child: ScaleTransition(
                           scale: _scaleAnimation,
-                          child: AnimatedBuilder(
-                            animation: _pulseAnimation,
-                            builder: (context, child) {
-                              return Transform.scale(
-                                scale: _pulseAnimation.value,
-                                child: _buildLogo(),
-                              );
-                            },
+                          child: ScaleTransition(
+                            scale: _pulseAnimation,
+                            child: _buildLogo(isDark),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 40),
-                      // App name
+                      const SizedBox(height: 36),
                       Transform.translate(
                         offset: Offset(0, _slideAnimation.value),
-                        child: Opacity(
-                          opacity: _fadeAnimation.value,
-                          child: _buildAppName(),
+                        child: FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: _buildAppName(colors),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      // Tagline
+                      const SizedBox(height: 14),
                       Transform.translate(
                         offset: Offset(0, _slideAnimation.value * 1.5),
-                        child: Opacity(
-                          opacity: _fadeAnimation.value,
-                          child: _buildTagline(),
+                        child: FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: _buildTagline(colors, isDark),
                         ),
                       ),
-                      const SizedBox(height: 80),
-                      // Loading indicator
+                      const SizedBox(height: 72),
                       FadeTransition(
                         opacity: _fadeAnimation,
-                        child: _buildLoadingIndicator(),
+                        child: _buildLoadingIndicator(colors),
                       ),
                     ],
                   );
                 },
               ),
             ),
-            // Version text at bottom
             Positioned(
-              bottom: 40,
+              bottom: 32,
               left: 0,
               right: 0,
               child: FadeTransition(
                 opacity: _fadeAnimation,
-                child: _buildVersionText(),
+                child: _buildFooter(colors),
               ),
             ),
           ],
@@ -195,160 +165,151 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _buildBackgroundElements() {
+  Widget _buildBackgroundElements(bool isDark) {
     return Stack(
       children: [
-        // Top right glow
         Positioned(
-          top: -100,
-          right: -100,
+          top: -120,
+          right: -120,
           child: Container(
-            width: 300,
-            height: 300,
+            width: 320,
+            height: 320,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  const Color(0xFF4CAF50).withOpacity(0.15),
+                  AppColors.primaryGreen.withValues(alpha: isDark ? 0.18 : 0.12),
                   Colors.transparent,
                 ],
               ),
             ),
           ),
         ),
-        // Bottom left glow
         Positioned(
-          bottom: -50,
-          left: -50,
+          bottom: -80,
+          left: -80,
           child: Container(
-            width: 200,
-            height: 200,
+            width: 240,
+            height: 240,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  const Color(0xFF2196F3).withOpacity(0.1),
+                  AppColors.info.withValues(alpha: isDark ? 0.12 : 0.08),
                   Colors.transparent,
                 ],
               ),
             ),
           ),
         ),
-        // Grid lines
-        ...List.generate(5, (index) {
-          return Positioned(
-            top: 0,
-            bottom: 0,
-            left: (MediaQuery.of(context).size.width / 5) * index,
-            child: Container(width: 1, color: Colors.white.withOpacity(0.02)),
-          );
-        }),
       ],
     );
   }
 
-  Widget _buildLogo() {
+  Widget _buildLogo(bool isDark) {
     return Container(
-      width: 140,
-      height: 140,
+      width: 132,
+      height: 132,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(35),
+        borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4CAF50).withOpacity(0.4),
-            blurRadius: 40,
-            spreadRadius: 10,
+            color: AppColors.primaryGreen.withValues(alpha: 0.35),
+            blurRadius: 36,
+            spreadRadius: 6,
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(35),
-        child: Image.asset('assets/images/Icone.png', fit: BoxFit.cover),
+        borderRadius: BorderRadius.circular(32),
+        child: Image.asset(
+          'assets/images/Logo_DronIA-11.png',
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
 
-  Widget _buildAppName() {
+  Widget _buildAppName(AppPalette colors) {
     return ShaderMask(
       shaderCallback: (bounds) => const LinearGradient(
-        colors: [Color(0xFF4CAF50), Color(0xFF81C784)],
+        colors: [AppColors.primaryGreen, AppColors.primaryGreenLight],
       ).createShader(bounds),
       child: const Text(
-        'DRONIA',
+        'DronIA',
         style: TextStyle(
-          fontSize: 48,
+          fontSize: 44,
           fontWeight: FontWeight.bold,
           color: Colors.white,
-          letterSpacing: 12,
+          letterSpacing: 8,
         ),
       ),
     );
   }
 
-  Widget _buildTagline() {
+  Widget _buildTagline(AppPalette colors, bool isDark) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        color: colors.card.withValues(alpha: isDark ? 0.4 : 0.7),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: colors.border),
       ),
       child: Text(
-        'Agronomie de Précision Portable',
+        'Agronomie de précision',
         style: TextStyle(
-          fontSize: 14,
-          color: Colors.white.withOpacity(0.7),
+          fontSize: 13,
+          color: colors.textSecondary,
           letterSpacing: 2,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
   }
 
-  Widget _buildLoadingIndicator() {
+  Widget _buildLoadingIndicator(AppPalette colors) {
     return Column(
       children: [
         SizedBox(
-          width: 50,
-          height: 50,
+          width: 44,
+          height: 44,
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Outer ring
               SizedBox(
-                width: 50,
-                height: 50,
+                width: 44,
+                height: 44,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    const Color(0xFF4CAF50).withOpacity(0.3),
+                    AppColors.primaryGreen.withValues(alpha: 0.25),
                   ),
                 ),
               ),
-              // Inner ring
-              SizedBox(
-                width: 35,
-                height: 35,
+              const SizedBox(
+                width: 30,
+                height: 30,
                 child: CircularProgressIndicator(
                   strokeWidth: 3,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    Color(0xFF4CAF50),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.primaryGreen,
                   ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 14),
         Text(
-          'Chargement...',
+          'Chargement…',
           style: TextStyle(
-            color: Colors.white.withOpacity(0.5),
-            fontSize: 13,
+            color: colors.textHint,
+            fontSize: 12,
             letterSpacing: 1,
           ),
         ),
@@ -356,17 +317,20 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _buildVersionText() {
+  Widget _buildFooter(AppPalette colors) {
     return Column(
       children: [
         Text(
           'Powered by AI',
-          style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 12),
+          style: TextStyle(color: colors.textHint, fontSize: 11),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           'v1.0.0',
-          style: TextStyle(color: Colors.white.withOpacity(0.2), fontSize: 11),
+          style: TextStyle(
+            color: colors.textHint.withValues(alpha: 0.7),
+            fontSize: 10,
+          ),
         ),
       ],
     );

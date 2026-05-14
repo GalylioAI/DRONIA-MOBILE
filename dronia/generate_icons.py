@@ -3,7 +3,7 @@
 from PIL import Image
 import os
 
-src = "assets/images/Icone.png"
+src = "assets/images/Logo_DronIA-11.png"
 img = Image.open(src).convert("RGBA")
 img_rgb = img.convert("RGB")
 res_dir = "android/app/src/main/res"

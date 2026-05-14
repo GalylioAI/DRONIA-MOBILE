@@ -54,14 +54,14 @@ class HealthIndicator extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(width: 20),
+        SizedBox(width: 20),
         // Health details
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(healthLevel.emoji, style: const TextStyle(fontSize: 24)),
-              const SizedBox(height: 4),
+              Text(healthLevel.emoji, style: TextStyle(fontSize: 24)),
+              SizedBox(height: 4),
               Text(
                 healthLevel.displayName,
                 style: TextStyle(
@@ -70,12 +70,12 @@ class HealthIndicator extends StatelessWidget {
                   color: color,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ],

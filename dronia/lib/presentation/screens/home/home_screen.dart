@@ -3,6 +3,7 @@ import '../../../core/routes/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/services/storage_service.dart';
 import '../../../data/services/intervention_service.dart';
+import '../../widgets/common/app_drawer.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../analysis/analysis_wizard_screen.dart';
 import '../analysis/analysis_history_screen.dart';
@@ -19,14 +20,17 @@ import '../analysis/insect_analysis_screen.dart';
 
 /// Main home screen with sidebar navigation matching Dronia website
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  /// Tab index to open on first build. Defaults to 0 (Tableau de bord).
+  final int initialIndex;
+
+  const HomeScreen({super.key, this.initialIndex = 0});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+  late int _selectedIndex = widget.initialIndex;
   int _pendingInterventionsCount = 0;
   final InterventionService _interventionService = InterventionService();
 
@@ -115,27 +119,27 @@ class _HomeScreenState extends State<HomeScreen> {
       case 0:
         return DashboardScreen(onNavigate: _onItemTapped);
       case 1:
-        return const DroneMonitoringScreen();
+        return DroneMonitoringScreen();
       case 2:
-        return const AnalysisWizardScreen();
+        return AnalysisWizardScreen();
       case 3:
-        return const InsectAnalysisScreen();
+        return InsectAnalysisScreen();
       case 4:
-        return const AnalysisHistoryScreen();
+        return AnalysisHistoryScreen();
       case 5:
-        return const WeatherHistoryScreen();
+        return WeatherHistoryScreen();
       case 6:
-        return const WeatherForecastScreen();
+        return WeatherForecastScreen();
       case 7:
-        return const HeatmapScreen();
+        return HeatmapScreen();
       case 8:
-        return const FieldMonitoringScreen();
+        return FieldMonitoringScreen();
       case 9:
-        return const SoilMonitorScreen();
+        return SoilMonitorScreen();
       case 10:
-        return const AgriculturalAdvisorScreen();
+        return AgriculturalAdvisorScreen();
       case 11:
-        return const ProfileScreen();
+        return ProfileScreen();
       default:
         return DashboardScreen(onNavigate: _onItemTapped);
     }
@@ -155,24 +159,24 @@ class _HomeScreenState extends State<HomeScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardDark,
-        title: const Text(
+        backgroundColor: context.colors.card,
+        title: Text(
           'Déconnexion',
-          style: TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: context.colors.textPrimary),
         ),
-        content: const Text(
+        content: Text(
           'Êtes-vous sûr de vouloir vous déconnecter?',
-          style: TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: context.colors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler'),
+            child: Text('Annuler'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text('Déconnexion'),
+            child: Text('Déconnexion'),
           ),
         ],
       ),
@@ -196,9 +200,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final isWideScreen = MediaQuery.of(context).size.width > 800;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       appBar: isWideScreen ? null : _buildAppBar(),
-      drawer: isWideScreen ? null : _buildDrawer(),
+      drawer: isWideScreen
+          ? null
+          : AppDrawer(
+              selectedIndex: _selectedIndex,
+              onItemTapped: _onItemTapped,
+            ),
       body: Row(
         children: [
           if (isWideScreen) _buildSidebar(),
@@ -210,11 +218,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: AppColors.backgroundDark,
       elevation: 0,
       leading: Builder(
         builder: (context) => IconButton(
-          icon: const Icon(Icons.menu, color: AppColors.textPrimary),
+          icon: Icon(Icons.menu, color: context.colors.textPrimary),
           onPressed: () => Scaffold.of(context).openDrawer(),
         ),
       ),
@@ -223,22 +230,22 @@ class _HomeScreenState extends State<HomeScreen> {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Image.asset(
-              'assets/images/Icone.png',
+              'assets/images/Logo_DronIA-11.png',
               width: 36,
               height: 36,
               fit: BoxFit.cover,
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           RichText(
-            text: const TextSpan(
+            text: TextSpan(
               children: [
                 TextSpan(
                   text: 'Dron',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 TextSpan(
@@ -259,15 +266,15 @@ class _HomeScreenState extends State<HomeScreen> {
         Stack(
           children: [
             IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.calendar_month_outlined,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
               onPressed: () async {
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const PlannedInterventionsScreen(),
+                    builder: (context) => PlannedInterventionsScreen(),
                   ),
                 );
                 _loadPendingInterventionsCount();
@@ -283,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: AppColors.error,
                     shape: BoxShape.circle,
                   ),
-                  constraints: const BoxConstraints(
+                  constraints: BoxConstraints(
                     minWidth: 16,
                     minHeight: 16,
                   ),
@@ -291,7 +298,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     _pendingInterventionsCount > 9
                         ? '9+'
                         : '$_pendingInterventionsCount',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.white,
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
@@ -304,9 +311,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         // Notifications icon
         IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.notifications_outlined,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           onPressed: () =>
               Navigator.pushNamed(context, AppRoutes.notifications),
@@ -315,98 +322,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildDrawer() {
-    return Drawer(
-      backgroundColor: AppColors.backgroundDark,
-      child: Column(
-        children: [
-          _buildDrawerHeader(),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: _navItems.length,
-              itemBuilder: (context, index) => _buildNavItem(index),
-            ),
-          ),
-          _buildLogoutButton(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDrawerHeader() {
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 20,
-        left: 20,
-        right: 20,
-        bottom: 20,
-      ),
-      decoration: const BoxDecoration(
-        color: AppColors.backgroundDark,
-        border: Border(
-          bottom: BorderSide(color: AppColors.dividerColor, width: 1),
-        ),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.asset(
-              'assets/images/Icone.png',
-              width: 40,
-              height: 40,
-              fit: BoxFit.cover,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              RichText(
-                text: const TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Dron',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    TextSpan(
-                      text: 'IA',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryGreen,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Text(
-                'AGRONOMIE DE PRÉCISION',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: AppColors.textSecondary,
-                  letterSpacing: 1.5,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSidebar() {
     return Container(
       width: 260,
-      decoration: const BoxDecoration(
-        color: AppColors.backgroundDark,
+      decoration: BoxDecoration(
+        color: context.colors.bg,
         border: Border(
-          right: BorderSide(color: AppColors.dividerColor, width: 1),
+          right: BorderSide(color: context.colors.divider, width: 1),
         ),
       ),
       child: Column(
@@ -428,9 +350,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildSidebarHeader() {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: AppColors.dividerColor, width: 1),
+          bottom: BorderSide(color: context.colors.divider, width: 1),
         ),
       ),
       child: Row(
@@ -438,25 +360,25 @@ class _HomeScreenState extends State<HomeScreen> {
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.asset(
-              'assets/images/Icone.png',
+              'assets/images/Logo_DronIA-11.png',
               width: 40,
               height: 40,
               fit: BoxFit.cover,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               RichText(
-                text: const TextSpan(
+                text: TextSpan(
                   children: [
                     TextSpan(
                       text: 'Dron',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     TextSpan(
@@ -470,11 +392,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              const Text(
+              Text(
                 'AGRONOMIE DE PRÉCISION',
                 style: TextStyle(
                   fontSize: 10,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   letterSpacing: 1.5,
                 ),
               ),
@@ -500,7 +422,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ListTile(
         leading: Icon(
           isSelected ? item.activeIcon : item.icon,
-          color: isSelected ? AppColors.primaryGreen : AppColors.textSecondary,
+          color: isSelected ? AppColors.primaryGreen : context.colors.textSecondary,
           size: 22,
         ),
         title: Row(
@@ -511,7 +433,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(
                   color: isSelected
                       ? AppColors.primaryGreen
-                      : AppColors.textPrimary,
+                      : context.colors.textPrimary,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                   fontSize: 14,
                 ),
@@ -547,9 +469,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildLogoutButton() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: AppColors.dividerColor, width: 1),
+          top: BorderSide(color: context.colors.divider, width: 1),
         ),
       ),
       child: ListTile(

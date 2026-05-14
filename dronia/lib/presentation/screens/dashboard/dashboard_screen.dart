@@ -89,7 +89,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -97,9 +96,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeader(context),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _buildStatCards(context),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _buildMainContent(context),
             ],
           ),
@@ -113,14 +112,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
-          text: const TextSpan(
+          text: TextSpan(
             children: [
               TextSpan(
                 text: 'Tableau de ',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               TextSpan(
@@ -134,10 +133,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 4),
-        const Text(
+        SizedBox(height: 4),
+        Text(
           'Interface de pilotage agronomique',
-          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
         ),
       ],
     );
@@ -156,7 +155,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 iconColor: AppColors.info,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: _StatCard(
                 title: 'SAINES',
@@ -167,7 +166,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Row(
           children: [
             Expanded(
@@ -178,7 +177,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 iconColor: AppColors.error,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: _StatCard(
                 title: 'SURFACE',
@@ -197,11 +196,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       children: [
         _buildHealthTrendCard(),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         _buildWeatherCard(),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         _buildQuickActionsCard(),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         _buildRecentActivitiesCard(),
       ],
     );
@@ -220,9 +219,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.dividerColor),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,18 +229,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Tendance de Santé',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               // Period toggle buttons
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundDark,
+                  color: context.colors.bg,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -254,12 +253,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           if (selectedData != null)
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.backgroundDark,
+                color: context.colors.bg,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -272,7 +271,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -280,15 +279,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         _selectedPeriod == 7
                             ? selectedData.day
                             : 'Jour ${selectedData.day}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                       Text(
                         'Santé Moyenne: ${selectedData.value.toStringAsFixed(0)}%',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           color: AppColors.primaryGreen,
                         ),
@@ -298,7 +297,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
             ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           SizedBox(
             height: 100,
             child: LayoutBuilder(
@@ -327,7 +326,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               },
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           // Day labels - show subset for 30 days
           _buildDayLabels(),
         ],
@@ -362,7 +361,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             color: isSelected
                 ? AppColors.primaryGreen
-                : AppColors.textSecondary,
+                : context.colors.textSecondary,
           ),
         ),
       ),
@@ -396,7 +395,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   color: isSelected
                       ? AppColors.primaryGreen
-                      : AppColors.textHint,
+                      : context.colors.textHint,
                 ),
               ),
             ),
@@ -432,7 +431,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   color: isSelected
                       ? AppColors.primaryGreen
-                      : AppColors.textHint,
+                      : context.colors.textHint,
                 ),
               ),
             ),
@@ -446,9 +445,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.dividerColor),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -456,12 +455,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Activités Récentes',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               TextButton(
@@ -470,24 +469,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   padding: EdgeInsets.zero,
                   minimumSize: Size.zero,
                 ),
-                child: const Text(
+                child: Text(
                   'Voir tout',
                   style: TextStyle(color: AppColors.primaryGreen, fontSize: 12),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.backgroundDark,
+              color: context.colors.bg,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
                 'Aucune activité récente',
-                style: TextStyle(color: AppColors.textHint, fontSize: 13),
+                style: TextStyle(color: context.colors.textHint, fontSize: 13),
               ),
             ),
           ),
@@ -500,9 +499,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.dividerColor),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -510,12 +509,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Météo Locale',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               if (!_isLoadingWeather)
@@ -524,19 +523,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundDark,
+                      color: context.colors.bg,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.refresh,
                       size: 16,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           if (_isLoadingWeather)
             _buildWeatherLoading()
           else if (_weatherError != null)
@@ -556,10 +555,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.backgroundDark,
+            color: context.colors.bg,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const SizedBox(
+          child: SizedBox(
             width: 24,
             height: 24,
             child: CircularProgressIndicator(
@@ -568,10 +567,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
         ),
-        const SizedBox(width: 12),
-        const Text(
+        SizedBox(width: 12),
+        Text(
           'Chargement de la météo...',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          style: TextStyle(color: context.colors.textSecondary, fontSize: 13),
         ),
       ],
     );
@@ -585,25 +584,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.backgroundDark,
+              color: context.colors.bg,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.cloud_off, size: 32, color: AppColors.textHint),
+            child: Icon(Icons.cloud_off, size: 32, color: context.colors.textHint),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   _weatherError ?? 'Erreur de chargement',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 13,
                   ),
                 ),
-                const SizedBox(height: 2),
-                const Text(
+                SizedBox(height: 2),
+                Text(
                   'Appuyez pour réessayer',
                   style: TextStyle(color: AppColors.primaryGreen, fontSize: 11),
                 ),
@@ -624,15 +623,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.backgroundDark,
+                color: context.colors.bg,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 weather.weatherEmoji,
-                style: const TextStyle(fontSize: 32),
+                style: TextStyle(fontSize: 32),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -642,18 +641,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     children: [
                       Text(
                         '${weather.temperature.round()}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
-                      const Text(
+                      Text(
                         '°C',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     ],
@@ -661,8 +660,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Text(
                     weather.description.substring(0, 1).toUpperCase() +
                         weather.description.substring(1),
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      color: context.colors.textSecondary,
                       fontSize: 13,
                     ),
                   ),
@@ -674,16 +673,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.location_on,
                       size: 12,
                       color: AppColors.primaryGreen,
                     ),
-                    const SizedBox(width: 2),
+                    SizedBox(width: 2),
                     Text(
                       weather.cityName,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 11,
                       ),
                     ),
@@ -693,11 +692,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: AppColors.backgroundDark,
+            color: context.colors.bg,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -708,13 +707,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 label: 'Ressenti',
                 value: '${weather.feelsLike.round()}°C',
               ),
-              Container(width: 1, height: 30, color: AppColors.dividerColor),
+              Container(width: 1, height: 30, color: context.colors.divider),
               _buildWeatherStat(
                 icon: Icons.water_drop,
                 label: 'Humidité',
                 value: '${weather.humidity}%',
               ),
-              Container(width: 1, height: 30, color: AppColors.dividerColor),
+              Container(width: 1, height: 30, color: context.colors.divider),
               _buildWeatherStat(
                 icon: Icons.air,
                 label: 'Vent',
@@ -735,18 +734,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       children: [
         Icon(icon, size: 16, color: AppColors.primaryGreen),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         Text(
           label,
-          style: const TextStyle(fontSize: 9, color: AppColors.textHint),
+          style: TextStyle(fontSize: 9, color: context.colors.textHint),
         ),
       ],
     );
@@ -756,22 +755,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.dividerColor),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Actions Rapides',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           _QuickActionButton(
             icon: Icons.cloud_upload,
             title: 'Nouvelle Analyse',
@@ -784,7 +783,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               }
             },
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           _QuickActionButton(
             icon: Icons.precision_manufacturing,
             title: 'Statut Drone',
@@ -821,9 +820,9 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.dividerColor),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Row(
         children: [
@@ -833,20 +832,20 @@ class _StatCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     letterSpacing: 0.5,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
               ],
@@ -895,17 +894,17 @@ class _QuickActionButton extends StatelessWidget {
         child: Row(
           children: [
             Icon(icon, color: color, size: 20),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   Text(subtitle, style: TextStyle(fontSize: 11, color: color)),
@@ -968,7 +967,7 @@ class _ChartPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawCircle(points[5], 5, dotPaint);
     final innerDotPaint = Paint()
-      ..color = AppColors.cardDark
+      ..color = Colors.white
       ..style = PaintingStyle.fill;
     canvas.drawCircle(points[5], 2, innerDotPaint);
   }
@@ -1040,7 +1039,7 @@ class _InteractiveChartPainter extends CustomPainter {
       if (isSelected) {
         // Draw larger dot and vertical line for selected
         final linePaint = Paint()
-          ..color = AppColors.textSecondary.withValues(alpha: 0.5)
+          ..color = Colors.grey.withValues(alpha: 0.5)
           ..strokeWidth = 1
           ..style = PaintingStyle.stroke;
         canvas.drawLine(
@@ -1050,7 +1049,7 @@ class _InteractiveChartPainter extends CustomPainter {
         );
         canvas.drawCircle(points[i], 8, dotPaint);
         final innerDotPaint = Paint()
-          ..color = AppColors.cardDark
+          ..color = Colors.white
           ..style = PaintingStyle.fill;
         canvas.drawCircle(points[i], 4, innerDotPaint);
       } else {

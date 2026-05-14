@@ -27,7 +27,7 @@ class _DroneListScreenState extends State<DroneListScreen>
       model: 'DJI Mavic 3',
       status: DroneStatus.active,
       batteryLevel: 78,
-      lastUpdated: DateTime.now().subtract(const Duration(minutes: 5)),
+      lastUpdated: DateTime.now().subtract(Duration(minutes: 5)),
     ),
     Drone(
       id: 'd002',
@@ -35,7 +35,7 @@ class _DroneListScreenState extends State<DroneListScreen>
       model: 'DJI Phantom 4',
       status: DroneStatus.idle,
       batteryLevel: 100,
-      lastUpdated: DateTime.now().subtract(const Duration(hours: 1)),
+      lastUpdated: DateTime.now().subtract(Duration(hours: 1)),
     ),
     Drone(
       id: 'd003',
@@ -43,7 +43,7 @@ class _DroneListScreenState extends State<DroneListScreen>
       model: 'DJI Agras T30',
       status: DroneStatus.charging,
       batteryLevel: 45,
-      lastUpdated: DateTime.now().subtract(const Duration(hours: 2)),
+      lastUpdated: DateTime.now().subtract(Duration(hours: 2)),
     ),
     Drone(
       id: 'd004',
@@ -51,7 +51,7 @@ class _DroneListScreenState extends State<DroneListScreen>
       model: 'DJI Mini 3 Pro',
       status: DroneStatus.offline,
       batteryLevel: 0,
-      lastUpdated: DateTime.now().subtract(const Duration(days: 1)),
+      lastUpdated: DateTime.now().subtract(Duration(days: 1)),
     ),
   ];
 
@@ -59,14 +59,14 @@ class _DroneListScreenState extends State<DroneListScreen>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: Duration(milliseconds: 800),
       vsync: this,
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
     _slideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+        Tween<Offset>(begin: Offset(0, 0.1), end: Offset.zero).animate(
           CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
         );
     _animationController.forward();
@@ -97,7 +97,7 @@ class _DroneListScreenState extends State<DroneListScreen>
   }
 
   Future<void> _refreshData() async {
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(Duration(seconds: 1));
     setState(() {});
   }
 
@@ -111,19 +111,19 @@ class _DroneListScreenState extends State<DroneListScreen>
           onRefresh: _refreshData,
           color: AppColors.primaryGreen,
           child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
+            physics: AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildFleetOverview(),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 _buildQuickActions(),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 _buildFilterTabs(),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 _buildDronesList(),
-                const SizedBox(height: 100),
+                SizedBox(height: 100),
               ],
             ),
           ),
@@ -160,7 +160,7 @@ class _DroneListScreenState extends State<DroneListScreen>
           BoxShadow(
             color: AppColors.accentBrown.withValues(alpha: 0.4),
             blurRadius: 20,
-            offset: const Offset(0, 8),
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -173,7 +173,7 @@ class _DroneListScreenState extends State<DroneListScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Flotte de Drones',
                       style: TextStyle(
                         color: AppColors.white,
@@ -181,7 +181,7 @@ class _DroneListScreenState extends State<DroneListScreen>
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       '${_drones.length} drones enregistrés',
                       style: TextStyle(
@@ -198,7 +198,7 @@ class _DroneListScreenState extends State<DroneListScreen>
                   color: AppColors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.precision_manufacturing,
                   color: AppColors.white,
                   size: 36,
@@ -206,15 +206,15 @@ class _DroneListScreenState extends State<DroneListScreen>
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           Row(
             children: [
               _buildStatusPill(activeCount, 'En vol', AppColors.success),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               _buildStatusPill(idleCount, 'En veille', AppColors.info),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               _buildStatusPill(chargingCount, 'Charge', AppColors.warning),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               _buildStatusPill(offlineCount, 'Hors ligne', AppColors.error),
             ],
           ),
@@ -251,10 +251,10 @@ class _DroneListScreenState extends State<DroneListScreen>
                     ],
                   ),
                 ),
-                const SizedBox(width: 6),
+                SizedBox(width: 6),
                 Text(
                   '$count',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -262,7 +262,7 @@ class _DroneListScreenState extends State<DroneListScreen>
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
@@ -288,7 +288,7 @@ class _DroneListScreenState extends State<DroneListScreen>
             onTap: () {},
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Expanded(
           child: _buildActionButton(
             icon: Icons.map_outlined,
@@ -330,7 +330,7 @@ class _DroneListScreenState extends State<DroneListScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, color: color, size: 22),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               Text(
                 label,
                 style: TextStyle(
@@ -369,7 +369,7 @@ class _DroneListScreenState extends State<DroneListScreen>
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
@@ -388,7 +388,7 @@ class _DroneListScreenState extends State<DroneListScreen>
               onTap: () =>
                   setState(() => _selectedFilter = filter['id'] as String),
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+                duration: Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
                   color: isSelected
@@ -404,7 +404,7 @@ class _DroneListScreenState extends State<DroneListScreen>
                       style: TextStyle(
                         color: isSelected
                             ? AppColors.white
-                            : AppColors.textSecondary,
+                            : context.colors.textSecondary,
                         fontSize: 12,
                         fontWeight: isSelected
                             ? FontWeight.w600
@@ -412,7 +412,7 @@ class _DroneListScreenState extends State<DroneListScreen>
                       ),
                     ),
                     if ((filter['count'] as int) > 0) ...[
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 6,
@@ -421,7 +421,7 @@ class _DroneListScreenState extends State<DroneListScreen>
                         decoration: BoxDecoration(
                           color: isSelected
                               ? AppColors.white.withValues(alpha: 0.2)
-                              : AppColors.backgroundDark,
+                              : context.colors.bg,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -429,7 +429,7 @@ class _DroneListScreenState extends State<DroneListScreen>
                           style: TextStyle(
                             color: isSelected
                                 ? AppColors.white
-                                : AppColors.textSecondary,
+                                : context.colors.textSecondary,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -453,7 +453,7 @@ class _DroneListScreenState extends State<DroneListScreen>
       return Container(
         padding: const EdgeInsets.all(40),
         decoration: BoxDecoration(
-          color: AppColors.cardDark,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           boxShadow: [
@@ -469,12 +469,12 @@ class _DroneListScreenState extends State<DroneListScreen>
             Icon(
               Icons.precision_manufacturing_outlined,
               size: 48,
-              color: AppColors.textSecondary.withValues(alpha: 0.5),
+              color: context.colors.textSecondary.withValues(alpha: 0.5),
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               'Aucun drone trouvé',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+              style: TextStyle(color: context.colors.textSecondary, fontSize: 16),
             ),
           ],
         ),
@@ -486,31 +486,31 @@ class _DroneListScreenState extends State<DroneListScreen>
       children: [
         Row(
           children: [
-            const Icon(
+            Icon(
               Icons.flight_takeoff,
               color: AppColors.accentBrown,
               size: 20,
             ),
-            const SizedBox(width: 8),
-            const Text(
+            SizedBox(width: 8),
+            Text(
               'Mes Drones',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
-            const Spacer(),
+            Spacer(),
             Text(
               '${drones.length} résultats',
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: context.colors.textSecondary,
                 fontSize: 12,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         ...drones.map((drone) => _buildDroneCard(drone)),
       ],
     );
@@ -523,19 +523,19 @@ class _DroneListScreenState extends State<DroneListScreen>
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: drone.status == DroneStatus.active
               ? statusColor.withValues(alpha: 0.4)
-              : AppColors.dividerColor,
+              : context.colors.divider,
         ),
         boxShadow: [
           if (drone.status == DroneStatus.active)
             BoxShadow(
               color: statusColor.withValues(alpha: 0.2),
               blurRadius: 12,
-              offset: const Offset(0, 4),
+              offset: Offset(0, 4),
             ),
         ],
       ),
@@ -593,7 +593,7 @@ class _DroneListScreenState extends State<DroneListScreen>
                                 color: statusColor,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: AppColors.cardDark,
+                                  color: context.colors.card,
                                   width: 2,
                                 ),
                                 boxShadow: [
@@ -608,24 +608,24 @@ class _DroneListScreenState extends State<DroneListScreen>
                         ],
                       ),
                     ),
-                    const SizedBox(width: 14),
+                    SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             drone.name,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
+                            style: TextStyle(
+                              color: context.colors.textPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             drone.model,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: context.colors.textSecondary,
                               fontSize: 13,
                             ),
                           ),
@@ -655,12 +655,12 @@ class _DroneListScreenState extends State<DroneListScreen>
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 // Battery and info row
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.backgroundDark,
+                    color: context.colors.bg,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -674,7 +674,7 @@ class _DroneListScreenState extends State<DroneListScreen>
                               color: _getBatteryColor(drone.batteryLevel),
                               size: 20,
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -693,7 +693,7 @@ class _DroneListScreenState extends State<DroneListScreen>
                                     borderRadius: BorderRadius.circular(4),
                                     child: LinearProgressIndicator(
                                       value: drone.batteryLevel / 100,
-                                      backgroundColor: AppColors.dividerColor,
+                                      backgroundColor: context.colors.divider,
                                       valueColor: AlwaysStoppedAnimation(
                                         _getBatteryColor(drone.batteryLevel),
                                       ),
@@ -709,34 +709,34 @@ class _DroneListScreenState extends State<DroneListScreen>
                       Container(
                         width: 1,
                         height: 30,
-                        color: AppColors.dividerColor,
+                        color: context.colors.divider,
                         margin: const EdgeInsets.symmetric(horizontal: 16),
                       ),
                       // Last update
                       Expanded(
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.access_time,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                               size: 18,
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Dernière activité',
                                     style: TextStyle(
-                                      color: AppColors.textSecondary,
+                                      color: context.colors.textSecondary,
                                       fontSize: 10,
                                     ),
                                   ),
                                   Text(
                                     _formatLastUpdated(drone.lastUpdated),
-                                    style: const TextStyle(
-                                      color: AppColors.textPrimary,
+                                    style: TextStyle(
+                                      color: context.colors.textPrimary,
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                     ),

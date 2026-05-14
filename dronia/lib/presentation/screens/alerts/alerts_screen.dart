@@ -23,7 +23,7 @@ class _AlertsScreenState extends State<AlertsScreen>
       title: 'Disease Detected',
       message:
           'Leaf blight detected in Field A - Zone 3. Immediate action recommended.',
-      createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+      createdAt: DateTime.now().subtract(Duration(hours: 2)),
       isRead: false,
       sourceType: 'field',
       sourceId: 'Field A',
@@ -35,7 +35,7 @@ class _AlertsScreenState extends State<AlertsScreen>
       title: 'Low Soil Moisture',
       message:
           'Soil moisture level dropped below 30% in Field B. Consider irrigation.',
-      createdAt: DateTime.now().subtract(const Duration(hours: 5)),
+      createdAt: DateTime.now().subtract(Duration(hours: 5)),
       isRead: false,
       sourceType: 'field',
       sourceId: 'Field B',
@@ -46,7 +46,7 @@ class _AlertsScreenState extends State<AlertsScreen>
       severity: AlertSeverity.low,
       title: 'Drone Battery Low',
       message: 'Drone Alpha battery at 15%. Returning to base for charging.',
-      createdAt: DateTime.now().subtract(const Duration(hours: 8)),
+      createdAt: DateTime.now().subtract(Duration(hours: 8)),
       isRead: true,
     ),
     Alert(
@@ -56,7 +56,7 @@ class _AlertsScreenState extends State<AlertsScreen>
       title: 'Weather Alert',
       message:
           'Heavy rain expected in the next 24 hours. Plan activities accordingly.',
-      createdAt: DateTime.now().subtract(const Duration(days: 1)),
+      createdAt: DateTime.now().subtract(Duration(days: 1)),
       isRead: true,
     ),
     Alert(
@@ -66,7 +66,7 @@ class _AlertsScreenState extends State<AlertsScreen>
       title: 'Pest Infestation Detected',
       message:
           'Aphid infestation identified in Field C. Urgent treatment required.',
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
+      createdAt: DateTime.now().subtract(Duration(days: 2)),
       isRead: true,
       sourceType: 'field',
       sourceId: 'Field C',
@@ -109,30 +109,30 @@ class _AlertsScreenState extends State<AlertsScreen>
                   color: AppColors.error,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.notifications_active,
                   color: AppColors.white,
                   size: 24,
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       '${unreadAlerts.length} Unread Alerts',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: AppColors.error,
                       ),
                     ),
-                    const Text(
+                    Text(
                       'Requires your attention',
                       style: TextStyle(
                         fontSize: 13,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -140,7 +140,7 @@ class _AlertsScreenState extends State<AlertsScreen>
               ),
               TextButton(
                 onPressed: _markAllAsRead,
-                child: const Text('Mark All Read'),
+                child: Text('Mark All Read'),
               ),
             ],
           ),
@@ -150,7 +150,7 @@ class _AlertsScreenState extends State<AlertsScreen>
         TabBar(
           controller: _tabController,
           labelColor: AppColors.primaryGreen,
-          unselectedLabelColor: AppColors.textSecondary,
+          unselectedLabelColor: context.colors.textSecondary,
           indicatorColor: AppColors.primaryGreen,
           tabs: [
             Tab(text: 'All (${_alerts.length})'),
@@ -176,19 +176,19 @@ class _AlertsScreenState extends State<AlertsScreen>
 
   Widget _buildAlertList(List<Alert> alerts) {
     if (alerts.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.notifications_off_outlined,
               size: 64,
-              color: AppColors.textHint,
+              color: context.colors.textHint,
             ),
             SizedBox(height: 16),
             Text(
               'No alerts',
-              style: TextStyle(fontSize: 18, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 18, color: context.colors.textSecondary),
             ),
           ],
         ),
@@ -198,7 +198,7 @@ class _AlertsScreenState extends State<AlertsScreen>
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: alerts.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => SizedBox(height: 12),
       itemBuilder: (context, index) => _buildAlertCard(alerts[index]),
     );
   }
@@ -214,7 +214,7 @@ class _AlertsScreenState extends State<AlertsScreen>
           color: AppColors.error,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const Icon(Icons.delete, color: AppColors.white),
+        child: Icon(Icons.delete, color: AppColors.white),
       ),
       onDismissed: (_) => _deleteAlert(alert),
       child: Container(
@@ -226,7 +226,7 @@ class _AlertsScreenState extends State<AlertsScreen>
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: alert.isRead
-                ? AppColors.dividerColor
+                ? context.colors.divider
                 : _getSeverityColor(alert.severity).withValues(alpha: 0.3),
           ),
           boxShadow: alert.isRead
@@ -237,7 +237,7 @@ class _AlertsScreenState extends State<AlertsScreen>
                       alert.severity,
                     ).withValues(alpha: 0.1),
                     blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    offset: Offset(0, 2),
                   ),
                 ],
         ),
@@ -260,7 +260,7 @@ class _AlertsScreenState extends State<AlertsScreen>
                     size: 22,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,15 +272,15 @@ class _AlertsScreenState extends State<AlertsScreen>
                           fontWeight: alert.isRead
                               ? FontWeight.w500
                               : FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2),
                       Text(
                         _formatTime(alert.createdAt),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textHint,
+                          color: context.colors.textHint,
                         ),
                       ),
                     ],
@@ -289,17 +289,17 @@ class _AlertsScreenState extends State<AlertsScreen>
                 _buildSeverityBadge(alert.severity),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Text(
               alert.message,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 height: 1.4,
               ),
             ),
             if (alert.sourceId != null) ...[
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
@@ -312,17 +312,17 @@ class _AlertsScreenState extends State<AlertsScreen>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.location_on,
                       size: 14,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4),
                     Text(
                       alert.sourceId!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -356,7 +356,7 @@ class _AlertsScreenState extends State<AlertsScreen>
   Color _getSeverityColor(AlertSeverity severity) {
     switch (severity) {
       case AlertSeverity.critical:
-        return const Color(0xFFD32F2F);
+        return Color(0xFFD32F2F);
       case AlertSeverity.high:
         return AppColors.error;
       case AlertSeverity.medium:
@@ -364,7 +364,7 @@ class _AlertsScreenState extends State<AlertsScreen>
       case AlertSeverity.low:
         return AppColors.info;
       case AlertSeverity.info:
-        return AppColors.textSecondary;
+        return context.colors.textSecondary;
     }
   }
 

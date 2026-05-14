@@ -1,12 +1,9 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../data/models/models.dart';
@@ -28,16 +25,12 @@ class _RegisterScreenState extends State<RegisterScreen>
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
-  // New fields
-  File? _profileImage;
-  final ImagePicker _picker = ImagePicker();
   String? _selectedCulture;
   final List<String> _cultureTypes = [
     'Blé',
@@ -62,16 +55,19 @@ class _RegisterScreenState extends State<RegisterScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
+  // Theme state — recomputed in build() each frame.
+  bool _isDark = true;
+
+  /// Foreground color that contrasts with the AuthBackground overlay.
+  /// In dark mode this is white; in light mode it's the slate-900 primary.
+  Color _fg([double opacity = 1.0]) => (_isDark
+          ? Colors.white
+          : AppColors.textPrimaryLight)
+      .withValues(alpha: opacity);
+
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-      ),
-    );
-
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -100,23 +96,10 @@ class _RegisterScreenState extends State<RegisterScreen>
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
-    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _fadeController.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 80,
-    );
-    if (image != null) {
-      setState(() => _profileImage = File(image.path));
-    }
   }
 
   Future<void> _handleRegister() async {
@@ -125,23 +108,12 @@ class _RegisterScreenState extends State<RegisterScreen>
     setState(() => _isLoading = true);
 
     try {
-      // Convert profile image to base64 if selected
-      String? profileImageBase64;
-      if (_profileImage != null) {
-        final bytes = await _profileImage!.readAsBytes();
-        profileImageBase64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
-      }
-
       await services.auth.register(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
-        phone: _phoneController.text.trim().isNotEmpty
-            ? _phoneController.text.trim()
-            : null,
         plantTypes: _selectedCulture != null ? [_selectedCulture!] : null,
-        profileImage: profileImageBase64,
         location: Location(lat: _selectedLat, lng: _selectedLng),
       );
 
@@ -168,6 +140,7 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   @override
   Widget build(BuildContext context) {
+    _isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: AuthBackground(
         child: SafeArea(
@@ -225,13 +198,13 @@ class _RegisterScreenState extends State<RegisterScreen>
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: _fg(0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: _fg(0.1)),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
+            color: _fg(),
             size: 20,
           ),
         ),
@@ -252,7 +225,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4CAF50).withOpacity(0.3),
+                    color: AppColors.primaryGreen.withOpacity(0.3),
                     blurRadius: 20,
                     spreadRadius: 2,
                   ),
@@ -261,7 +234,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: Image.asset(
-                  'assets/images/Icone.png',
+                  'assets/images/Logo_DronIA-11.png',
                   fit: BoxFit.cover,
                 ),
               ),
@@ -271,12 +244,12 @@ class _RegisterScreenState extends State<RegisterScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Créer un Compte',
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: _fg(),
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -285,7 +258,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     'Rejoignez DronIA',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.6),
+                      color: _fg(0.6),
                     ),
                   ),
                 ],
@@ -326,11 +299,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             ),
           ],
         ),
-        const SizedBox(height: 16),
-
-        // Profile photo picker
-        _buildProfilePhotoPicker(),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
 
         FuturisticTextField(
           controller: _emailController,
@@ -341,17 +310,7 @@ class _RegisterScreenState extends State<RegisterScreen>
           validator: Validators.email,
           textInputAction: TextInputAction.next,
         ),
-        const SizedBox(height: 16),
-        FuturisticTextField(
-          controller: _phoneController,
-          label: 'TÉLÉPHONE (optionnel)',
-          hint: '+216 XX XXX XXX',
-          keyboardType: TextInputType.phone,
-          prefixIcon: Icons.phone_outlined,
-          validator: Validators.optionalPhone,
-          textInputAction: TextInputAction.next,
-        ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         FuturisticTextField(
           controller: _passwordController,
           label: 'MOT DE PASSE',
@@ -363,7 +322,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               _obscurePassword
                   ? Icons.visibility_off_outlined
                   : Icons.visibility_outlined,
-              color: Colors.white.withOpacity(0.5),
+              color: _fg(0.5),
               size: 20,
             ),
             onPressed: () {
@@ -373,7 +332,7 @@ class _RegisterScreenState extends State<RegisterScreen>
           validator: Validators.strongPassword,
           textInputAction: TextInputAction.next,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         FuturisticTextField(
           controller: _confirmPasswordController,
           label: 'CONFIRMER MOT DE PASSE',
@@ -385,7 +344,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               _obscureConfirmPassword
                   ? Icons.visibility_off_outlined
                   : Icons.visibility_outlined,
-              color: Colors.white.withOpacity(0.5),
+              color: _fg(0.5),
               size: 20,
             ),
             onPressed: () {
@@ -397,103 +356,15 @@ class _RegisterScreenState extends State<RegisterScreen>
           validator: Validators.confirmPassword(_passwordController.text),
           textInputAction: TextInputAction.next,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
 
         // Culture type dropdown
         _buildCultureTypeDropdown(),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
 
         // Location picker
         _buildLocationPicker(),
       ],
-    );
-  }
-
-  Widget _buildProfilePhotoPicker() {
-    return GestureDetector(
-      onTap: _pickImage,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
-                image: _profileImage != null
-                    ? DecorationImage(
-                        image: FileImage(_profileImage!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-              ),
-              child: _profileImage == null
-                  ? Icon(
-                      Icons.add_a_photo_outlined,
-                      color: Colors.white.withOpacity(0.5),
-                      size: 24,
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'PHOTO DE PROFIL ',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white.withOpacity(0.7),
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        TextSpan(
-                          text: '(optionnel)',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.white.withOpacity(0.4),
-                          ),
-                        ),
-                      ],
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Cliquez pour ajouter une photo',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.white.withOpacity(0.5),
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              Icons.chevron_right,
-              color: Colors.white.withOpacity(0.3),
-              size: 20,
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -506,17 +377,17 @@ class _RegisterScreenState extends State<RegisterScreen>
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: Colors.white.withOpacity(0.7),
+            color: _fg(0.7),
             letterSpacing: 1,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: _fg(0.05),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: _fg(0.1)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
@@ -525,7 +396,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                 children: [
                   Icon(
                     Icons.grass_outlined,
-                    color: Colors.white.withOpacity(0.5),
+                    color: _fg(0.5),
                     size: 20,
                   ),
                   const SizedBox(width: 12),
@@ -533,7 +404,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     child: Text(
                       'Sélectionner une culture...',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: _fg(0.5),
                         fontSize: 14,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -541,11 +412,13 @@ class _RegisterScreenState extends State<RegisterScreen>
                   ),
                 ],
               ),
-              dropdownColor: const Color(0xFF1E293B),
+              dropdownColor: _isDark
+                  ? AppColors.cardDarkBase
+                  : AppColors.cardLight,
               isExpanded: true,
               icon: Icon(
                 Icons.keyboard_arrow_down,
-                color: Colors.white.withOpacity(0.5),
+                color: _fg(0.5),
               ),
               items: _cultureTypes.map((culture) {
                 return DropdownMenuItem<String>(
@@ -554,13 +427,13 @@ class _RegisterScreenState extends State<RegisterScreen>
                     children: [
                       const Icon(
                         Icons.grass_outlined,
-                        color: Color(0xFF4CAF50),
+                        color: AppColors.primaryGreen,
                         size: 20,
                       ),
                       const SizedBox(width: 12),
                       Text(
                         culture,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: _fg()),
                       ),
                     ],
                   ),
@@ -588,7 +461,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: Colors.white.withOpacity(0.7),
+                color: _fg(0.7),
                 letterSpacing: 1,
               ),
             ),
@@ -600,10 +473,10 @@ class _RegisterScreenState extends State<RegisterScreen>
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50).withOpacity(0.2),
+                  color: AppColors.primaryGreen.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: const Color(0xFF4CAF50).withOpacity(0.5),
+                    color: AppColors.primaryGreen.withOpacity(0.5),
                   ),
                 ),
                 child: Row(
@@ -615,20 +488,20 @@ class _RegisterScreenState extends State<RegisterScreen>
                         height: 14,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Color(0xFF4CAF50),
+                          color: AppColors.primaryGreen,
                         ),
                       )
                     else
                       const Icon(
                         Icons.my_location,
-                        color: Color(0xFF4CAF50),
+                        color: AppColors.primaryGreen,
                         size: 14,
                       ),
                     const SizedBox(width: 4),
                     const Text(
                       'Ma position',
                       style: TextStyle(
-                        color: Color(0xFF4CAF50),
+                        color: AppColors.primaryGreen,
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                       ),
@@ -648,7 +521,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               height: 180,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                border: Border.all(color: _fg(0.1)),
               ),
               child: Stack(
                 children: [
@@ -673,7 +546,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                               height: 40,
                               child: const Icon(
                                 Icons.location_pin,
-                                color: Color(0xFF4CAF50),
+                                color: AppColors.primaryGreen,
                                 size: 40,
                               ),
                             ),
@@ -692,7 +565,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                         color: Colors.black.withOpacity(0.6),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.2),
+                          color: _fg(0.2),
                         ),
                       ),
                       child: const Icon(
@@ -863,12 +736,12 @@ class _RegisterScreenState extends State<RegisterScreen>
     return Text.rich(
       TextSpan(
         text: "En créant un compte, vous acceptez nos ",
-        style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+        style: TextStyle(color: _fg(0.5), fontSize: 12),
         children: [
           TextSpan(
             text: "Conditions d'utilisation",
             style: TextStyle(
-              color: const Color(0xFF4CAF50).withOpacity(0.8),
+              color: AppColors.primaryGreen.withOpacity(0.8),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -876,7 +749,7 @@ class _RegisterScreenState extends State<RegisterScreen>
           TextSpan(
             text: "Politique de confidentialité",
             style: TextStyle(
-              color: const Color(0xFF4CAF50).withOpacity(0.8),
+              color: AppColors.primaryGreen.withOpacity(0.8),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -893,14 +766,14 @@ class _RegisterScreenState extends State<RegisterScreen>
       children: [
         Text(
           "Déjà un compte ? ",
-          style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14),
+          style: TextStyle(color: _fg(0.6), fontSize: 14),
         ),
         GestureDetector(
           onTap: () => Navigator.pop(context),
           child: const Text(
             "Se connecter",
             style: TextStyle(
-              color: Color(0xFF4CAF50),
+              color: AppColors.primaryGreen,
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),

@@ -4,7 +4,8 @@ publish_to: 'none'
 
 # Version format: major.minor.patch+buildNumber
 # Increment buildNumber for each store release
-version: 1.0.0+1
+# Beta: 0.x.x = pre-release, increment buildNumber for each upload
+version: 0.1.0+7
 
 environment:
   sdk: ^3.9.2
@@ -38,6 +39,9 @@ dependencies:
   # Video player
   video_player: ^2.8.6
   
+  # Typography — Plus Jakarta Sans (referenced design system)
+  google_fonts: ^6.2.1
+
   # State management
   provider: ^6.1.2
   pdf: ^3.11.3
@@ -66,6 +70,8 @@ dependencies:
   # Push notifications
   flutter_local_notifications: ^17.2.3
   timezone: ^0.9.4
+  model_viewer_plus: ^1.9.3
+  cached_network_image: ^3.3.1
 
 dev_dependencies:
   flutter_test:
@@ -85,8 +91,8 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/Drone_Logo.png"
-  adaptive_icon_foreground: "assets/images/Drone_Logo.png"
+  image_path: "assets/images/Logo_DronIA-11.png"
+  adaptive_icon_foreground: "assets/images/Logo_DronIA-11.png"
   adaptive_icon_background: "#FFFFFF"
   remove_alpha_ios: true
   min_sdk_android: 21
@@ -106,6 +112,10 @@ flutter:
   assets:
     - assets/images/
     - assets/videos/
+    - assets/Drones/
+    - assets/data/
+    - assets/data/disease_images/
+    - assets/data/crop_photos/
     - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see

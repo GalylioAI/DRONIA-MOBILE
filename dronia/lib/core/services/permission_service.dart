@@ -14,28 +14,15 @@ class PermissionService {
     await requestCameraPermission();
   }
 
-  /// Demande la permission de localisation
+  /// Demande la permission de localisation.
+  /// Affiche toujours la boîte de dialogue système iOS/Android avant toute
+  /// redirection vers les Réglages (conformité Apple 5.1.1).
   Future<bool> requestLocationPermission() async {
     try {
-      // Vérifier si le service de localisation est activé
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        // Demander d'activer le service
-        await Geolocator.openLocationSettings();
-        return false;
-      }
-
-      // Vérifier les permissions
       LocationPermission permission = await Geolocator.checkPermission();
 
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        // Ouvrir les paramètres de l'app
-        await Geolocator.openAppSettings();
-        return false;
       }
 
       return permission == LocationPermission.whileInUse ||
@@ -46,18 +33,14 @@ class PermissionService {
     }
   }
 
-  /// Demande la permission caméra
+  /// Demande la permission caméra.
+  /// Affiche toujours la boîte de dialogue système avant toute redirection.
   Future<bool> requestCameraPermission() async {
     try {
       var status = await Permission.camera.status;
 
       if (status.isDenied) {
         status = await Permission.camera.request();
-      }
-
-      if (status.isPermanentlyDenied) {
-        await openAppSettings();
-        return false;
       }
 
       return status.isGranted;

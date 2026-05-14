@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -24,10 +26,38 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>DronIA nécessite l'accès à la caméra pour capturer des photos de vos cultures et effectuer des analyses.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>DronIA utilise votre position pour le suivi de vos parcelles agricoles.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>DronIA utilise votre position pour localiser vos parcelles agricoles.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>DronIA nécessite l'accès à la galerie pour sauvegarder les captures et rapports.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>DronIA nécessite l'accès à la galerie pour sélectionner des photos de vos cultures.</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+	<key>UIFileSharingEnabled</key>
+	<false/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>UIStatusBarHidden</key>
+	<false/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -41,51 +71,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	
-	<!-- Camera permissions -->
-	<key>NSCameraUsageDescription</key>
-	<string>DronIA nécessite l'accès à la caméra pour capturer des photos de vos cultures et effectuer des analyses.</string>
-	
-	<!-- Photo Library permissions -->
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>DronIA nécessite l'accès à la galerie pour sauvegarder les captures et rapports.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>DronIA nécessite l'accès à la galerie pour sélectionner des photos de vos cultures.</string>
-	
-	<!-- Location permissions (if needed) -->
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>DronIA utilise votre position pour localiser vos parcelles agricoles.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>DronIA utilise votre position pour le suivi de vos parcelles agricoles.</string>
-	
-	<!-- Network/ATS Configuration for development -->
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
-	
-	<!-- Prevent iTunes file sharing -->
-	<key>UIFileSharingEnabled</key>
-	<false/>
-	
-	<!-- Status bar -->
-	<key>UIStatusBarHidden</key>
-	<false/>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	
-	<!-- Background modes for notifications -->
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-		<string>remote-notification</string>
-	</array>
 </dict>
 </plist>

@@ -27,7 +27,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: Duration(milliseconds: 600),
     );
     _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _animController.forward();
@@ -76,7 +76,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         title: 'Bienvenue sur DronIA',
         message:
             'Votre application de surveillance agricole intelligente est prête.',
-        timestamp: DateTime.now().subtract(const Duration(hours: 2)),
+        timestamp: DateTime.now().subtract(Duration(hours: 2)),
         isRead: true,
         icon: Icons.check_circle,
         color: AppColors.primaryGreen,
@@ -92,7 +92,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         title: 'Conditions météo favorables',
         message:
             'Température idéale pour le vol de drone aujourd\'hui (22°C, vent faible).',
-        timestamp: DateTime.now().subtract(const Duration(hours: 1)),
+        timestamp: DateTime.now().subtract(Duration(hours: 1)),
         isRead: false,
         icon: Icons.wb_sunny,
         color: AppColors.warning,
@@ -124,7 +124,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       }
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text('Toutes les notifications marquées comme lues'),
         backgroundColor: AppColors.primaryGreen,
         duration: Duration(seconds: 2),
@@ -136,32 +136,32 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardDark,
-        title: const Text(
+        backgroundColor: context.colors.card,
+        title: Text(
           'Effacer les notifications',
-          style: TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: context.colors.textPrimary),
         ),
-        content: const Text(
+        content: Text(
           'Voulez-vous vraiment effacer toutes les notifications ?',
-          style: TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: context.colors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler'),
+            child: Text('Annuler'),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               setState(() => _notifications.clear());
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
+                SnackBar(
                   content: Text('Notifications effacées'),
                   backgroundColor: AppColors.primaryGreen,
                 ),
               );
             },
-            child: const Text(
+            child: Text(
               'Effacer',
               style: TextStyle(color: AppColors.error),
             ),
@@ -182,15 +182,13 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     final unreadCount = _notifications.where((n) => !n.isRead).length;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundDark,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: context.colors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Row(
+        title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.notifications, color: AppColors.primaryGreen, size: 20),
@@ -198,7 +196,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
             Text(
               'Notifications',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
               ),
@@ -208,18 +206,18 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         actions: [
           if (_notifications.isNotEmpty) ...[
             IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.done_all,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 size: 22,
               ),
               onPressed: _markAllAsRead,
               tooltip: 'Tout marquer comme lu',
             ),
             IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.delete_outline,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 size: 22,
               ),
               onPressed: _clearNotifications,
@@ -231,7 +229,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       body: FadeTransition(
               opacity: _fadeAnim,
               child: _isLoading
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
                         color: AppColors.primaryGreen,
                       ),
@@ -251,30 +249,30 @@ class _NotificationsScreenState extends State<NotificationsScreen>
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.cardDark,
+              color: context.colors.card,
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.notifications_off_outlined,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: context.colors.textSecondary.withOpacity(0.5),
               size: 48,
             ),
           ),
-          const SizedBox(height: 20),
-          const Text(
+          SizedBox(height: 20),
+          Text(
             'Aucune notification',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             'Vous serez notifié des détections\net alertes importantes',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppColors.textSecondary.withOpacity(0.7),
+              color: context.colors.textSecondary.withOpacity(0.7),
               fontSize: 14,
             ),
           ),
@@ -311,16 +309,16 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         children: [
           if (todayNotifications.isNotEmpty) ...[
             _buildSectionHeader('Aujourd\'hui'),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             ...todayNotifications.map((n) => _buildNotificationCard(n)),
           ],
           if (olderNotifications.isNotEmpty) ...[
-            if (todayNotifications.isNotEmpty) const SizedBox(height: 20),
+            if (todayNotifications.isNotEmpty) SizedBox(height: 20),
             _buildSectionHeader('Plus ancien'),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             ...olderNotifications.map((n) => _buildNotificationCard(n)),
           ],
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
         ],
       ),
     );
@@ -332,7 +330,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       child: Text(
         title,
         style: TextStyle(
-          color: AppColors.textSecondary.withOpacity(0.7),
+          color: context.colors.textSecondary.withOpacity(0.7),
           fontSize: 12,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.5,
@@ -353,7 +351,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
           color: AppColors.error.withOpacity(0.2),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(Icons.delete, color: AppColors.error),
+        child: Icon(Icons.delete, color: AppColors.error),
       ),
       onDismissed: (direction) {
         setState(() {
@@ -367,12 +365,12 @@ class _NotificationsScreenState extends State<NotificationsScreen>
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: notification.isRead
-                ? AppColors.cardDark
+                ? context.colors.card
                 : notification.color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: notification.isRead
-                  ? AppColors.dividerColor
+                  ? context.colors.divider
                   : notification.color.withOpacity(0.3),
             ),
           ),
@@ -392,7 +390,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                   size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               // Content
               Expanded(
                 child: Column(
@@ -404,7 +402,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                           child: Text(
                             notification.title,
                             style: TextStyle(
-                              color: AppColors.textPrimary,
+                              color: context.colors.textPrimary,
                               fontSize: 14,
                               fontWeight: notification.isRead
                                   ? FontWeight.w500
@@ -423,19 +421,19 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                           ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       notification.message,
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     Text(
                       _formatTime(notification.timestamp),
                       style: TextStyle(
-                        color: AppColors.textSecondary.withOpacity(0.6),
+                        color: context.colors.textSecondary.withOpacity(0.6),
                         fontSize: 11,
                       ),
                     ),

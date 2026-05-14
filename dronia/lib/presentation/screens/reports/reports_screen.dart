@@ -37,7 +37,7 @@ class _ReportsScreenState extends State<ReportsScreen>
       'subtitle': 'Parcelle A - Surveillance',
       'date': 'Il y a 2 semaines',
       'icon': Icons.flight,
-      'color': const Color(0xFF2196F3),
+      'color': Color(0xFF2196F3),
       'type': 'drone',
     },
     {
@@ -63,7 +63,7 @@ class _ReportsScreenState extends State<ReportsScreen>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: Duration(milliseconds: 800),
     );
     _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _animController.forward();
@@ -78,7 +78,6 @@ class _ReportsScreenState extends State<ReportsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: FadeTransition(
               opacity: _fadeAnim,
               child: CustomScrollView(
@@ -96,22 +95,21 @@ class _ReportsScreenState extends State<ReportsScreen>
                       ),
                     ),
                   ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                  SliverToBoxAdapter(child: SizedBox(height: 100)),
                 ],
               ),
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {},
         backgroundColor: AppColors.primaryGreen,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Nouveau', style: TextStyle(color: Colors.white)),
+        icon: Icon(Icons.add, color: Colors.white),
+        label: Text('Nouveau', style: TextStyle(color: Colors.white)),
       ),
     );
   }
 
   Widget _buildHeader() {
     return SliverAppBar(
-      backgroundColor: AppColors.backgroundDark,
       floating: true,
       title: Row(
         children: [
@@ -126,13 +124,13 @@ class _ReportsScreenState extends State<ReportsScreen>
               ),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(Icons.assessment, color: Colors.purple, size: 20),
+            child: Icon(Icons.assessment, color: Colors.purple, size: 20),
           ),
-          const SizedBox(width: 12),
-          const Text(
+          SizedBox(width: 12),
+          Text(
             'Rapports',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -141,11 +139,11 @@ class _ReportsScreenState extends State<ReportsScreen>
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.search, color: AppColors.textSecondary),
+          icon: Icon(Icons.search, color: context.colors.textSecondary),
           onPressed: () {},
         ),
         IconButton(
-          icon: const Icon(Icons.filter_list, color: AppColors.textSecondary),
+          icon: Icon(Icons.filter_list, color: context.colors.textSecondary),
           onPressed: () {},
         ),
       ],
@@ -165,7 +163,7 @@ class _ReportsScreenState extends State<ReportsScreen>
               AppColors.primaryGreen,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: _buildStatCard(
               'Score Santé',
@@ -188,7 +186,7 @@ class _ReportsScreenState extends State<ReportsScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
@@ -210,7 +208,7 @@ class _ReportsScreenState extends State<ReportsScreen>
             ),
             child: Icon(icon, color: color, size: 24),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Text(
             value,
             style: TextStyle(
@@ -221,8 +219,8 @@ class _ReportsScreenState extends State<ReportsScreen>
           ),
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontSize: 13,
             ),
           ),
@@ -275,10 +273,10 @@ class _ReportsScreenState extends State<ReportsScreen>
       child: Column(
         children: [
           Icon(icon, color: Colors.purple, size: 24),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.purple,
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -295,17 +293,17 @@ class _ReportsScreenState extends State<ReportsScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
+          Text(
             'Rapports Récents',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
           TextButton(
             onPressed: () {},
-            child: const Text(
+            child: Text(
               'Voir tout',
               style: TextStyle(
                 color: AppColors.primaryGreen,
@@ -324,7 +322,7 @@ class _ReportsScreenState extends State<ReportsScreen>
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
@@ -356,24 +354,24 @@ class _ReportsScreenState extends State<ReportsScreen>
                     size: 26,
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         report['title'] as String,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: context.colors.textPrimary,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         report['subtitle'] as String,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          color: context.colors.textSecondary,
                           fontSize: 13,
                         ),
                       ),
@@ -385,15 +383,15 @@ class _ReportsScreenState extends State<ReportsScreen>
                   children: [
                     Text(
                       report['date'] as String,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 11,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Icon(
                       Icons.arrow_forward_ios,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       size: 14,
                     ),
                   ],

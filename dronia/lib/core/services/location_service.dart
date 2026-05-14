@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -130,11 +131,13 @@ class LocationService {
 
   /// Ouvre les paramètres de l'application pour activer la localisation
   Future<bool> openSettings() async {
+    if (kIsWeb) return false;
     return await Geolocator.openAppSettings();
   }
 
   /// Ouvre les paramètres de localisation du système
   Future<bool> openLocationSettings() async {
+    if (kIsWeb) return false;
     return await Geolocator.openLocationSettings();
   }
 }

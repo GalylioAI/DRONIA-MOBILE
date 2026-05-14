@@ -91,24 +91,24 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardDark,
-        title: const Text(
+        backgroundColor: context.colors.card,
+        title: Text(
           'Effacer l\'historique?',
-          style: TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: context.colors.textPrimary),
         ),
-        content: const Text(
+        content: Text(
           'Cette action supprimera toutes les détections enregistrées. Cette action est irréversible.',
-          style: TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: context.colors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler'),
+            child: Text('Annuler'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text('Effacer'),
+            child: Text('Effacer'),
           ),
         ],
       ),
@@ -128,18 +128,16 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundDark,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: context.colors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Historique Détections',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
@@ -147,7 +145,7 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
         actions: [
           if (_detections.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.delete_outline, color: AppColors.error),
+              icon: Icon(Icons.delete_outline, color: AppColors.error),
               onPressed: _clearHistory,
             ),
         ],
@@ -158,7 +156,7 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
           _buildStats(),
           Expanded(
             child: _isLoading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
                       color: AppColors.primaryGreen,
                     ),
@@ -178,9 +176,9 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
       child: Row(
         children: [
           _buildFilterChip('Tous', 'all'),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           _buildFilterChip('Maladies', 'disease'),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           _buildFilterChip('Stress', 'stress'),
         ],
       ),
@@ -207,17 +205,17 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.2) : AppColors.cardDark,
+          color: isSelected ? color.withOpacity(0.2) : context.colors.card,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? color : AppColors.dividerColor,
+            color: isSelected ? color : context.colors.divider,
             width: isSelected ? 2 : 1,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? color : AppColors.textSecondary,
+            color: isSelected ? color : context.colors.textSecondary,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             fontSize: 13,
           ),
@@ -238,7 +236,7 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -264,10 +262,10 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
         ),
       ],
     );
@@ -281,24 +279,24 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
           Icon(
             Icons.history,
             size: 64,
-            color: AppColors.textSecondary.withOpacity(0.5),
+            color: context.colors.textSecondary.withOpacity(0.5),
           ),
-          const SizedBox(height: 16),
-          const Text(
+          SizedBox(height: 16),
+          Text(
             'Aucune détection',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             _filterType == 'all'
                 ? 'Les détections apparaîtront ici'
                 : 'Aucune détection de ce type',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontSize: 14,
             ),
           ),
@@ -333,8 +331,8 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 date,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: context.colors.textSecondary,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
@@ -377,14 +375,14 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
           color: AppColors.error,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const Icon(Icons.delete, color: Colors.white),
+        child: Icon(Icons.delete, color: Colors.white),
       ),
       onDismissed: (_) => _deleteDetection(detection.id),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.cardDark,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
@@ -401,7 +399,7 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
                   ),
                   child: Icon(icon, color: color, size: 24),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -410,13 +408,13 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
                         children: [
                           Text(
                             detection.label,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
+                            style: TextStyle(
+                              color: context.colors.textPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 6,
@@ -437,11 +435,11 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         detection.zone,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          color: context.colors.textSecondary,
                           fontSize: 13,
                         ),
                       ),
@@ -469,11 +467,11 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       DateFormat('HH:mm:ss').format(detection.timestamp),
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 11,
                       ),
                     ),
@@ -481,7 +479,7 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -489,11 +487,11 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
                     onPressed: () {
                       // Navigate to map location
                     },
-                    icon: const Icon(Icons.map, size: 16),
-                    label: const Text('Localiser'),
+                    icon: Icon(Icons.map, size: 16),
+                    label: Text('Localiser'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.info,
-                      side: const BorderSide(color: AppColors.info),
+                      side: BorderSide(color: AppColors.info),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -501,17 +499,17 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
                       _showDetectionDetails(detection);
                     },
-                    icon: const Icon(Icons.info_outline, size: 16),
-                    label: const Text('Détails'),
+                    icon: Icon(Icons.info_outline, size: 16),
+                    label: Text('Détails'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
-                      side: const BorderSide(color: AppColors.dividerColor),
+                      foregroundColor: context.colors.textSecondary,
+                      side: BorderSide(color: context.colors.divider),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -536,8 +534,8 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.cardDark,
-      shape: const RoundedRectangleBorder(
+      backgroundColor: context.colors.card,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => Padding(
@@ -550,20 +548,20 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
               children: [
                 Text(
                   detection.label,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: context.colors.textPrimary,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Spacer(),
+                Spacer(),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                  icon: Icon(Icons.close, color: context.colors.textSecondary),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             _buildDetailRow('Type', detection.type.displayName, color),
             _buildDetailRow(
               'Confiance',
@@ -574,10 +572,10 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
             _buildDetailRow(
               'Date',
               DateFormat('dd/MM/yyyy à HH:mm:ss').format(detection.timestamp),
-              AppColors.textSecondary,
+              context.colors.textSecondary,
             ),
-            _buildDetailRow('ID', detection.id, AppColors.textSecondary),
-            const SizedBox(height: 24),
+            _buildDetailRow('ID', detection.id, context.colors.textSecondary),
+            SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -592,7 +590,7 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text('Voir sur la carte'),
+                child: Text('Voir sur la carte'),
               ),
             ),
           ],
@@ -611,8 +609,8 @@ class _DetectionHistoryScreenState extends State<DetectionHistoryScreen> {
             width: 100,
             child: Text(
               label,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: context.colors.textSecondary,
                 fontSize: 14,
               ),
             ),

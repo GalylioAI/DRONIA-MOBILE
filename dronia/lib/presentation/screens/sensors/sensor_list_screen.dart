@@ -25,7 +25,7 @@ class _SensorListScreenState extends State<SensorListScreen>
       status: SensorStatus.online,
       location: GeoLocation(latitude: 36.8065, longitude: 10.1815),
       parcelName: 'Parcelle A',
-      lastUpdated: DateTime.now().subtract(const Duration(minutes: 5)),
+      lastUpdated: DateTime.now().subtract(Duration(minutes: 5)),
     ),
     Sensor(
       id: 's002',
@@ -34,7 +34,7 @@ class _SensorListScreenState extends State<SensorListScreen>
       status: SensorStatus.online,
       location: GeoLocation(latitude: 36.8100, longitude: 10.1750),
       parcelName: 'Parcelle B',
-      lastUpdated: DateTime.now().subtract(const Duration(minutes: 3)),
+      lastUpdated: DateTime.now().subtract(Duration(minutes: 3)),
     ),
     Sensor(
       id: 's003',
@@ -43,7 +43,7 @@ class _SensorListScreenState extends State<SensorListScreen>
       status: SensorStatus.warning,
       location: GeoLocation(latitude: 36.8050, longitude: 10.1800),
       parcelName: 'Parcelle B',
-      lastUpdated: DateTime.now().subtract(const Duration(minutes: 10)),
+      lastUpdated: DateTime.now().subtract(Duration(minutes: 10)),
     ),
     Sensor(
       id: 's004',
@@ -52,7 +52,7 @@ class _SensorListScreenState extends State<SensorListScreen>
       status: SensorStatus.offline,
       location: GeoLocation(latitude: 36.8080, longitude: 10.1780),
       parcelName: 'Parcelle C',
-      lastUpdated: DateTime.now().subtract(const Duration(hours: 2)),
+      lastUpdated: DateTime.now().subtract(Duration(hours: 2)),
     ),
   ];
 
@@ -61,7 +61,7 @@ class _SensorListScreenState extends State<SensorListScreen>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: Duration(milliseconds: 800),
     );
     _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _animController.forward();
@@ -90,7 +90,6 @@ class _SensorListScreenState extends State<SensorListScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: FadeTransition(
         opacity: _fadeAnim,
         child: CustomScrollView(
@@ -107,21 +106,20 @@ class _SensorListScreenState extends State<SensorListScreen>
                 ),
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 80)),
+            SliverToBoxAdapter(child: SizedBox(height: 80)),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         backgroundColor: AppColors.primaryGreen,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
   Widget _buildHeader() {
     return SliverAppBar(
-      backgroundColor: AppColors.backgroundDark,
       floating: true,
       title: Row(
         children: [
@@ -136,17 +134,17 @@ class _SensorListScreenState extends State<SensorListScreen>
               ),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.sensors,
               color: AppColors.primaryGreen,
               size: 20,
             ),
           ),
-          const SizedBox(width: 12),
-          const Text(
+          SizedBox(width: 12),
+          Text(
             'Capteurs IoT',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -155,11 +153,11 @@ class _SensorListScreenState extends State<SensorListScreen>
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.search, color: AppColors.textSecondary),
+          icon: Icon(Icons.search, color: context.colors.textSecondary),
           onPressed: () {},
         ),
         IconButton(
-          icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
+          icon: Icon(Icons.refresh, color: context.colors.textSecondary),
           onPressed: () {},
         ),
       ],
@@ -193,7 +191,7 @@ class _SensorListScreenState extends State<SensorListScreen>
             BoxShadow(
               color: AppColors.primaryGreen.withOpacity(0.3),
               blurRadius: 15,
-              offset: const Offset(0, 8),
+              offset: Offset(0, 8),
             ),
           ],
         ),
@@ -245,10 +243,10 @@ class _SensorListScreenState extends State<SensorListScreen>
     return Column(
       children: [
         Icon(icon, color: iconColor ?? Colors.white70, size: 20),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -288,12 +286,12 @@ class _SensorListScreenState extends State<SensorListScreen>
                 decoration: BoxDecoration(
                   color: isSelected
                       ? AppColors.primaryGreen.withOpacity(0.2)
-                      : AppColors.cardDark,
+                      : context.colors.card,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected
                         ? AppColors.primaryGreen
-                        : AppColors.dividerColor,
+                        : context.colors.divider,
                   ),
                 ),
                 child: Text(
@@ -301,7 +299,7 @@ class _SensorListScreenState extends State<SensorListScreen>
                   style: TextStyle(
                     color: isSelected
                         ? AppColors.primaryGreen
-                        : AppColors.textSecondary,
+                        : context.colors.textSecondary,
                     fontWeight: isSelected
                         ? FontWeight.bold
                         : FontWeight.normal,
@@ -338,7 +336,7 @@ class _SensorListScreenState extends State<SensorListScreen>
         statusText = 'Hors ligne';
         break;
       default:
-        statusColor = AppColors.textSecondary;
+        statusColor = context.colors.textSecondary;
         statusIcon = Icons.help;
         statusText = 'Inconnu';
     }
@@ -364,7 +362,7 @@ class _SensorListScreenState extends State<SensorListScreen>
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
@@ -398,32 +396,32 @@ class _SensorListScreenState extends State<SensorListScreen>
                   ),
                   child: Icon(sensorIcon, color: statusColor, size: 26),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         sensor.name,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: context.colors.textPrimary,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Row(
                         children: [
                           Icon(
                             Icons.location_on,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                             size: 14,
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4),
                           Text(
                             sensor.parcelName ?? 'Non assigné',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: context.colors.textSecondary,
                               fontSize: 12,
                             ),
                           ),
@@ -448,7 +446,7 @@ class _SensorListScreenState extends State<SensorListScreen>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(statusIcon, color: statusColor, size: 12),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4),
                           Text(
                             statusText,
                             style: TextStyle(
@@ -460,11 +458,11 @@ class _SensorListScreenState extends State<SensorListScreen>
                         ],
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Text(
                       _formatTime(sensor.lastUpdated),
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 11,
                       ),
                     ),

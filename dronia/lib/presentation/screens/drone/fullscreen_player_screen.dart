@@ -57,7 +57,7 @@ class _FullscreenPlayerScreenState extends State<FullscreenPlayerScreen> {
 
     // Start timer to update recording time
     if (widget.isMissionActive) {
-      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _timer = Timer.periodic(Duration(seconds: 1), (timer) {
         if (mounted) {
           setState(() => _currentSeconds++);
         }
@@ -77,7 +77,7 @@ class _FullscreenPlayerScreenState extends State<FullscreenPlayerScreen> {
 
   void _startDetection() {
     // Run detection every 4 seconds
-    _detectionTimer = Timer.periodic(const Duration(seconds: 4), (timer) async {
+    _detectionTimer = Timer.periodic(Duration(seconds: 4), (timer) async {
       if (!widget.isMissionActive || !mounted) return;
 
       final detection = await _detectionService.runDetection();
@@ -103,7 +103,7 @@ class _FullscreenPlayerScreenState extends State<FullscreenPlayerScreen> {
 
   void _startAlertTimer() {
     _alertTimer?.cancel();
-    _alertTimer = Timer(const Duration(seconds: 2), () {
+    _alertTimer = Timer(Duration(seconds: 2), () {
       if (mounted) {
         setState(() => _showAlert = false);
         // Resume video after alert is dismissed
@@ -160,7 +160,7 @@ class _FullscreenPlayerScreenState extends State<FullscreenPlayerScreen> {
                           child: VideoPlayer(widget.videoController),
                         ),
                       )
-                    : const Center(
+                    : Center(
                         child: CircularProgressIndicator(
                           color: AppColors.primaryGreen,
                         ),
@@ -178,7 +178,7 @@ class _FullscreenPlayerScreenState extends State<FullscreenPlayerScreen> {
                       AppColors.error,
                       widget.isMissionActive,
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     _buildBadge(
                       'REC $_formattedTime',
                       AppColors.error,
@@ -199,7 +199,7 @@ class _FullscreenPlayerScreenState extends State<FullscreenPlayerScreen> {
                       AppColors.info,
                       false,
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     _buildBadge(
                       '${widget.speed.toStringAsFixed(1)}m/s',
                       AppColors.warning,
@@ -241,7 +241,7 @@ class _FullscreenPlayerScreenState extends State<FullscreenPlayerScreen> {
                     color: Colors.black.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Appuyez pour quitter le plein écran',
                     style: TextStyle(color: Colors.white70, fontSize: 12),
                   ),
@@ -299,16 +299,16 @@ class _FullscreenPlayerScreenState extends State<FullscreenPlayerScreen> {
             Container(
               width: 8,
               height: 8,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: 6),
           ],
           Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -389,7 +389,7 @@ class _FullscreenPlayerScreenState extends State<FullscreenPlayerScreen> {
         width: 180,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.cardDark.withOpacity(0.95),
+          color: context.colors.card.withOpacity(0.95),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: color, width: 2),
           boxShadow: [
@@ -407,7 +407,7 @@ class _FullscreenPlayerScreenState extends State<FullscreenPlayerScreen> {
             Row(
               children: [
                 Icon(Icons.warning_amber_rounded, color: color, size: 14),
-                const SizedBox(width: 4),
+                SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     detection.type == DetectionType.disease
@@ -422,28 +422,28 @@ class _FullscreenPlayerScreenState extends State<FullscreenPlayerScreen> {
                 ),
                 GestureDetector(
                   onTap: () => setState(() => _showAlert = false),
-                  child: const Icon(
+                  child: Icon(
                     Icons.close,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     size: 14,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             Text(
               detection.label,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: context.colors.textPrimary,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 2),
+            SizedBox(height: 2),
             Text(
               '${(detection.confidence * 100).toStringAsFixed(0)}% • ${detection.zone}',
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: context.colors.textSecondary,
                 fontSize: 10,
               ),
             ),

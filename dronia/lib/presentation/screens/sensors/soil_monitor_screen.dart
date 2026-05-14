@@ -750,7 +750,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
   void _finishDrawing() {
     if (_currentDrawingPoints.length < 3) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Minimum 3 points requis pour créer une région'),
           backgroundColor: AppColors.error,
         ),
@@ -768,30 +768,30 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardDark,
+        backgroundColor: context.colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
+        title: Text(
           'Nom de la parcelle',
-          style: TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: context.colors.textPrimary),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: _regionNameController,
-              style: const TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(color: context.colors.textPrimary),
               decoration: InputDecoration(
                 hintText: 'Entrez le nom...',
-                hintStyle: TextStyle(color: AppColors.textSecondary),
+                hintStyle: TextStyle(color: context.colors.textSecondary),
                 filled: true,
-                fillColor: AppColors.backgroundDark,
+                fillColor: context.colors.bg,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -800,15 +800,15 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.straighten,
                     color: AppColors.primaryGreen,
                     size: 20,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     '${hectares.toStringAsFixed(2)} hectares',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.primaryGreen,
                       fontWeight: FontWeight.bold,
                     ),
@@ -824,9 +824,9 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
               Navigator.pop(context);
               _cancelDrawing();
             },
-            child: const Text(
+            child: Text(
               'Annuler',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: context.colors.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -840,7 +840,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
-            child: const Text(
+            child: Text(
               'Enregistrer',
               style: TextStyle(color: Colors.white),
             ),
@@ -921,22 +921,22 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardDark,
+        backgroundColor: context.colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
+        title: Text(
           'Supprimer la région?',
-          style: TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: context.colors.textPrimary),
         ),
         content: Text(
           'Voulez-vous vraiment supprimer "${_regions[index].name}"?',
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: context.colors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Annuler',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: context.colors.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -954,7 +954,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
               _deleteRegionFromApi(regionToDelete.id);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
+                SnackBar(
                   content: Text('Région supprimée'),
                   backgroundColor: AppColors.error,
                 ),
@@ -966,7 +966,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
-            child: const Text(
+            child: Text(
               'Supprimer',
               style: TextStyle(color: Colors.white),
             ),
@@ -1008,7 +1008,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
       }
 
       // Open popup after a short delay to let the map animate
-      Future.delayed(const Duration(milliseconds: 500), () {
+      Future.delayed(Duration(milliseconds: 500), () {
         if (mounted) {
           _showRegionDetailPopup(region, avgLat, avgLng);
         }
@@ -1036,13 +1036,11 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
     // Fullscreen mode - only show map
     if (_isFullscreen) {
       return Scaffold(
-        backgroundColor: AppColors.backgroundDark,
         body: SafeArea(child: _buildFullscreenMap()),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -1072,28 +1070,28 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: AppColors.cardDark,
+              color: context.colors.card,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
             child: TextField(
               controller: _searchController,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: context.colors.textPrimary,
                 fontSize: 14,
               ),
               decoration: InputDecoration(
                 hintText: 'Rechercher un lieu...',
                 hintStyle: TextStyle(
-                  color: AppColors.textSecondary.withOpacity(0.7),
+                  color: context.colors.textSecondary.withOpacity(0.7),
                 ),
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.search,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   size: 20,
                 ),
                 suffixIcon: _isSearching
-                    ? const Padding(
+                    ? Padding(
                         padding: EdgeInsets.all(12),
                         child: SizedBox(
                           width: 16,
@@ -1106,9 +1104,9 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                       )
                     : _searchController.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.close,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           size: 18,
                         ),
                         onPressed: () {
@@ -1133,16 +1131,16 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
           if (_showSearchResults)
             Container(
               margin: const EdgeInsets.only(top: 4),
-              constraints: const BoxConstraints(maxHeight: 180),
+              constraints: BoxConstraints(maxHeight: 180),
               decoration: BoxDecoration(
-                color: AppColors.cardDark,
+                color: context.colors.card,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.2),
                     blurRadius: 8,
-                    offset: const Offset(0, 4),
+                    offset: Offset(0, 4),
                   ),
                 ],
               ),
@@ -1154,15 +1152,15 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                   final location = _searchResults[index];
                   return ListTile(
                     dense: true,
-                    leading: const Icon(
+                    leading: Icon(
                       Icons.location_on,
                       color: AppColors.primaryGreen,
                       size: 20,
                     ),
                     title: Text(
                       '${location.latitude.toStringAsFixed(4)}, ${location.longitude.toStringAsFixed(4)}',
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
                         fontSize: 13,
                       ),
                     ),
@@ -1242,16 +1240,16 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                   _mapController.camera.zoom + 1,
                 );
               }),
-              const SizedBox(height: 6),
+              SizedBox(height: 6),
               _buildZoomButton(Icons.remove, () {
                 _mapController.move(
                   _mapController.camera.center,
                   _mapController.camera.zoom - 1,
                 );
               }),
-              const SizedBox(height: 6),
+              SizedBox(height: 6),
               _buildZoomButton(Icons.my_location, _goToMyLocation),
-              const SizedBox(height: 6),
+              SizedBox(height: 6),
               _buildZoomButton(Icons.edit, () {
                 setState(() => _isDrawingMode = !_isDrawingMode);
               }),
@@ -1267,7 +1265,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.cardDark.withValues(alpha: 0.95),
+                color: context.colors.card.withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
@@ -1308,19 +1306,19 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.backgroundDark.withValues(alpha: 0.95),
+              color: context.colors.bg.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.location_on, size: 14, color: AppColors.info),
-                const SizedBox(width: 6),
+                Icon(Icons.location_on, size: 14, color: AppColors.info),
+                SizedBox(width: 6),
                 Text(
                   '${_latitude.toStringAsFixed(4)}° N, ${_longitude.toStringAsFixed(4)}° E',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 11,
                     fontFamily: 'monospace',
                   ),
@@ -1352,7 +1350,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 20, color: color),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
@@ -1378,21 +1376,21 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
               color: AppColors.primaryGreen.withOpacity(0.2),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Text('🌱', style: TextStyle(fontSize: 20)),
+            child: Text('🌱', style: TextStyle(fontSize: 20)),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               RichText(
-                text: const TextSpan(
+                text: TextSpan(
                   children: [
                     TextSpan(
                       text: 'Mes ',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     TextSpan(
@@ -1408,21 +1406,21 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
               ),
               Text(
                 'Saison ${DateTime.now().year}',
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: context.colors.textSecondary,
                   fontSize: 12,
                 ),
               ),
             ],
           ),
-          const Spacer(),
+          Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: AppColors.primaryGreen.withOpacity(0.2),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Text(
+            child: Text(
               'NEW',
               style: TextStyle(
                 color: AppColors.primaryGreen,
@@ -1451,7 +1449,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
               AppColors.primaryGreen,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: _buildStatCard(
               Icons.straighten,
@@ -1481,7 +1479,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
       child: Row(
         children: [
           Icon(icon, color: color, size: 20),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1495,8 +1493,8 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
               ),
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: context.colors.textSecondary,
                   fontSize: 10,
                 ),
               ),
@@ -1515,15 +1513,15 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
         child: Row(
           children: [
             _buildMapStyleButton('🛰️', 'Satellite', 'satellite'),
-            const SizedBox(width: 6),
+            SizedBox(width: 6),
             _buildMapStyleButton('🏔️', 'Terrain', 'terrain'),
-            const SizedBox(width: 6),
+            SizedBox(width: 6),
             _buildMapStyleButton('🌙', 'Sombre', 'dark'),
-            const SizedBox(width: 12),
-            Container(width: 1, height: 24, color: AppColors.dividerColor),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
+            Container(width: 1, height: 24, color: context.colors.divider),
+            SizedBox(width: 12),
             _buildOverlayButton('💧', 'Humidité', 'humidity'),
-            const SizedBox(width: 6),
+            SizedBox(width: 6),
             _buildOverlayButton('🌡️', 'Température', 'temperature'),
           ],
         ),
@@ -1538,20 +1536,20 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryGreen : AppColors.cardDark,
+          color: isSelected ? AppColors.primaryGreen : context.colors.card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primaryGreen : AppColors.dividerColor,
+            color: isSelected ? AppColors.primaryGreen : context.colors.divider,
           ),
         ),
         child: Row(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 14)),
-            const SizedBox(width: 6),
+            Text(emoji, style: TextStyle(fontSize: 14)),
+            SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppColors.white : AppColors.textSecondary,
+                color: isSelected ? AppColors.white : context.colors.textSecondary,
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
@@ -1569,20 +1567,20 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.info : AppColors.cardDark,
+          color: isSelected ? AppColors.info : context.colors.card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.info : AppColors.dividerColor,
+            color: isSelected ? AppColors.info : context.colors.divider,
           ),
         ),
         child: Row(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 14)),
-            const SizedBox(width: 6),
+            Text(emoji, style: TextStyle(fontSize: 14)),
+            SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppColors.white : AppColors.textSecondary,
+                color: isSelected ? AppColors.white : context.colors.textSecondary,
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
@@ -1597,7 +1595,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -1652,7 +1650,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
             ),
             // Loading indicator
             if (_isLoading)
-              const Center(
+              Center(
                 child: CircularProgressIndicator(color: AppColors.primaryGreen),
               ),
             // Map controls - compact layout
@@ -1668,16 +1666,16 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                       _mapController.camera.zoom + 1,
                     );
                   }),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   _buildSmallZoomButton(Icons.remove, () {
                     _mapController.move(
                       _mapController.camera.center,
                       _mapController.camera.zoom - 1,
                     );
                   }),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   _buildSmallZoomButton(Icons.my_location, _goToMyLocation),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   _buildSmallZoomButton(Icons.fullscreen, () {
                     setState(() => _isFullscreen = true);
                   }),
@@ -1691,13 +1689,13 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundDark.withOpacity(0.9),
+                  color: context.colors.bg.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   '${_latitude.toStringAsFixed(4)}°, ${_longitude.toStringAsFixed(4)}° | Zoom: ${_zoom.round()}',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 10,
                   ),
                 ),
@@ -1720,9 +1718,9 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.edit, color: Colors.white, size: 16),
-                      const SizedBox(width: 8),
-                      const Text(
+                      Icon(Icons.edit, color: Colors.white, size: 16),
+                      SizedBox(width: 8),
+                      Text(
                         'Mode dessin actif',
                         style: TextStyle(
                           color: Colors.white,
@@ -1730,7 +1728,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 6,
@@ -1742,7 +1740,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                         ),
                         child: Text(
                           '${_currentDrawingPoints.length} pts',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
                             fontSize: 10,
                           ),
@@ -1793,7 +1791,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
             ],
           ),
           child: index == 0
-              ? const Icon(Icons.flag, color: Colors.white, size: 12)
+              ? Icon(Icons.flag, color: Colors.white, size: 12)
               : null,
         ),
       );
@@ -1835,7 +1833,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
               ),
               child: Text(
                 '${region.hectares.toStringAsFixed(1)} ha',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -1864,7 +1862,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
 
   Widget _buildZoomButton(IconData icon, VoidCallback onTap) {
     return Material(
-      color: AppColors.backgroundDark,
+      color: context.colors.bg,
       borderRadius: BorderRadius.circular(6),
       child: InkWell(
         onTap: onTap,
@@ -1875,7 +1873,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
             borderRadius: BorderRadius.circular(6),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
-          child: Icon(icon, color: AppColors.textPrimary, size: 18),
+          child: Icon(icon, color: context.colors.textPrimary, size: 18),
         ),
       ),
     );
@@ -1884,7 +1882,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
   /// Smaller zoom button for compact map view
   Widget _buildSmallZoomButton(IconData icon, VoidCallback onTap) {
     return Material(
-      color: AppColors.backgroundDark.withOpacity(0.9),
+      color: context.colors.bg.withOpacity(0.9),
       borderRadius: BorderRadius.circular(4),
       child: InkWell(
         onTap: onTap,
@@ -1895,7 +1893,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
             borderRadius: BorderRadius.circular(4),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
-          child: Icon(icon, color: AppColors.textPrimary, size: 14),
+          child: Icon(icon, color: context.colors.textPrimary, size: 14),
         ),
       ),
     );
@@ -1907,8 +1905,8 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
-        border: Border(top: BorderSide(color: AppColors.dividerColor)),
+        color: context.colors.card,
+        border: Border(top: BorderSide(color: context.colors.divider)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1920,22 +1918,22 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: const Color(0xFF1A2F3A),
+                color: Color(0xFF1A2F3A),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.crop_square_rounded,
                     color: AppColors.primaryGreen,
                     size: 20,
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   Text(
                     'Surface estimée: ${hectares.toStringAsFixed(2)} ha',
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
+                    style: TextStyle(
+                      color: context.colors.textPrimary,
                       fontWeight: FontWeight.w600,
                       fontSize: 15,
                     ),
@@ -1954,7 +1952,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                     onPressed: _removeLastPoint,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.warning,
-                      side: const BorderSide(
+                      side: BorderSide(
                         color: AppColors.warning,
                         width: 1.5,
                       ),
@@ -1977,7 +1975,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                     ),
                   ),
                 ),
-              if (_currentDrawingPoints.isNotEmpty) const SizedBox(width: 10),
+              if (_currentDrawingPoints.isNotEmpty) SizedBox(width: 10),
               // Terminer button
               Expanded(
                 flex: 3,
@@ -1988,7 +1986,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryGreen,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppColors.dividerColor,
+                    disabledBackgroundColor: context.colors.divider,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -1997,12 +1995,12 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.check, size: 18),
-                      const SizedBox(width: 6),
+                      Icon(Icons.check, size: 18),
+                      SizedBox(width: 6),
                       Text(
                         'Terminer\n(${_currentDrawingPoints.length} pts)',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           height: 1.2,
@@ -2012,7 +2010,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               // Annuler button
               Expanded(
                 flex: 2,
@@ -2020,13 +2018,13 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                   onPressed: _cancelDrawing,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.error,
-                    side: const BorderSide(color: AppColors.error, width: 1.5),
+                    side: BorderSide(color: AppColors.error, width: 1.5),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Annuler',
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                   ),
@@ -2044,7 +2042,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -2062,7 +2060,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
               ),
             ),
 
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
 
           // Add region button
           if (!_isDrawingMode)
@@ -2070,8 +2068,8 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: _startDrawingMode,
-                icon: const Icon(Icons.add, size: 22),
-                label: const Text(
+                icon: Icon(Icons.add, size: 22),
+                label: Text(
                   'Ajouter une région',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
@@ -2097,7 +2095,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
           width: 64,
           height: 64,
           decoration: BoxDecoration(
-            color: const Color(0xFF1E3A4C),
+            color: Color(0xFF1E3A4C),
             shape: BoxShape.circle,
           ),
           child: Center(
@@ -2106,7 +2104,7 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
               width: 36,
               height: 36,
               errorBuilder: (context, error, stackTrace) {
-                return const Icon(
+                return Icon(
                   Icons.map_outlined,
                   color: Colors.lightBlueAccent,
                   size: 32,
@@ -2115,19 +2113,19 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        const Text(
+        SizedBox(height: 16),
+        Text(
           'Aucune région',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
         ),
-        const SizedBox(height: 6),
-        const Text(
+        SizedBox(height: 6),
+        Text(
           'Dessinez sur la carte pour créer une région',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          style: TextStyle(color: context.colors.textSecondary, fontSize: 13),
         ),
       ],
     );
@@ -2161,10 +2159,10 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
         decoration: BoxDecoration(
           color: isSelected
               ? region.color.withOpacity(0.15)
-              : AppColors.cardDark,
+              : context.colors.card,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? region.color : AppColors.dividerColor,
+            color: isSelected ? region.color : context.colors.divider,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -2182,13 +2180,13 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                     color: AppColors.primaryGreen.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.location_on,
                     color: AppColors.primaryGreen,
                     size: 18,
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -2196,8 +2194,8 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                     children: [
                       Text(
                         region.name,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: context.colors.textPrimary,
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         ),
@@ -2206,8 +2204,8 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                       ),
                       Text(
                         '${region.hectares.toStringAsFixed(2)} ha',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          color: context.colors.textSecondary,
                           fontSize: 10,
                         ),
                       ),
@@ -2216,15 +2214,15 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
                 ),
                 GestureDetector(
                   onTap: () => _deleteRegion(index),
-                  child: const Icon(
+                  child: Icon(
                     Icons.close,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     size: 14,
                   ),
                 ),
               ],
             ),
-            const Spacer(),
+            Spacer(),
             // Weather info row - compact version
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -2247,8 +2245,8 @@ class _SoilMonitorScreenState extends State<SoilMonitorScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 10)),
-        const SizedBox(width: 2),
+        Text(emoji, style: TextStyle(fontSize: 10)),
+        SizedBox(width: 2),
         Text(
           value,
           style: TextStyle(
@@ -2721,8 +2719,8 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
       maxChildSize: 0.95,
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: AppColors.backgroundDark,
+          decoration: BoxDecoration(
+            color: context.colors.bg,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
@@ -2733,7 +2731,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.dividerColor,
+                  color: context.colors.divider,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -2744,7 +2742,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
               // Content
               Expanded(
                 child: _isLoading
-                    ? const Center(
+                    ? Center(
                         child: CircularProgressIndicator(
                           color: AppColors.primaryGreen,
                         ),
@@ -2790,23 +2788,23 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                   size: 28,
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       widget.region.name,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
                       '${widget.region.hectares.toStringAsFixed(2)} ha',
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 13,
                       ),
                     ),
@@ -2815,40 +2813,40 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
               ),
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                icon: Icon(Icons.close, color: context.colors.textSecondary),
               ),
             ],
           ),
           if (locationStr.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.cardDark,
+                color: context.colors.card,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.public,
                     color: AppColors.primaryGreen,
                     size: 18,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     locationStr,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
+                    style: TextStyle(
+                      color: context.colors.textPrimary,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Text(
                     '${widget.latitude.toStringAsFixed(4)}°, ${widget.longitude.toStringAsFixed(4)}°',
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      color: context.colors.textSecondary,
                       fontSize: 12,
                     ),
                   ),
@@ -2874,7 +2872,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -2897,16 +2895,16 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                       tabs[index]['icon'] as IconData,
                       color: isSelected
                           ? Colors.white
-                          : AppColors.textSecondary,
+                          : context.colors.textSecondary,
                       size: 20,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       tabs[index]['label'] as String,
                       style: TextStyle(
                         color: isSelected
                             ? Colors.white
-                            : AppColors.textSecondary,
+                            : context.colors.textSecondary,
                         fontSize: 10,
                         fontWeight: isSelected
                             ? FontWeight.w600
@@ -2949,7 +2947,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
@@ -2958,19 +2956,19 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
             children: [
               Row(
                 children: [
-                  const Text('📍', style: TextStyle(fontSize: 20)),
-                  const SizedBox(width: 10),
-                  const Text(
+                  Text('📍', style: TextStyle(fontSize: 20)),
+                  SizedBox(width: 10),
+                  Text(
                     'Informations',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _buildInfoRow('🌍', 'Continent', _continent ?? 'Chargement...'),
               _buildInfoRow('🏳️', 'Pays', _countryName ?? 'Chargement...'),
               if (_stateName != null && _stateName!.isNotEmpty)
@@ -2995,7 +2993,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         // Quick soil summary
         Container(
           padding: const EdgeInsets.all(16),
@@ -3007,15 +3005,15 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 '🌱 Résumé du Sol',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
@@ -3026,7 +3024,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                       Colors.cyan,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: _buildSummaryCard(
                       '🌡️',
@@ -3035,7 +3033,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                       Colors.orange,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: _buildSummaryCard(
                       '🪲',
@@ -3062,20 +3060,20 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 16)),
-          const SizedBox(width: 10),
+          Text(emoji, style: TextStyle(fontSize: 16)),
+          SizedBox(width: 10),
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontSize: 14,
             ),
           ),
-          const Spacer(),
+          Spacer(),
           Text(
             value,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: context.colors.textPrimary,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -3094,13 +3092,13 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 20)),
-          const SizedBox(height: 4),
+          Text(emoji, style: TextStyle(fontSize: 20)),
+          SizedBox(height: 4),
           Text(
             value,
             style: TextStyle(
@@ -3111,7 +3109,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
           ),
           Text(
             label,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 9),
+            style: TextStyle(color: context.colors.textSecondary, fontSize: 9),
             textAlign: TextAlign.center,
           ),
         ],
@@ -3126,11 +3124,11 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(color: AppColors.primaryGreen),
-            const SizedBox(height: 16),
-            const Text(
+            CircularProgressIndicator(color: AppColors.primaryGreen),
+            SizedBox(height: 16),
+            Text(
               'Chargement des données météo...',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: context.colors.textSecondary),
             ),
           ],
         ),
@@ -3168,10 +3166,10 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Météo Actuelle',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -3180,7 +3178,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                     'https://openweathermap.org/img/wn/$icon@2x.png',
                     width: 50,
                     height: 50,
-                    errorBuilder: (_, __, ___) => const Icon(
+                    errorBuilder: (_, __, ___) => Icon(
                       Icons.wb_sunny,
                       color: Colors.amber,
                       size: 40,
@@ -3188,16 +3186,16 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 description.toString().toUpperCase(),
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   fontSize: 12,
                   letterSpacing: 1,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Row(
                 children: [
                   _buildWeatherItem(
@@ -3206,7 +3204,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                     value: '${temp.toStringAsFixed(1)}°C',
                     color: Colors.orange,
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16),
                   _buildWeatherItem(
                     icon: Icons.water_drop,
                     label: 'Humidité Air',
@@ -3215,7 +3213,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Row(
                 children: [
                   _buildWeatherItem(
@@ -3224,7 +3222,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                     value: '${(wind * 3.6).toStringAsFixed(1)} km/h',
                     color: Colors.blueGrey,
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16),
                   _buildWeatherItem(
                     icon: Icons.umbrella,
                     label: 'Pluie',
@@ -3250,7 +3248,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.cardDark,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -3264,15 +3262,15 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
               ),
               child: Icon(icon, color: color, size: 20),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      color: context.colors.textSecondary,
                       fontSize: 11,
                     ),
                   ),
@@ -3337,7 +3335,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
@@ -3347,18 +3345,18 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
               Row(
                 children: [
                   Icon(Icons.water_drop, color: Colors.blue, size: 24),
-                  const SizedBox(width: 10),
-                  const Text(
+                  SizedBox(width: 10),
+                  Text(
                     'Humidité du Sol',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               ...levels.map(
                 (level) => _buildSoilHumidityRow(
                   name: level['name'] as String,
@@ -3369,7 +3367,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         _buildSoilHumidityLegend(),
       ],
     );
@@ -3398,15 +3396,15 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
               children: [
                 Text(
                   name,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: context.colors.textPrimary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
                   depth,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -3420,7 +3418,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                 Container(
                   height: 8,
                   decoration: BoxDecoration(
-                    color: AppColors.backgroundDark,
+                    color: context.colors.bg,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -3437,7 +3435,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Text(
             '$value%',
             style: TextStyle(
@@ -3454,7 +3452,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.cardDark.withOpacity(0.5),
+        color: context.colors.card.withOpacity(0.5),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -3480,10 +3478,10 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
             borderRadius: BorderRadius.circular(3),
           ),
         ),
-        const SizedBox(width: 6),
+        SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+          style: TextStyle(color: context.colors.textSecondary, fontSize: 11),
         ),
       ],
     );
@@ -3531,7 +3529,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
@@ -3541,22 +3539,22 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
               Row(
                 children: [
                   Icon(Icons.thermostat, color: Colors.orange, size: 24),
-                  const SizedBox(width: 10),
-                  const Text(
+                  SizedBox(width: 10),
+                  Text(
                     'Température du Sol',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               GridView.count(
                 crossAxisCount: 2,
                 shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
+                physics: NeverScrollableScrollPhysics(),
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
                 childAspectRatio: 1.5,
@@ -3587,7 +3585,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.backgroundDark,
+        color: context.colors.bg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: getColor(value).withOpacity(0.3)),
       ),
@@ -3596,12 +3594,12 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
         children: [
           Text(
             depth,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontSize: 12,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             '${value.toStringAsFixed(1)}°C',
             style: TextStyle(
@@ -3754,9 +3752,9 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('✅', style: TextStyle(fontSize: 48)),
-            const SizedBox(height: 16),
-            const Text(
+            Text('✅', style: TextStyle(fontSize: 48)),
+            SizedBox(height: 16),
+            Text(
               'Risque parasitaire faible',
               style: TextStyle(
                 color: AppColors.primaryGreen,
@@ -3764,14 +3762,14 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               'Conditions actuelles: ${temp.toStringAsFixed(1)}°C, ${humidity}% humidité sol',
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: context.colors.textSecondary),
             ),
-            const Text(
+            Text(
               'Conditions défavorables aux ravageurs',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: context.colors.textSecondary),
             ),
           ],
         ),
@@ -3792,32 +3790,32 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
           padding: const EdgeInsets.all(12),
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: Row(
             children: [
               Icon(Icons.thermostat, color: Colors.orange, size: 20),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 '${temp.toStringAsFixed(1)}°C',
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: context.colors.textPrimary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               Icon(Icons.water_drop, color: Colors.cyan, size: 20),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 '${humidity}% sol',
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: context.colors.textPrimary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const Spacer(),
+              Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
@@ -3849,16 +3847,16 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
           ),
           child: Row(
             children: [
-              const Text('🪲', style: TextStyle(fontSize: 28)),
-              const SizedBox(width: 12),
+              Text('🪲', style: TextStyle(fontSize: 28)),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Risques Parasitaires',
                       style: TextStyle(
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -3866,7 +3864,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                     Text(
                       'Niveau global basé sur les conditions météo',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
@@ -3884,7 +3882,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                 ),
                 child: Text(
                   riskLabel,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
@@ -3894,7 +3892,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         // Pest cards
         ...pests.map((pest) => _buildPestCard(pest)),
       ],
@@ -3910,7 +3908,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -3919,7 +3917,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         leading: Text(
           pest['icon'] as String,
-          style: const TextStyle(fontSize: 28),
+          style: TextStyle(fontSize: 28),
         ),
         title: Row(
           children: [
@@ -3929,15 +3927,15 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                 children: [
                   Text(
                     pest['name'] as String,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
+                    style: TextStyle(
+                      color: context.colors.textPrimary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
                     pest['latin'] as String,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      color: context.colors.textSecondary,
                       fontSize: 12,
                       fontStyle: FontStyle.italic,
                     ),
@@ -3953,7 +3951,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
               ),
               child: Text(
                 '$risk%',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
@@ -3962,17 +3960,17 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
             ),
           ],
         ),
-        iconColor: AppColors.textSecondary,
-        collapsedIconColor: AppColors.textSecondary,
+        iconColor: context.colors.textSecondary,
+        collapsedIconColor: context.colors.textSecondary,
         children: [
           Text(
             pest['description'] as String,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontSize: 13,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -3984,13 +3982,13 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundDark,
+                      color: context.colors.bg,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       c,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 11,
                       ),
                     ),
@@ -3998,7 +3996,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                 )
                 .toList(),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -4008,7 +4006,7 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Prévention:',
                   style: TextStyle(
                     color: AppColors.primaryGreen,
@@ -4016,22 +4014,22 @@ class _RegionDetailSheetState extends State<RegionDetailSheet> {
                     fontSize: 13,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 ...(pest['prevention'] as List<String>).map(
                   (p) => Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           '• ',
                           style: TextStyle(color: AppColors.primaryGreen),
                         ),
                         Expanded(
                           child: Text(
                             p,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: context.colors.textSecondary,
                               fontSize: 12,
                             ),
                           ),

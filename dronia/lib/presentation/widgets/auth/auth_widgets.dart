@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_colors.dart';
 
-/// Animated background slideshow widget for auth screens
+/// Animated background slideshow widget for auth screens.
+/// Adapts overlay intensity to the active theme.
 class AuthBackground extends StatefulWidget {
   final Widget child;
 
@@ -13,11 +15,11 @@ class AuthBackground extends StatefulWidget {
 
 class _AuthBackgroundState extends State<AuthBackground>
     with TickerProviderStateMixin {
-  late PageController _pageController;
-  late Timer _timer;
+  late final PageController _pageController;
+  late final Timer _timer;
   int _currentPage = 0;
 
-  final List<String> _images = [
+  final List<String> _images = const [
     'assets/images/slider1.jpeg',
     'assets/images/slider2.jpeg',
     'assets/images/slider3.jpeg',
@@ -27,15 +29,12 @@ class _AuthBackgroundState extends State<AuthBackground>
   void initState() {
     super.initState();
     _pageController = PageController();
-    _startAutoSlide();
-  }
-
-  void _startAutoSlide() {
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 4), (_) {
+      if (!mounted) return;
       _currentPage = (_currentPage + 1) % _images.length;
       _pageController.animateToPage(
         _currentPage,
-        duration: const Duration(milliseconds: 800),
+        duration: const Duration(milliseconds: 900),
         curve: Curves.easeInOut,
       );
     });
@@ -50,37 +49,41 @@ class _AuthBackgroundState extends State<AuthBackground>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Background image slideshow
         PageView.builder(
           controller: _pageController,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: _images.length,
-          itemBuilder: (context, index) {
-            return Image.asset(_images[index], fit: BoxFit.cover);
-          },
+          itemBuilder: (_, index) =>
+              Image.asset(_images[index], fit: BoxFit.cover),
         ),
-        // Dark gradient overlay for readability
+        // Theme-adaptive overlay for readability
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withOpacity(0.7),
-                Colors.black.withOpacity(0.85),
-                Colors.black.withOpacity(0.95),
-              ],
+              colors: isDark
+                  ? [
+                      Colors.black.withValues(alpha: 0.55),
+                      Colors.black.withValues(alpha: 0.78),
+                      Colors.black.withValues(alpha: 0.92),
+                    ]
+                  : [
+                      Colors.white.withValues(alpha: 0.65),
+                      Colors.white.withValues(alpha: 0.85),
+                      Colors.white.withValues(alpha: 0.95),
+                    ],
               stops: const [0.0, 0.4, 1.0],
             ),
           ),
         ),
-        // Futuristic accent elements
         Positioned(
-          top: -100,
-          right: -100,
+          top: -120,
+          right: -120,
           child: Container(
             width: 300,
             height: 300,
@@ -88,7 +91,8 @@ class _AuthBackgroundState extends State<AuthBackground>
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  const Color(0xFF4CAF50).withOpacity(0.15),
+                  AppColors.primaryGreen
+                      .withValues(alpha: isDark ? 0.18 : 0.14),
                   Colors.transparent,
                 ],
               ),
@@ -96,30 +100,29 @@ class _AuthBackgroundState extends State<AuthBackground>
           ),
         ),
         Positioned(
-          bottom: -50,
-          left: -50,
+          bottom: -60,
+          left: -60,
           child: Container(
-            width: 200,
-            height: 200,
+            width: 220,
+            height: 220,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  const Color(0xFF2196F3).withOpacity(0.1),
+                  AppColors.info.withValues(alpha: isDark ? 0.12 : 0.08),
                   Colors.transparent,
                 ],
               ),
             ),
           ),
         ),
-        // Content (page indicators removed for cleaner UI)
         widget.child,
       ],
     );
   }
 }
 
-/// Glassmorphism card container
+/// Glassmorphism card — theme-adaptive.
 class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsets? padding;
@@ -134,17 +137,27 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: padding ?? const EdgeInsets.all(24),
+      padding: padding ?? const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(borderRadius ?? 24),
-        border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.06)
+            : Colors.white.withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(borderRadius ?? 22),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.12)
+              : Colors.black.withValues(alpha: 0.06),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 20,
-            spreadRadius: 5,
+            color: Colors.black
+                .withValues(alpha: isDark ? 0.35 : 0.08),
+            blurRadius: 22,
+            spreadRadius: 2,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -153,7 +166,7 @@ class GlassCard extends StatelessWidget {
   }
 }
 
-/// Futuristic text field for auth forms
+/// Themed text field for auth forms.
 class FuturisticTextField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
@@ -182,16 +195,31 @@ class FuturisticTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : AppColors.textPrimaryLight;
+    final labelColor = isDark
+        ? Colors.white.withValues(alpha: 0.7)
+        : AppColors.textSecondaryLight;
+    final hintColor = isDark
+        ? Colors.white.withValues(alpha: 0.35)
+        : AppColors.textHintLight;
+    final fillColor = isDark
+        ? Colors.white.withValues(alpha: 0.06)
+        : Colors.white.withValues(alpha: 0.9);
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.12)
+        : Colors.black.withValues(alpha: 0.08);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.5,
+            color: labelColor,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.6,
           ),
         ),
         const SizedBox(height: 8),
@@ -202,44 +230,40 @@ class FuturisticTextField extends StatelessWidget {
           validator: validator,
           textInputAction: textInputAction,
           onFieldSubmitted: onFieldSubmitted,
-          style: const TextStyle(color: Colors.white, fontSize: 16),
+          style: TextStyle(color: textColor, fontSize: 15),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(
-              color: Colors.white.withOpacity(0.3),
-              fontSize: 14,
-            ),
+            hintStyle: TextStyle(color: hintColor, fontSize: 14),
             prefixIcon: prefixIcon != null
-                ? Icon(prefixIcon, color: const Color(0xFF4CAF50), size: 20)
+                ? Icon(prefixIcon, color: AppColors.primaryGreen, size: 20)
                 : null,
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: Colors.white.withOpacity(0.05),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
-            ),
+            fillColor: fillColor,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+              borderSide: BorderSide(color: borderColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+              borderSide: BorderSide(color: borderColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+              borderSide:
+                  const BorderSide(color: AppColors.primaryGreen, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.redAccent),
+              borderSide: const BorderSide(color: AppColors.error),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.redAccent, width: 2),
+              borderSide: const BorderSide(color: AppColors.error, width: 2),
             ),
-            errorStyle: const TextStyle(color: Colors.redAccent),
+            errorStyle: const TextStyle(color: AppColors.error),
           ),
         ),
       ],
@@ -247,7 +271,7 @@ class FuturisticTextField extends StatelessWidget {
   }
 }
 
-/// Futuristic gradient button
+/// Gradient button — brand colors, theme-agnostic.
 class FuturisticButton extends StatefulWidget {
   final VoidCallback onPressed;
   final String text;
@@ -268,8 +292,8 @@ class FuturisticButton extends StatefulWidget {
 
 class _FuturisticButtonState extends State<FuturisticButton>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
+  late final AnimationController _controller;
+  late final Animation<double> _scaleAnimation;
 
   @override
   void initState() {
@@ -278,10 +302,9 @@ class _FuturisticButtonState extends State<FuturisticButton>
       vsync: this,
       duration: const Duration(milliseconds: 150),
     );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.95,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -302,17 +325,20 @@ class _FuturisticButtonState extends State<FuturisticButton>
       child: ScaleTransition(
         scale: _scaleAnimation,
         child: Container(
-          height: 56,
+          height: 54,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+              colors: [
+                AppColors.primaryGreen,
+                AppColors.primaryGreenDark,
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF4CAF50).withOpacity(0.4),
+                color: AppColors.primaryGreen.withValues(alpha: 0.4),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -321,8 +347,8 @@ class _FuturisticButtonState extends State<FuturisticButton>
           child: Center(
             child: widget.isLoading
                 ? const SizedBox(
-                    width: 24,
-                    height: 24,
+                    width: 22,
+                    height: 22,
                     child: CircularProgressIndicator(
                       color: Colors.white,
                       strokeWidth: 2.5,

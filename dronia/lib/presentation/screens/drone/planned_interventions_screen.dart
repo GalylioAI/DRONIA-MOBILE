@@ -49,27 +49,27 @@ class _PlannedInterventionsScreenState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardDark,
+        backgroundColor: context.colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
+        title: Text(
           'Supprimer l\'intervention?',
-          style: TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: context.colors.textPrimary),
         ),
         content: Text(
           'Voulez-vous supprimer l\'intervention pour "${intervention.detectionLabel}"?',
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: context.colors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Annuler',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: context.colors.textSecondary),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
+            child: Text(
               'Supprimer',
               style: TextStyle(color: AppColors.error),
             ),
@@ -83,7 +83,7 @@ class _PlannedInterventionsScreenState
       _loadInterventions();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Intervention supprimée'),
             backgroundColor: AppColors.error,
           ),
@@ -114,12 +114,10 @@ class _PlannedInterventionsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundDark,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: context.colors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Row(
@@ -130,18 +128,18 @@ class _PlannedInterventionsScreenState
                 color: AppColors.primaryGreen.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.calendar_month,
                 color: AppColors.primaryGreen,
                 size: 20,
               ),
             ),
-            const SizedBox(width: 10),
-            const Flexible(
+            SizedBox(width: 10),
+            Flexible(
               child: Text(
                 'Interventions Planifiées',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -152,13 +150,13 @@ class _PlannedInterventionsScreenState
         actions: [
           if (_interventions.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
+              icon: Icon(Icons.refresh, color: context.colors.textSecondary),
               onPressed: _loadInterventions,
             ),
         ],
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: AppColors.primaryGreen),
             )
           : _interventions.isEmpty
@@ -177,29 +175,29 @@ class _PlannedInterventionsScreenState
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.cardDark,
+                color: context.colors.card,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.calendar_today_outlined,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 size: 48,
               ),
             ),
-            const SizedBox(height: 24),
-            const Text(
+            SizedBox(height: 24),
+            Text(
               'Aucune intervention planifiée',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               'Les interventions planifiées depuis les détections apparaîtront ici.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              style: TextStyle(color: context.colors.textSecondary, fontSize: 14),
             ),
           ],
         ),
@@ -230,7 +228,7 @@ class _PlannedInterventionsScreenState
         children: [
           // Summary card
           _buildSummaryCard(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // Pending
           if (pending.isNotEmpty) ...[
@@ -239,17 +237,17 @@ class _PlannedInterventionsScreenState
               pending.length,
               AppColors.warning,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             ...pending.map((i) => _buildInterventionCard(i)),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
           ],
 
           // In Progress
           if (inProgress.isNotEmpty) ...[
             _buildSectionHeader('En cours', inProgress.length, AppColors.info),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             ...inProgress.map((i) => _buildInterventionCard(i)),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
           ],
 
           // Completed
@@ -259,9 +257,9 @@ class _PlannedInterventionsScreenState
               completed.length,
               AppColors.primaryGreen,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             ...completed.map((i) => _buildInterventionCard(i)),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
           ],
 
           // Cancelled
@@ -269,9 +267,9 @@ class _PlannedInterventionsScreenState
             _buildSectionHeader(
               'Annulées',
               cancelled.length,
-              AppColors.textSecondary,
+              context.colors.textSecondary,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             ...cancelled.map((i) => _buildInterventionCard(i)),
           ],
         ],
@@ -290,7 +288,7 @@ class _PlannedInterventionsScreenState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
@@ -323,10 +321,10 @@ class _PlannedInterventionsScreenState
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
         ),
       ],
     );
@@ -343,16 +341,16 @@ class _PlannedInterventionsScreenState
             borderRadius: BorderRadius.circular(2),
           ),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: context.colors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(width: 6),
+        SizedBox(width: 6),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
@@ -389,19 +387,19 @@ class _PlannedInterventionsScreenState
         statusColor = AppColors.primaryGreen;
         break;
       case InterventionStatus.cancelled:
-        statusColor = AppColors.textSecondary;
+        statusColor = context.colors.textSecondary;
         break;
     }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isOverdue
               ? AppColors.error.withOpacity(0.5)
-              : AppColors.dividerColor,
+              : context.colors.divider,
         ),
       ),
       child: Material(
@@ -429,20 +427,20 @@ class _PlannedInterventionsScreenState
                         size: 18,
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             intervention.interventionType,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
+                            style: TextStyle(
+                              color: context.colors.textPrimary,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2),
                           Text(
                             intervention.detectionLabel,
                             style: TextStyle(
@@ -476,50 +474,50 @@ class _PlannedInterventionsScreenState
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
 
                 // Date and time
                 Row(
                   children: [
                     Icon(
                       Icons.calendar_today,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       size: 14,
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Text(
                       '${intervention.scheduledDate.day.toString().padLeft(2, '0')}/${intervention.scheduledDate.month.toString().padLeft(2, '0')}/${intervention.scheduledDate.year}',
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
                     Icon(
                       Icons.access_time,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       size: 14,
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Text(
                       intervention.scheduledTime,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
                     Icon(
                       Icons.location_on_outlined,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       size: 14,
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4),
                     Flexible(
                       child: Text(
                         intervention.zone,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          color: context.colors.textSecondary,
                           fontSize: 12,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -531,13 +529,13 @@ class _PlannedInterventionsScreenState
                 // Notes preview if any
                 if (intervention.notes != null &&
                     intervention.notes!.isNotEmpty) ...[
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Text(
                     intervention.notes!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      color: context.colors.textSecondary,
                       fontSize: 11,
                       fontStyle: FontStyle.italic,
                     ),
@@ -578,7 +576,7 @@ class _PlannedInterventionsScreenState
           maxHeight: MediaQuery.of(context).size.height * 0.7,
         ),
         decoration: BoxDecoration(
-          color: AppColors.cardDark,
+          color: context.colors.card,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: SingleChildScrollView(
@@ -594,12 +592,12 @@ class _PlannedInterventionsScreenState
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.dividerColor,
+                      color: context.colors.divider,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
 
                 // Title
                 Row(
@@ -616,15 +614,15 @@ class _PlannedInterventionsScreenState
                         size: 24,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             intervention.interventionType,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
+                            style: TextStyle(
+                              color: context.colors.textPrimary,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
@@ -653,7 +651,7 @@ class _PlannedInterventionsScreenState
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
 
                 // Detection info
                 _buildDetailRow(
@@ -661,7 +659,7 @@ class _PlannedInterventionsScreenState
                   'Détection',
                   '${intervention.detectionLabel} (${(intervention.detectionConfidence * 100).toStringAsFixed(0)}%)',
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
 
                 // Date
                 _buildDetailRow(
@@ -669,7 +667,7 @@ class _PlannedInterventionsScreenState
                   'Date',
                   '${intervention.scheduledDate.day.toString().padLeft(2, '0')}/${intervention.scheduledDate.month.toString().padLeft(2, '0')}/${intervention.scheduledDate.year}',
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
 
                 // Time
                 _buildDetailRow(
@@ -677,7 +675,7 @@ class _PlannedInterventionsScreenState
                   'Heure',
                   intervention.scheduledTime,
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
 
                 // Zone
                 _buildDetailRow(Icons.location_on, 'Zone', intervention.zone),
@@ -685,11 +683,11 @@ class _PlannedInterventionsScreenState
                 // Notes
                 if (intervention.notes != null &&
                     intervention.notes!.isNotEmpty) ...[
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   _buildDetailRow(Icons.notes, 'Notes', intervention.notes!),
                 ],
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
 
                 // Action buttons
                 if (intervention.status == InterventionStatus.pending) ...[
@@ -704,8 +702,8 @@ class _PlannedInterventionsScreenState
                               InterventionStatus.cancelled,
                             );
                           },
-                          icon: const Icon(Icons.cancel, size: 18),
-                          label: const Text('Annuler'),
+                          icon: Icon(Icons.cancel, size: 18),
+                          label: Text('Annuler'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.error,
                             side: BorderSide(
@@ -718,7 +716,7 @@ class _PlannedInterventionsScreenState
                           ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10),
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
@@ -728,8 +726,8 @@ class _PlannedInterventionsScreenState
                               InterventionStatus.inProgress,
                             );
                           },
-                          icon: const Icon(Icons.play_arrow, size: 18),
-                          label: const Text('Démarrer'),
+                          icon: Icon(Icons.play_arrow, size: 18),
+                          label: Text('Démarrer'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryGreen,
                             foregroundColor: AppColors.white,
@@ -754,8 +752,8 @@ class _PlannedInterventionsScreenState
                           InterventionStatus.completed,
                         );
                       },
-                      icon: const Icon(Icons.check, size: 18),
-                      label: const Text('Marquer comme terminée'),
+                      icon: Icon(Icons.check, size: 18),
+                      label: Text('Marquer comme terminée'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryGreen,
                         foregroundColor: AppColors.white,
@@ -768,7 +766,7 @@ class _PlannedInterventionsScreenState
                   ),
                 ],
 
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
 
                 // Delete button
                 SizedBox(
@@ -778,10 +776,10 @@ class _PlannedInterventionsScreenState
                       Navigator.pop(context);
                       _deleteIntervention(intervention);
                     },
-                    icon: const Icon(Icons.delete_outline, size: 18),
-                    label: const Text('Supprimer'),
+                    icon: Icon(Icons.delete_outline, size: 18),
+                    label: Text('Supprimer'),
                     style: TextButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
+                      foregroundColor: context.colors.textSecondary,
                     ),
                   ),
                 ),
@@ -797,24 +795,24 @@ class _PlannedInterventionsScreenState
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: AppColors.textSecondary, size: 18),
-        const SizedBox(width: 10),
+        Icon(icon, color: context.colors.textSecondary, size: 18),
+        SizedBox(width: 10),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: context.colors.textSecondary,
                   fontSize: 11,
                 ),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: context.colors.textPrimary,
                   fontSize: 14,
                 ),
               ),

@@ -296,7 +296,6 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -305,20 +304,20 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
             children: [
               // Header
               _buildHeader(),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // Stats Cards Row
               _buildStatsCards(),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // Main Content - Upload Card
               _buildUploadCard(),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
 
               // Results (if available)
               if (_analysisResult != null) ...[
                 _buildResultsCard(),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
               ],
 
               // Model Info Card
@@ -347,26 +346,26 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.pest_control,
                 color: AppColors.warning,
                 size: 24,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   RichText(
-                    text: const TextSpan(
+                    text: TextSpan(
                       children: [
                         TextSpan(
                           text: 'Analyse des ',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         TextSpan(
@@ -380,12 +379,12 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  const Text(
+                  SizedBox(height: 2),
+                  Text(
                     'Détection IA avec YOLO11s • 102 espèces',
                     style: TextStyle(
                       fontSize: 13,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
@@ -409,7 +408,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
             onTap: () => _showAllAnalysesHistory(),
           ),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: 10),
         Expanded(
           child: _StatCard(
             title: 'AVEC INSECTES',
@@ -546,7 +545,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.75,
         decoration: BoxDecoration(
-          color: AppColors.cardDark,
+          color: context.colors.card,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
@@ -557,7 +556,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.dividerColor,
+                color: context.colors.divider,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -572,29 +571,29 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                       color: AppColors.warning.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.pest_control,
                       color: AppColors.warning,
                       size: 24,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           insectName,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: context.colors.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
                           '${filteredAnalyses.length} analyse(s) avec cet insecte',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: context.colors.textSecondary,
                             fontSize: 13,
                           ),
                         ),
@@ -604,7 +603,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                 ],
               ),
             ),
-            const Divider(color: AppColors.dividerColor, height: 1),
+            Divider(color: context.colors.divider, height: 1),
             // List
             Expanded(
               child: filteredAnalyses.isEmpty
@@ -615,15 +614,15 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                           Icon(
                             Icons.inbox_outlined,
                             size: 64,
-                            color: AppColors.textSecondary.withValues(
+                            color: context.colors.textSecondary.withValues(
                               alpha: 0.5,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           Text(
                             'Aucune analyse trouvée',
                             style: TextStyle(
-                              color: AppColors.textSecondary.withValues(
+                              color: context.colors.textSecondary.withValues(
                                 alpha: 0.7,
                               ),
                               fontSize: 16,
@@ -687,7 +686,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: AppColors.backgroundDark,
+          color: context.colors.bg,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
         ),
@@ -708,10 +707,10 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                   errorBuilder: (_, __, ___) => Container(
                     width: 80,
                     height: 80,
-                    color: AppColors.cardDark,
-                    child: const Icon(
+                    color: context.colors.card,
+                    child: Icon(
                       Icons.image_not_supported,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ),
@@ -721,7 +720,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: AppColors.cardDark,
+                  color: context.colors.card,
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(12),
                     bottomLeft: Radius.circular(12),
@@ -745,8 +744,8 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                         Expanded(
                           child: Text(
                             DateFormat('dd/MM/yyyy à HH:mm').format(createdAt),
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
+                            style: TextStyle(
+                              color: context.colors.textPrimary,
                               fontWeight: FontWeight.w600,
                               fontSize: 13,
                             ),
@@ -772,7 +771,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     Row(
                       children: [
                         Container(
@@ -787,15 +786,15 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.pest_control,
                                 size: 12,
                                 color: AppColors.warning,
                               ),
-                              const SizedBox(width: 4),
+                              SizedBox(width: 4),
                               Text(
                                 '$confidence%',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppColors.warning,
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
@@ -804,11 +803,11 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                             ],
                           ),
                         ),
-                        const Spacer(),
+                        Spacer(),
                         Icon(
                           Icons.arrow_forward_ios,
                           size: 14,
-                          color: AppColors.textSecondary.withValues(alpha: 0.5),
+                          color: context.colors.textSecondary.withValues(alpha: 0.5),
                         ),
                       ],
                     ),
@@ -833,7 +832,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -844,7 +843,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.dividerColor,
+              color: context.colors.divider,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -861,23 +860,23 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                   ),
                   child: Icon(icon, color: iconColor, size: 24),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: context.colors.textPrimary,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         subtitle,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          color: context.colors.textSecondary,
                           fontSize: 13,
                         ),
                       ),
@@ -885,9 +884,9 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.refresh,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                   onPressed: () {
                     Navigator.pop(context);
@@ -897,7 +896,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
               ],
             ),
           ),
-          const Divider(color: AppColors.dividerColor, height: 1),
+          Divider(color: context.colors.divider, height: 1),
           // List
           Expanded(
             child: analyses.isEmpty
@@ -908,13 +907,13 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                         Icon(
                           Icons.inbox_outlined,
                           size: 64,
-                          color: AppColors.textSecondary.withValues(alpha: 0.5),
+                          color: context.colors.textSecondary.withValues(alpha: 0.5),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         Text(
                           emptyMessage,
                           style: TextStyle(
-                            color: AppColors.textSecondary.withValues(
+                            color: context.colors.textSecondary.withValues(
                               alpha: 0.7,
                             ),
                             fontSize: 16,
@@ -970,32 +969,32 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
         ),
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        child: const Icon(Icons.delete, color: Colors.white, size: 28),
+        child: Icon(Icons.delete, color: Colors.white, size: 28),
       ),
       confirmDismiss: (direction) async {
         return await showDialog<bool>(
               context: context,
               builder: (context) => AlertDialog(
-                backgroundColor: AppColors.cardDark,
-                title: const Text(
+                backgroundColor: context.colors.card,
+                title: Text(
                   'Supprimer',
-                  style: TextStyle(color: AppColors.textPrimary),
+                  style: TextStyle(color: context.colors.textPrimary),
                 ),
-                content: const Text(
+                content: Text(
                   'Voulez-vous supprimer cette analyse ?',
-                  style: TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: context.colors.textSecondary),
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Annuler'),
+                    child: Text('Annuler'),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(context, true),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.error,
                     ),
-                    child: const Text('Supprimer'),
+                    child: Text('Supprimer'),
                   ),
                 ],
               ),
@@ -1014,7 +1013,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.backgroundDark,
+            color: context.colors.bg,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             boxShadow: [
@@ -1043,7 +1042,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                   size: 24,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               // Content
               Expanded(
                 child: Column(
@@ -1053,22 +1052,22 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                       hasInsects
                           ? '$totalCount insecte(s) détecté(s)'
                           : 'Aucun insecte',
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       DateFormat('dd/MM/yyyy à HH:mm').format(createdAt),
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
                     if (hasInsects && detections.isNotEmpty) ...[
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6),
                       Wrap(
                         spacing: 6,
                         runSpacing: 4,
@@ -1088,7 +1087,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                                 ),
                                 child: Text(
                                   d['className'] ?? 'Inconnu',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: AppColors.warning,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
@@ -1104,7 +1103,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                           child: Text(
                             '+${detections.length - 3} autres',
                             style: TextStyle(
-                              color: AppColors.textSecondary.withValues(
+                              color: context.colors.textSecondary.withValues(
                                 alpha: 0.7,
                               ),
                               fontSize: 10,
@@ -1138,11 +1137,11 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                         ),
                       ),
                     ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Icon(
                     Icons.arrow_forward_ios,
                     size: 14,
-                    color: AppColors.textSecondary.withValues(alpha: 0.5),
+                    color: context.colors.textSecondary.withValues(alpha: 0.5),
                   ),
                 ],
               ),
@@ -1177,7 +1176,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Analyse supprimée'),
             backgroundColor: AppColors.success,
             duration: Duration(seconds: 2),
@@ -1188,7 +1187,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
       debugPrint('Error deleting analysis: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Erreur lors de la suppression'),
             backgroundColor: AppColors.error,
           ),
@@ -1209,7 +1208,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.cardDark,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           boxShadow: [
@@ -1230,12 +1229,12 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                   size: 18,
                   color: dangerColor.withValues(alpha: 0.8),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     className,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
+                    style: TextStyle(
+                      color: context.colors.textPrimary,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1259,25 +1258,25 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Icon(
                   Icons.info_outline,
                   size: 18,
-                  color: AppColors.textSecondary.withValues(alpha: 0.6),
+                  color: context.colors.textSecondary.withValues(alpha: 0.6),
                 ),
               ],
             ),
             if (detectionDangerLevel != null || impact != null) ...[
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Row(
                 children: [
                   if (detectionDangerLevel != null) ...[
                     Icon(Icons.warning_amber, size: 12, color: dangerColor),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4),
                     Text(
                       'Danger: $detectionDangerLevel',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 11,
                       ),
                     ),
@@ -1285,7 +1284,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                 ],
               ),
             ],
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Text(
               'Appuyez pour voir les détails',
               style: TextStyle(
@@ -1325,7 +1324,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: AppColors.cardDark,
+        backgroundColor: context.colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: SingleChildScrollView(
           child: Padding(
@@ -1349,30 +1348,30 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                         size: 24,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             className,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
+                            style: TextStyle(
+                              color: context.colors.textPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2),
                           Row(
                             children: [
                               Text(
                                 'Confiance: $confidence%',
-                                style: const TextStyle(
-                                  color: AppColors.textSecondary,
+                                style: TextStyle(
+                                  color: context.colors.textSecondary,
                                   fontSize: 12,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 6,
@@ -1397,17 +1396,17 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.close,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                const Divider(color: AppColors.dividerColor),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
+                Divider(color: context.colors.divider),
+                SizedBox(height: 16),
 
                 // Impact
                 if (impact != null && impact.isNotEmpty) ...[
@@ -1417,7 +1416,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                     label: 'Impact',
                     value: impact,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                 ],
 
                 // Treatment
@@ -1428,7 +1427,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                     label: 'Traitement recommandé',
                     value: treatment,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                 ],
 
                 // Prevention
@@ -1441,7 +1440,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                   ),
                 ],
 
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -1454,7 +1453,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text('Fermer'),
+                    child: Text('Fermer'),
                   ),
                 ),
               ],
@@ -1494,7 +1493,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.85,
         decoration: BoxDecoration(
-          color: AppColors.cardDark,
+          color: context.colors.card,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
@@ -1505,7 +1504,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.dividerColor,
+                color: context.colors.divider,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1526,7 +1525,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                       size: 24,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1535,8 +1534,8 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                           hasInsects
                               ? '$totalCount insecte(s) détecté(s)'
                               : 'Analyse sans insecte',
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: context.colors.textPrimary,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -1546,8 +1545,8 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                             'dd MMMM yyyy à HH:mm',
                             'fr_FR',
                           ).format(createdAt),
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: context.colors.textSecondary,
                             fontSize: 13,
                           ),
                         ),
@@ -1575,7 +1574,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                 ],
               ),
             ),
-            const Divider(color: AppColors.dividerColor, height: 1),
+            Divider(color: context.colors.divider, height: 1),
 
             // Content
             Expanded(
@@ -1597,11 +1596,11 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => Container(
                                 height: 200,
-                                color: AppColors.backgroundDark,
-                                child: const Center(
+                                color: context.colors.bg,
+                                child: Center(
                                   child: Icon(
                                     Icons.image_not_supported,
-                                    color: AppColors.textSecondary,
+                                    color: context.colors.textSecondary,
                                     size: 48,
                                   ),
                                 ),
@@ -1629,21 +1628,21 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20),
                     ],
 
                     // Detections list
                     if (detections.isNotEmpty) ...[
-                      const Text(
+                      Text(
                         'INSECTES DÉTECTÉS',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       ...detections.map(
                         (d) => _buildDetailedDetectionCard(d, dangerColor),
                       ),
@@ -1657,7 +1656,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                             color: AppColors.success.withValues(alpha: 0.3),
                           ),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
                             Icon(
                               Icons.check_circle,
@@ -1681,7 +1680,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                                   Text(
                                     'Votre culture semble saine !',
                                     style: TextStyle(
-                                      color: AppColors.textSecondary,
+                                      color: context.colors.textSecondary,
                                       fontSize: 13,
                                     ),
                                   ),
@@ -1727,7 +1726,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.backgroundDark,
+        color: context.colors.bg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: cardColor.withValues(alpha: 0.3)),
       ),
@@ -1746,8 +1745,8 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
           ),
           title: Text(
             className,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: context.colors.textPrimary,
               fontWeight: FontWeight.w600,
               fontSize: 14,
             ),
@@ -1756,12 +1755,12 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
             children: [
               Text(
                 'Confiance: $confidence%',
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: context.colors.textSecondary,
                   fontSize: 12,
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
@@ -1787,7 +1786,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                 label: 'Impact',
                 value: impact,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
             ],
             if (treatment != null && treatment.isNotEmpty) ...[
               _buildInfoSection(
@@ -1796,7 +1795,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                 label: 'Traitement',
                 value: treatment,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
             ],
             if (prevention != null && prevention.isNotEmpty)
               _buildInfoSection(
@@ -1815,7 +1814,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.6,
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -1826,7 +1825,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.dividerColor,
+              color: context.colors.divider,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -1841,29 +1840,29 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                     color: AppColors.error.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.visibility,
                     color: AppColors.error,
                     size: 24,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Insectes Détectés',
                         style: TextStyle(
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         '$_totalInsectsDetected insectes au total',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          color: context.colors.textSecondary,
                           fontSize: 13,
                         ),
                       ),
@@ -1873,7 +1872,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
               ],
             ),
           ),
-          const Divider(color: AppColors.dividerColor, height: 1),
+          Divider(color: context.colors.divider, height: 1),
           // Top insects list
           Expanded(
             child: _topInsects.isEmpty
@@ -1884,13 +1883,13 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                         Icon(
                           Icons.pest_control_outlined,
                           size: 64,
-                          color: AppColors.textSecondary.withValues(alpha: 0.5),
+                          color: context.colors.textSecondary.withValues(alpha: 0.5),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         Text(
                           'Aucun insecte détecté',
                           style: TextStyle(
-                            color: AppColors.textSecondary.withValues(
+                            color: context.colors.textSecondary.withValues(
                               alpha: 0.7,
                             ),
                             fontSize: 16,
@@ -1916,7 +1915,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: AppColors.backgroundDark,
+                            color: context.colors.bg,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                             boxShadow: [
@@ -1944,7 +1943,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                                     child: Center(
                                       child: Text(
                                         '${index + 1}',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           color: AppColors.warning,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 14,
@@ -1952,12 +1951,12 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
+                                  SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
                                       name,
-                                      style: const TextStyle(
-                                        color: AppColors.textPrimary,
+                                      style: TextStyle(
+                                        color: context.colors.textPrimary,
                                         fontWeight: FontWeight.w600,
                                         fontSize: 14,
                                       ),
@@ -1965,42 +1964,42 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                                   ),
                                   Text(
                                     '$count fois',
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
+                                    style: TextStyle(
+                                      color: context.colors.textSecondary,
                                       fontSize: 13,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
+                                  SizedBox(width: 8),
                                   Icon(
                                     Icons.arrow_forward_ios,
                                     size: 14,
-                                    color: AppColors.textSecondary.withValues(
+                                    color: context.colors.textSecondary.withValues(
                                       alpha: 0.5,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 10),
+                              SizedBox(height: 10),
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(4),
                                 child: LinearProgressIndicator(
                                   value: percentage / 100,
-                                  backgroundColor: AppColors.dividerColor,
-                                  valueColor: const AlwaysStoppedAnimation(
+                                  backgroundColor: context.colors.divider,
+                                  valueColor: AlwaysStoppedAnimation(
                                     AppColors.warning,
                                   ),
                                   minHeight: 6,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4),
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     '${percentage.toStringAsFixed(1)}% des détections',
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
+                                    style: TextStyle(
+                                      color: context.colors.textSecondary,
                                       fontSize: 11,
                                     ),
                                   ),
@@ -2031,7 +2030,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
   Widget _buildUploadCard() {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
@@ -2048,8 +2047,8 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
           // Card Header
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: AppColors.dividerColor)),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: context.colors.divider)),
             ),
             child: Row(
               children: [
@@ -2058,12 +2057,12 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                   color: AppColors.warning.withValues(alpha: 0.8),
                   size: 20,
                 ),
-                const SizedBox(width: 10),
-                const Expanded(
+                SizedBox(width: 10),
+                Expanded(
                   child: Text(
                     'Analyser une image',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -2077,11 +2076,11 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                         _analysisResult = null;
                       });
                     },
-                    icon: const Icon(Icons.refresh, size: 20),
-                    color: AppColors.textSecondary,
+                    icon: Icon(Icons.refresh, size: 20),
+                    color: context.colors.textSecondary,
                     tooltip: 'Réinitialiser',
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
+                    constraints: BoxConstraints(),
                   ),
               ],
             ),
@@ -2107,10 +2106,10 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
         decoration: BoxDecoration(
-          color: AppColors.backgroundDark,
+          color: context.colors.bg,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: AppColors.dividerColor,
+            color: context.colors.divider,
             style: BorderStyle.solid,
           ),
         ),
@@ -2123,28 +2122,28 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                 color: AppColors.warning.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.add_photo_alternate_outlined,
                 color: AppColors.warning,
                 size: 32,
               ),
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               'Ajouter une image',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 6),
-            const Text(
+            SizedBox(height: 6),
+            Text(
               'Appuyez pour prendre une photo ou choisir depuis la galerie',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              style: TextStyle(color: context.colors.textSecondary, fontSize: 13),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -2153,7 +2152,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                   label: 'Caméra',
                   onTap: () => _pickImage(ImageSource.camera),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 _ActionChip(
                   icon: Icons.photo_library,
                   label: 'Galerie',
@@ -2185,26 +2184,26 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                   backgroundColor: AppColors.warning.withValues(alpha: 0.2),
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.pest_control,
                 color: AppColors.warning,
                 size: 24,
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          const Text(
+          SizedBox(height: 20),
+          Text(
             'Analyse en cours...',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 6),
-          const Text(
+          SizedBox(height: 6),
+          Text(
             'Détection des ravageurs avec YOLO11s',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            style: TextStyle(color: context.colors.textSecondary, fontSize: 13),
           ),
         ],
       ),
@@ -2223,27 +2222,27 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
             fit: BoxFit.cover,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Row(
           children: [
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: _showImageSourceDialog,
-                icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('Changer'),
+                icon: Icon(Icons.refresh, size: 18),
+                label: Text('Changer'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.textSecondary,
-                  side: const BorderSide(color: AppColors.dividerColor),
+                  foregroundColor: context.colors.textSecondary,
+                  side: BorderSide(color: context.colors.divider),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: _analyzeImage,
-                icon: const Icon(Icons.search, size: 18),
-                label: const Text('Analyser'),
+                icon: Icon(Icons.search, size: 18),
+                label: Text('Analyser'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.warning,
                   foregroundColor: AppColors.white,
@@ -2281,7 +2280,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: dangerColor.withValues(alpha: 0.3)),
       ),
@@ -2316,7 +2315,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                       ),
                       child: Icon(dangerIcon, color: dangerColor, size: 24),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2331,13 +2330,13 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2),
                           Text(
                             hasInsects
                                 ? 'Niveau de danger: $dangerLevel'
                                 : 'Votre culture semble saine',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: context.colors.textSecondary,
                               fontSize: 13,
                             ),
                           ),
@@ -2423,12 +2422,12 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(bottom: 8),
                     child: Text(
                       'RAVAGEURS IDENTIFIÉS',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
@@ -2458,13 +2457,13 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                     ),
                     child: Column(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.eco,
                           color: AppColors.success,
                           size: 40,
                         ),
-                        const SizedBox(height: 12),
-                        const Text(
+                        SizedBox(height: 12),
+                        Text(
                           'Culture saine',
                           style: TextStyle(
                             color: AppColors.success,
@@ -2472,12 +2471,12 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        const Text(
+                        SizedBox(height: 4),
+                        Text(
                           'Aucun ravageur n\'a été détecté dans cette image. Continuez à surveiller régulièrement vos cultures.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                             fontSize: 12,
                           ),
                         ),
@@ -2515,7 +2514,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: AppColors.backgroundDark,
+        color: context.colors.bg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: dangerColor.withValues(alpha: 0.2)),
       ),
@@ -2532,8 +2531,8 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
         ),
         title: Text(
           className,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: context.colors.textPrimary,
             fontWeight: FontWeight.w600,
             fontSize: 14,
           ),
@@ -2556,7 +2555,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                 ),
               ),
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: 6),
             Container(
               margin: const EdgeInsets.only(top: 4),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -2575,8 +2574,8 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
             ),
           ],
         ),
-        iconColor: AppColors.textSecondary,
-        collapsedIconColor: AppColors.textSecondary,
+        iconColor: context.colors.textSecondary,
+        collapsedIconColor: context.colors.textSecondary,
         children: [
           // Impact
           if (impact.isNotEmpty)
@@ -2626,7 +2625,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
             ),
             child: Icon(icon, size: 14, color: color),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -2639,11 +2638,11 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 12,
                     height: 1.4,
                   ),
@@ -2666,7 +2665,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
@@ -2688,47 +2687,47 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                   color: AppColors.info.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.memory,
                   color: AppColors.info,
                   size: 18,
                 ),
               ),
-              const SizedBox(width: 10),
-              const Text(
+              SizedBox(width: 10),
+              Text(
                 'À propos du modèle',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           _InfoRow(
             icon: Icons.psychology,
             label: 'Modèle',
             value: 'YOLO11s Pest Detection',
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           _InfoRow(
             icon: Icons.category,
             label: 'Dataset',
             value: 'IP102 (102 espèces)',
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           _InfoRow(
             icon: Icons.speed,
             label: 'Précision',
             value: 'Confiance affichée par détection',
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           // Tips Section
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.backgroundDark,
+              color: context.colors.bg,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Column(
@@ -2741,24 +2740,24 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                       color: AppColors.warning.withValues(alpha: 0.8),
                       size: 16,
                     ),
-                    const SizedBox(width: 6),
-                    const Text(
+                    SizedBox(width: 6),
+                    Text(
                       'Conseils',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                const Text(
+                SizedBox(height: 8),
+                Text(
                   '• Utilisez des images nettes et bien éclairées\n'
                   '• Centrez les insectes dans le cadre\n'
                   '• Évitez les images floues ou sombres',
                   style: TextStyle(
-                    color: AppColors.textHint,
+                    color: context.colors.textHint,
                     fontSize: 12,
                     height: 1.5,
                   ),
@@ -2774,8 +2773,8 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
   void _showImageSourceDialog() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.cardDark,
-      shape: const RoundedRectangleBorder(
+      backgroundColor: context.colors.card,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => SafeArea(
@@ -2788,20 +2787,20 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.dividerColor,
+                  color: context.colors.divider,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 20),
-              const Text(
+              SizedBox(height: 20),
+              Text(
                 'Sélectionner une image',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
@@ -2815,7 +2814,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16),
                   Expanded(
                     child: _SourceOption(
                       icon: Icons.photo_library,
@@ -2829,7 +2828,7 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
             ],
           ),
         ),
@@ -2862,7 +2861,7 @@ class _StatCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.cardDark,
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           boxShadow: [
@@ -2884,20 +2883,20 @@ class _StatCard extends StatelessWidget {
               ),
               child: Icon(icon, color: iconColor, size: 16),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Text(
               value,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: context.colors.textPrimary,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 2),
+            SizedBox(height: 2),
             Text(
               title,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: context.colors.textSecondary,
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
               ),
@@ -2936,10 +2935,10 @@ class _ActionChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, color: AppColors.warning, size: 18),
-            const SizedBox(width: 6),
+            SizedBox(width: 6),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.warning,
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
@@ -2967,17 +2966,17 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: AppColors.textHint, size: 16),
-        const SizedBox(width: 8),
+        Icon(icon, color: context.colors.textHint, size: 16),
+        SizedBox(width: 8),
         Text(
           '$label: ',
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          style: TextStyle(color: context.colors.textSecondary, fontSize: 13),
         ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: context.colors.textPrimary,
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
@@ -3023,7 +3022,7 @@ class _SourceOption extends StatelessWidget {
               ),
               child: Icon(icon, color: color, size: 28),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Text(
               label,
               style: TextStyle(
@@ -3062,13 +3061,13 @@ class _BoundingBoxPainter extends CustomPainter {
       Color boxColor;
       switch (dangerLevel) {
         case 'Élevé':
-          boxColor = const Color(0xFFE53935); // Red
+          boxColor = Color(0xFFE53935); // Red
           break;
         case 'Modéré':
-          boxColor = const Color(0xFFFF9800); // Orange
+          boxColor = Color(0xFFFF9800); // Orange
           break;
         default:
-          boxColor = const Color(0xFF2196F3); // Blue
+          boxColor = Color(0xFF2196F3); // Blue
       }
 
       // Convert percentage to pixels
@@ -3237,7 +3236,7 @@ class _StatefulHistoryBottomSheetState
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -3248,7 +3247,7 @@ class _StatefulHistoryBottomSheetState
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.dividerColor,
+              color: context.colors.divider,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -3265,15 +3264,15 @@ class _StatefulHistoryBottomSheetState
                   ),
                   child: Icon(widget.icon, color: widget.iconColor, size: 24),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         widget.title,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: context.colors.textPrimary,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -3282,8 +3281,8 @@ class _StatefulHistoryBottomSheetState
                         _isLoading
                             ? 'Chargement...'
                             : '${_analyses.length} analyse(s)',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          color: context.colors.textSecondary,
                           fontSize: 13,
                         ),
                       ),
@@ -3291,20 +3290,20 @@ class _StatefulHistoryBottomSheetState
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.refresh,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                   onPressed: _loadData,
                 ),
               ],
             ),
           ),
-          const Divider(color: AppColors.dividerColor, height: 1),
+          Divider(color: context.colors.divider, height: 1),
           // List
           Expanded(
             child: _isLoading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
                       color: AppColors.primaryGreen,
                     ),
@@ -3319,21 +3318,21 @@ class _StatefulHistoryBottomSheetState
                           size: 48,
                           color: AppColors.error.withValues(alpha: 0.7),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         Text(
                           _error!,
                           style: TextStyle(
-                            color: AppColors.textSecondary.withValues(
+                            color: context.colors.textSecondary.withValues(
                               alpha: 0.7,
                             ),
                             fontSize: 14,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         TextButton(
                           onPressed: _loadData,
-                          child: const Text('Réessayer'),
+                          child: Text('Réessayer'),
                         ),
                       ],
                     ),
@@ -3346,13 +3345,13 @@ class _StatefulHistoryBottomSheetState
                         Icon(
                           Icons.inbox_outlined,
                           size: 64,
-                          color: AppColors.textSecondary.withValues(alpha: 0.5),
+                          color: context.colors.textSecondary.withValues(alpha: 0.5),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         Text(
                           widget.emptyMessage,
                           style: TextStyle(
-                            color: AppColors.textSecondary.withValues(
+                            color: context.colors.textSecondary.withValues(
                               alpha: 0.7,
                             ),
                             fontSize: 16,
@@ -3408,32 +3407,32 @@ class _StatefulHistoryBottomSheetState
         ),
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        child: const Icon(Icons.delete, color: Colors.white, size: 28),
+        child: Icon(Icons.delete, color: Colors.white, size: 28),
       ),
       confirmDismiss: (direction) async {
         return await showDialog<bool>(
               context: context,
               builder: (context) => AlertDialog(
-                backgroundColor: AppColors.cardDark,
-                title: const Text(
+                backgroundColor: context.colors.card,
+                title: Text(
                   'Supprimer',
-                  style: TextStyle(color: AppColors.textPrimary),
+                  style: TextStyle(color: context.colors.textPrimary),
                 ),
-                content: const Text(
+                content: Text(
                   'Voulez-vous supprimer cette analyse ?',
-                  style: TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: context.colors.textSecondary),
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Annuler'),
+                    child: Text('Annuler'),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(context, true),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.error,
                     ),
-                    child: const Text('Supprimer'),
+                    child: Text('Supprimer'),
                   ),
                 ],
               ),
@@ -3457,10 +3456,10 @@ class _StatefulHistoryBottomSheetState
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.backgroundDarkSecondary,
+            color: context.colors.bgSecondary,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppColors.dividerColor.withValues(alpha: 0.3),
+              color: context.colors.divider.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -3488,7 +3487,7 @@ class _StatefulHistoryBottomSheetState
                       )
                     : Icon(Icons.bug_report, color: dangerColor, size: 24),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               // Info
               Expanded(
                 child: Column(
@@ -3498,22 +3497,22 @@ class _StatefulHistoryBottomSheetState
                       hasInsects || totalCount > 0 || detections.isNotEmpty
                           ? '${totalCount > 0 ? totalCount : detections.length} insecte(s) détecté(s)'
                           : 'Aucun insecte détecté',
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       DateFormat('dd/MM/yyyy à HH:mm').format(createdAt),
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
                     if (detections.isNotEmpty) ...[
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         detections
                                 .take(2)
@@ -3521,7 +3520,7 @@ class _StatefulHistoryBottomSheetState
                                 .join(', ') +
                             (detections.length > 2 ? '...' : ''),
                         style: TextStyle(
-                          color: AppColors.textSecondary.withValues(alpha: 0.8),
+                          color: context.colors.textSecondary.withValues(alpha: 0.8),
                           fontSize: 11,
                         ),
                         maxLines: 1,
@@ -3554,11 +3553,11 @@ class _StatefulHistoryBottomSheetState
                         ),
                       ),
                     ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Icon(
                     Icons.arrow_forward_ios,
                     size: 14,
-                    color: AppColors.textSecondary.withValues(alpha: 0.5),
+                    color: context.colors.textSecondary.withValues(alpha: 0.5),
                   ),
                 ],
               ),

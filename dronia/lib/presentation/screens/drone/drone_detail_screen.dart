@@ -11,9 +11,9 @@ class DroneDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Drone Alpha'),
+        title: Text('Drone Alpha'),
         actions: [
-          IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
+          IconButton(icon: Icon(Icons.settings), onPressed: () {}),
         ],
       ),
       body: SingleChildScrollView(
@@ -186,7 +186,7 @@ class DroneDetailScreen extends StatelessWidget {
       child: Column(
         children: [
           Icon(icon, color: AppColors.white, size: 24),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             value,
             style: const TextStyle(
@@ -220,7 +220,7 @@ class DroneDetailScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, color: color),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Text(
             label,
             style: TextStyle(color: color, fontWeight: FontWeight.bold),
@@ -244,7 +244,7 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppColors.textSecondary)),
+          Text(label, style: TextStyle(color: context.colors.textSecondary)),
           Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),

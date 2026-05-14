@@ -1,0 +1,3150 @@
+{
+  "version": "1.0.0",
+  "totalDiseases": 51,
+  "lastUpdated": "2026-01-15",
+  "sources": [
+    "PlantVillage",
+    "EPPO",
+    "INRA",
+    "FAO",
+    "CABI"
+  ],
+  "diseases": [
+    {
+      "id": "apple_scab",
+      "name": "Apple Scab",
+      "nameFr": "Tavelure du pommier",
+      "scientificName": "Venturia inaequalis",
+      "type": "fungal",
+      "crops": [
+        "Apple"
+      ],
+      "cropsFr": [
+        "Pomme"
+      ],
+      "emoji": "🍎",
+      "severity": "high",
+      "detectable": true,
+      "symptoms": [
+        "Olive-green to dark brown velvety spots on leaves",
+        "Scabby lesions on fruit surface",
+        "Premature leaf drop",
+        "Distorted or cracked fruit",
+        "Dark spots on young twigs"
+      ],
+      "symptomsFr": [
+        "Taches vert olive à brun foncé veloutées sur les feuilles",
+        "Lésions croûteuses sur la surface des fruits",
+        "Chute prématurée des feuilles",
+        "Fruits déformés ou fissurés",
+        "Taches sombres sur les jeunes rameaux"
+      ],
+      "conditions": "Cool, wet spring weather (15-20°C). High humidity and frequent rain.",
+      "conditionsFr": "Temps frais et humide au printemps (15-20°C). Humidité élevée et pluies fréquentes.",
+      "treatments": [
+        "Apply fungicides (captan, mancozeb) at green tip stage",
+        "Remove fallen leaves in autumn",
+        "Prune for good air circulation",
+        "Plant resistant varieties (Liberty, Enterprise)",
+        "Apply sulfur-based sprays preventatively"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides (captane, mancozèbe) au stade pointe verte",
+        "Ramasser les feuilles tombées en automne",
+        "Tailler pour une bonne circulation d'air",
+        "Planter des variétés résistantes (Liberty, Enterprise)",
+        "Appliquer des pulvérisations à base de soufre préventivement"
+      ],
+      "prevention": [
+        "Choose resistant cultivars",
+        "Maintain tree spacing for airflow",
+        "Remove infected debris after harvest",
+        "Monitor weather conditions for infection periods"
+      ],
+      "riskMonths": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "spreadMethod": "Wind-dispersed spores from overwintered leaves",
+      "imagePath": "assets/data/disease_images/apple_scab_1.jpg",
+      "images": [
+        "assets/data/disease_images/apple_scab_1.jpg",
+        "assets/data/disease_images/apple_scab_2.jpg",
+        "assets/data/disease_images/apple_scab_3.jpg",
+        "assets/data/disease_images/apple_scab_4.jpg",
+        "assets/data/disease_images/apple_scab_5.jpg",
+        "assets/data/disease_images/apple_scab_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "apple_black_rot",
+      "name": "Black Rot",
+      "nameFr": "Pourriture noire (Pomme)",
+      "scientificName": "Botryosphaeria obtusa",
+      "type": "fungal",
+      "crops": [
+        "Apple"
+      ],
+      "cropsFr": [
+        "Pomme"
+      ],
+      "emoji": "🍎",
+      "severity": "high",
+      "detectable": true,
+      "symptoms": [
+        "Frogeye leaf spots with purple margins",
+        "Large brown rotting areas on fruit",
+        "Mummified black fruit on tree",
+        "Cankers on limbs and trunk",
+        "Concentric rings on rotted fruit"
+      ],
+      "symptomsFr": [
+        "Taches foliaires en œil de grenouille avec marges violettes",
+        "Grandes zones de pourriture brune sur les fruits",
+        "Fruits momifiés noirs sur l'arbre",
+        "Chancres sur les branches et le tronc",
+        "Anneaux concentriques sur les fruits pourris"
+      ],
+      "conditions": "Warm, humid weather. Enters through wounds or weakened tissue.",
+      "conditionsFr": "Temps chaud et humide. Pénètre par les blessures ou tissus affaiblis.",
+      "treatments": [
+        "Remove mummified fruits and cankers",
+        "Apply captan or thiophanate-methyl fungicides",
+        "Prune dead or diseased wood",
+        "Maintain tree vigor through proper fertilization",
+        "Apply copper-based sprays at dormant stage"
+      ],
+      "treatmentsFr": [
+        "Retirer les fruits momifiés et les chancres",
+        "Appliquer des fongicides captane ou thiophanate-méthyle",
+        "Tailler le bois mort ou malade",
+        "Maintenir la vigueur de l'arbre par une fertilisation appropriée",
+        "Appliquer des pulvérisations à base de cuivre au stade dormant"
+      ],
+      "prevention": [
+        "Remove all mummified fruit",
+        "Prune cankers during dormant season",
+        "Avoid wounding fruit during harvest",
+        "Maintain good orchard sanitation"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "spreadMethod": "Rain splash dispersal from cankers and mummified fruit",
+      "imagePath": "assets/data/disease_images/apple_black_rot_1.jpg",
+      "images": [
+        "assets/data/disease_images/apple_black_rot_1.jpg",
+        "assets/data/disease_images/apple_black_rot_2.jpg",
+        "assets/data/disease_images/apple_black_rot_3.jpg",
+        "assets/data/disease_images/apple_black_rot_4.jpg",
+        "assets/data/disease_images/apple_black_rot_5.jpg",
+        "assets/data/disease_images/apple_black_rot_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "apple_cedar_rust",
+      "name": "Cedar Apple Rust",
+      "nameFr": "Rouille du cèdre",
+      "scientificName": "Gymnosporangium juniperi-virginianae",
+      "type": "fungal",
+      "crops": [
+        "Apple"
+      ],
+      "cropsFr": [
+        "Pomme"
+      ],
+      "emoji": "🍎",
+      "severity": "medium",
+      "detectable": true,
+      "symptoms": [
+        "Bright orange-yellow spots on upper leaf surface",
+        "Cup-shaped structures on leaf undersides",
+        "Small raised lesions on fruit",
+        "Premature leaf and fruit drop",
+        "Orange gelatinous galls on cedar trees"
+      ],
+      "symptomsFr": [
+        "Taches orange-jaune vif sur la face supérieure des feuilles",
+        "Structures en forme de coupe sous les feuilles",
+        "Petites lésions surélevées sur les fruits",
+        "Chute prématurée des feuilles et fruits",
+        "Galles gélatineuses oranges sur les cèdres"
+      ],
+      "conditions": "Requires both apple and cedar/juniper hosts. Warm spring rains (18-24°C).",
+      "conditionsFr": "Nécessite un hôte pommier et cèdre/genévrier. Pluies printanières chaudes (18-24°C).",
+      "treatments": [
+        "Apply myclobutanil or propiconazole fungicides",
+        "Remove nearby cedar/juniper trees if possible",
+        "Spray at pink bud and petal fall stages",
+        "Use resistant apple varieties",
+        "Remove galls from juniper trees in winter"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides myclobutanil ou propiconazole",
+        "Retirer les cèdres/genévriers proches si possible",
+        "Pulvériser aux stades bouton rose et chute des pétales",
+        "Utiliser des variétés de pommiers résistantes",
+        "Retirer les galles des genévriers en hiver"
+      ],
+      "prevention": [
+        "Plant resistant apple varieties",
+        "Remove alternate hosts (cedars) within 300m",
+        "Monitor weather for spore release periods"
+      ],
+      "riskMonths": [
+        4,
+        5,
+        6
+      ],
+      "spreadMethod": "Wind-carried spores between cedar and apple hosts",
+      "imagePath": "assets/data/disease_images/apple_cedar_rust_1.jpg",
+      "images": [
+        "assets/data/disease_images/apple_cedar_rust_1.jpg",
+        "assets/data/disease_images/apple_cedar_rust_2.jpg",
+        "assets/data/disease_images/apple_cedar_rust_3.jpg",
+        "assets/data/disease_images/apple_cedar_rust_4.jpg",
+        "assets/data/disease_images/apple_cedar_rust_5.jpg",
+        "assets/data/disease_images/apple_cedar_rust_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "cherry_powdery_mildew",
+      "name": "Powdery Mildew (Cherry)",
+      "nameFr": "Oïdium (Cerise)",
+      "scientificName": "Podosphaera clandestina",
+      "type": "fungal",
+      "crops": [
+        "Cherry"
+      ],
+      "cropsFr": [
+        "Cerise"
+      ],
+      "emoji": "🍒",
+      "severity": "medium",
+      "detectable": true,
+      "symptoms": [
+        "White powdery coating on leaves and shoots",
+        "Leaf curling and distortion",
+        "Stunted new growth",
+        "Reduced fruit quality",
+        "Premature leaf drop"
+      ],
+      "symptomsFr": [
+        "Revêtement poudreux blanc sur les feuilles et pousses",
+        "Enroulement et déformation des feuilles",
+        "Croissance rabougrie des nouvelles pousses",
+        "Qualité réduite des fruits",
+        "Chute prématurée des feuilles"
+      ],
+      "conditions": "Warm, dry days with cool nights. Moderate humidity (60-80%).",
+      "conditionsFr": "Journées chaudes et sèches avec nuits fraîches. Humidité modérée (60-80%).",
+      "treatments": [
+        "Apply sulfur or potassium bicarbonate sprays",
+        "Use systemic fungicides (trifloxystrobin)",
+        "Apply neem oil as organic alternative",
+        "Prune for air circulation",
+        "Remove severely infected shoots"
+      ],
+      "treatmentsFr": [
+        "Appliquer des pulvérisations de soufre ou bicarbonate de potassium",
+        "Utiliser des fongicides systémiques (trifloxystrobine)",
+        "Appliquer de l'huile de neem comme alternative biologique",
+        "Tailler pour la circulation d'air",
+        "Retirer les pousses sévèrement infectées"
+      ],
+      "prevention": [
+        "Avoid overhead irrigation",
+        "Maintain proper tree spacing",
+        "Apply preventive fungicides before symptoms appear"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "spreadMethod": "Wind-dispersed conidia spores",
+      "imagePath": "assets/data/disease_images/cherry_powdery_mildew_1.jpg",
+      "images": [
+        "assets/data/disease_images/cherry_powdery_mildew_1.jpg",
+        "assets/data/disease_images/cherry_powdery_mildew_2.jpg",
+        "assets/data/disease_images/cherry_powdery_mildew_3.jpg",
+        "assets/data/disease_images/cherry_powdery_mildew_4.jpg",
+        "assets/data/disease_images/cherry_powdery_mildew_5.jpg",
+        "assets/data/disease_images/cherry_powdery_mildew_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "corn_gray_leaf_spot",
+      "name": "Gray Leaf Spot",
+      "nameFr": "Tache grise des feuilles (Maïs)",
+      "scientificName": "Cercospora zeae-maydis",
+      "type": "fungal",
+      "crops": [
+        "Corn"
+      ],
+      "cropsFr": [
+        "Maïs"
+      ],
+      "emoji": "🌽",
+      "severity": "high",
+      "detectable": true,
+      "symptoms": [
+        "Rectangular gray to tan lesions between leaf veins",
+        "Lesions parallel to leaf veins",
+        "Lower leaves affected first",
+        "Severe blighting in advanced cases",
+        "Reduced grain fill"
+      ],
+      "symptomsFr": [
+        "Lésions rectangulaires gris à brun entre les nervures foliaires",
+        "Lésions parallèles aux nervures",
+        "Feuilles inférieures affectées en premier",
+        "Brûlure sévère dans les cas avancés",
+        "Remplissage réduit des grains"
+      ],
+      "conditions": "Prolonged leaf wetness, high humidity (>90%), temperatures 22-30°C.",
+      "conditionsFr": "Humidité foliaire prolongée, forte humidité (>90%), températures 22-30°C.",
+      "treatments": [
+        "Apply foliar fungicides (azoxystrobin, pyraclostrobin)",
+        "Rotate crops away from corn for 1-2 years",
+        "Plant resistant hybrids",
+        "Improve field drainage",
+        "Reduce plant density for airflow"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides foliaires (azoxystrobine, pyraclostrobine)",
+        "Rotation des cultures hors maïs pendant 1-2 ans",
+        "Planter des hybrides résistants",
+        "Améliorer le drainage du champ",
+        "Réduire la densité de plantation pour la circulation d'air"
+      ],
+      "prevention": [
+        "Crop rotation with soybeans or small grains",
+        "Tillage to bury infected residue",
+        "Select tolerant hybrids"
+      ],
+      "riskMonths": [
+        6,
+        7,
+        8
+      ],
+      "spreadMethod": "Wind and rain splash from infected crop debris",
+      "imagePath": "assets/data/disease_images/corn_gray_leaf_spot_1.jpg",
+      "images": [
+        "assets/data/disease_images/corn_gray_leaf_spot_1.jpg",
+        "assets/data/disease_images/corn_gray_leaf_spot_2.jpg",
+        "assets/data/disease_images/corn_gray_leaf_spot_3.jpg",
+        "assets/data/disease_images/corn_gray_leaf_spot_4.jpg",
+        "assets/data/disease_images/corn_gray_leaf_spot_5.jpg",
+        "assets/data/disease_images/corn_gray_leaf_spot_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "corn_common_rust",
+      "name": "Common Rust",
+      "nameFr": "Rouille commune (Maïs)",
+      "scientificName": "Puccinia sorghi",
+      "type": "fungal",
+      "crops": [
+        "Corn"
+      ],
+      "cropsFr": [
+        "Maïs"
+      ],
+      "emoji": "🌽",
+      "severity": "medium",
+      "detectable": true,
+      "symptoms": [
+        "Small, circular to elongate reddish-brown pustules on both leaf surfaces",
+        "Pustules turn dark brown to black as they mature",
+        "Powdery reddish-brown spores released when pustules rupture",
+        "Chlorosis around pustules",
+        "Severe infection causes premature leaf death"
+      ],
+      "symptomsFr": [
+        "Petites pustules brun rougeâtre circulaires à allongées sur les deux faces des feuilles",
+        "Les pustules deviennent brun foncé à noir en mûrissant",
+        "Spores brun rougeâtre poudreuses libérées à la rupture des pustules",
+        "Chlorose autour des pustules",
+        "L'infection sévère provoque la mort prématurée des feuilles"
+      ],
+      "conditions": "Cool to moderate temperatures (16-23°C), high humidity, heavy dew.",
+      "conditionsFr": "Températures fraîches à modérées (16-23°C), forte humidité, rosée abondante.",
+      "treatments": [
+        "Apply triazole or strobilurin fungicides if severe",
+        "Plant resistant hybrids",
+        "Early planting to avoid peak spore periods",
+        "Monitor fields regularly during cool, humid weather"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides triazoles ou strobilurines si sévère",
+        "Planter des hybrides résistants",
+        "Plantation précoce pour éviter les pics de spores",
+        "Surveiller les champs régulièrement en temps frais et humide"
+      ],
+      "prevention": [
+        "Use resistant hybrids",
+        "Avoid late planting",
+        "Scout fields beginning at tassel stage"
+      ],
+      "riskMonths": [
+        6,
+        7,
+        8
+      ],
+      "spreadMethod": "Long-distance wind transport of urediniospores",
+      "imagePath": "assets/data/disease_images/corn_common_rust_1.jpg",
+      "images": [
+        "assets/data/disease_images/corn_common_rust_1.jpg",
+        "assets/data/disease_images/corn_common_rust_2.jpg",
+        "assets/data/disease_images/corn_common_rust_3.jpg",
+        "assets/data/disease_images/corn_common_rust_4.jpg",
+        "assets/data/disease_images/corn_common_rust_5.jpg",
+        "assets/data/disease_images/corn_common_rust_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "corn_northern_leaf_blight",
+      "name": "Northern Leaf Blight",
+      "nameFr": "Brûlure septentrionale (Maïs)",
+      "scientificName": "Exserohilum turcicum",
+      "type": "fungal",
+      "crops": [
+        "Corn"
+      ],
+      "cropsFr": [
+        "Maïs"
+      ],
+      "emoji": "🌽",
+      "severity": "high",
+      "detectable": true,
+      "symptoms": [
+        "Large cigar-shaped grayish-green lesions (5-15 cm)",
+        "Lesions start on lower leaves",
+        "Lesions may coalesce, killing entire leaves",
+        "Dark sporulation visible on lesions in humid conditions",
+        "Significant yield loss if infection occurs before tasseling"
+      ],
+      "symptomsFr": [
+        "Grandes lésions gris-vert en forme de cigare (5-15 cm)",
+        "Les lésions commencent sur les feuilles inférieures",
+        "Les lésions peuvent fusionner, tuant des feuilles entières",
+        "Sporulation foncée visible sur les lésions en conditions humides",
+        "Pertes de rendement significatives si infection avant la floraison"
+      ],
+      "conditions": "Moderate temperatures (18-27°C), heavy dew, frequent rain.",
+      "conditionsFr": "Températures modérées (18-27°C), rosée abondante, pluies fréquentes.",
+      "treatments": [
+        "Apply foliar fungicides at first sign of disease",
+        "Use resistant hybrids with Ht genes",
+        "Crop rotation with non-host crops",
+        "Tillage to bury infected residue",
+        "Apply preventive fungicide at V6-VT stage"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides foliaires dès les premiers signes",
+        "Utiliser des hybrides résistants avec gènes Ht",
+        "Rotation avec des cultures non hôtes",
+        "Labour pour enfouir les résidus infectés",
+        "Appliquer un fongicide préventif au stade V6-VT"
+      ],
+      "prevention": [
+        "Hybrid selection with multiple Ht resistance genes",
+        "Tillage to reduce inoculum",
+        "Avoid continuous corn planting"
+      ],
+      "riskMonths": [
+        6,
+        7,
+        8,
+        9
+      ],
+      "spreadMethod": "Wind-blown conidia from residue on soil surface",
+      "imagePath": "assets/data/disease_images/corn_northern_leaf_blight_1.jpg",
+      "images": [
+        "assets/data/disease_images/corn_northern_leaf_blight_1.jpg",
+        "assets/data/disease_images/corn_northern_leaf_blight_2.jpg",
+        "assets/data/disease_images/corn_northern_leaf_blight_3.jpg",
+        "assets/data/disease_images/corn_northern_leaf_blight_4.jpg",
+        "assets/data/disease_images/corn_northern_leaf_blight_5.jpg",
+        "assets/data/disease_images/corn_northern_leaf_blight_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "grape_black_rot",
+      "name": "Black Rot (Grape)",
+      "nameFr": "Pourriture noire (Raisin)",
+      "scientificName": "Guignardia bidwellii",
+      "type": "fungal",
+      "crops": [
+        "Grape"
+      ],
+      "cropsFr": [
+        "Raisin"
+      ],
+      "emoji": "🍇",
+      "severity": "high",
+      "detectable": true,
+      "symptoms": [
+        "Circular reddish-brown spots on leaves with dark borders",
+        "Small black pycnidia dots within leaf spots",
+        "Berries turn brown, then shrivel into hard black mummies",
+        "Elongated dark lesions on shoots and tendrils",
+        "Rapid fruit loss — entire clusters can be destroyed"
+      ],
+      "symptomsFr": [
+        "Taches circulaires brun-rougeâtre sur les feuilles avec bords foncés",
+        "Petits points noirs (pycnides) dans les taches foliaires",
+        "Les baies deviennent brunes, puis se ratatinent en momies noires",
+        "Lésions sombres allongées sur les rameaux et vrilles",
+        "Perte rapide des fruits — des grappes entières peuvent être détruites"
+      ],
+      "conditions": "Warm, wet weather (21-27°C). Infection requires 6+ hours of leaf wetness.",
+      "conditionsFr": "Temps chaud et humide (21-27°C). L'infection nécessite 6h+ d'humidité foliaire.",
+      "treatments": [
+        "Apply mancozeb or myclobutanil fungicides",
+        "Remove mummified berries and infected canes",
+        "Begin sprays at 10-15 cm shoot growth",
+        "Continue applications through veraison",
+        "Apply captan as protectant fungicide"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides mancozèbe ou myclobutanil",
+        "Retirer les baies momifiées et les rameaux infectés",
+        "Commencer les pulvérisations à 10-15 cm de croissance",
+        "Continuer les applications jusqu'à la véraison",
+        "Appliquer du captane comme fongicide protecteur"
+      ],
+      "prevention": [
+        "Remove mummies from vineyard floor",
+        "Prune out infected canes",
+        "Ensure good canopy management for airflow"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "spreadMethod": "Rain splash of ascospores from overwintered mummies",
+      "imagePath": "assets/data/disease_images/grape_black_rot_1.jpg",
+      "images": [
+        "assets/data/disease_images/grape_black_rot_1.jpg",
+        "assets/data/disease_images/grape_black_rot_2.jpg",
+        "assets/data/disease_images/grape_black_rot_3.jpg",
+        "assets/data/disease_images/grape_black_rot_4.jpg",
+        "assets/data/disease_images/grape_black_rot_5.jpg",
+        "assets/data/disease_images/grape_black_rot_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "grape_esca",
+      "name": "Esca (Black Measles)",
+      "nameFr": "Esca",
+      "scientificName": "Phaeomoniella chlamydospora / Phaeoacremonium spp.",
+      "type": "fungal",
+      "crops": [
+        "Grape"
+      ],
+      "cropsFr": [
+        "Raisin"
+      ],
+      "emoji": "🍇",
+      "severity": "high",
+      "detectable": true,
+      "symptoms": [
+        "Tiger-striped interveinal chlorosis on leaves",
+        "Dark spots and streaks on berries",
+        "Sudden vine collapse (apoplexy) in summer",
+        "Internal wood necrosis visible in cross-section",
+        "Gradual vine decline over years"
+      ],
+      "symptomsFr": [
+        "Chlorose internervaire tigrée sur les feuilles",
+        "Taches et stries sombres sur les baies",
+        "Effondrement soudain de la vigne (apoplexie) en été",
+        "Nécrose interne du bois visible en coupe",
+        "Déclin progressif de la vigne sur plusieurs années"
+      ],
+      "conditions": "Hot, dry summers. Stress weakens vines making them susceptible.",
+      "conditionsFr": "Étés chauds et secs. Le stress affaiblit les vignes les rendant sensibles.",
+      "treatments": [
+        "No curative treatment available",
+        "Trunk surgery — remove decayed wood",
+        "Apply wound protectants after pruning",
+        "Remedial surgery on affected trunks",
+        "Use Trichoderma-based biocontrol agents on pruning wounds"
+      ],
+      "treatmentsFr": [
+        "Aucun traitement curatif disponible",
+        "Curetage du tronc — retirer le bois nécrosé",
+        "Appliquer des protecteurs de plaies après la taille",
+        "Chirurgie réparatrice sur les troncs affectés",
+        "Utiliser des agents de biocontrôle à base de Trichoderma"
+      ],
+      "prevention": [
+        "Protect pruning wounds with sealant",
+        "Prune during dry weather",
+        "Avoid large pruning wounds",
+        "Delay pruning as late as possible"
+      ],
+      "riskMonths": [
+        6,
+        7,
+        8
+      ],
+      "spreadMethod": "Spore entry through pruning wounds",
+      "imagePath": "assets/data/disease_images/grape_esca_1.jpg",
+      "images": [
+        "assets/data/disease_images/grape_esca_1.jpg",
+        "assets/data/disease_images/grape_esca_2.jpg",
+        "assets/data/disease_images/grape_esca_3.jpg",
+        "assets/data/disease_images/grape_esca_4.jpg",
+        "assets/data/disease_images/grape_esca_5.jpg",
+        "assets/data/disease_images/grape_esca_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "grape_leaf_blight",
+      "name": "Leaf Blight (Isariopsis)",
+      "nameFr": "Brûlure des feuilles (Raisin)",
+      "scientificName": "Pseudocercospora vitis",
+      "type": "fungal",
+      "crops": [
+        "Grape"
+      ],
+      "cropsFr": [
+        "Raisin"
+      ],
+      "emoji": "🍇",
+      "severity": "medium",
+      "detectable": true,
+      "symptoms": [
+        "Brown irregular spots on lower leaves",
+        "Dark brown to black sporulation on leaf undersides",
+        "Progressive defoliation from base upward",
+        "Reduced vine vigor",
+        "Poor fruit maturation"
+      ],
+      "symptomsFr": [
+        "Taches brunes irrégulières sur les feuilles inférieures",
+        "Sporulation brun foncé à noir sous les feuilles",
+        "Défoliation progressive de la base vers le haut",
+        "Vigueur réduite de la vigne",
+        "Mauvaise maturation des fruits"
+      ],
+      "conditions": "Warm, humid conditions favoring fungal growth.",
+      "conditionsFr": "Conditions chaudes et humides favorisant la croissance fongique.",
+      "treatments": [
+        "Apply copper-based fungicides",
+        "Remove and destroy fallen leaves",
+        "Improve canopy management",
+        "Apply mancozeb preventatively",
+        "Ensure proper vine spacing"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides à base de cuivre",
+        "Ramasser et détruire les feuilles tombées",
+        "Améliorer la gestion du couvert végétal",
+        "Appliquer du mancozèbe préventivement",
+        "Assurer un espacement adéquat des vignes"
+      ],
+      "prevention": [
+        "Good canopy management",
+        "Remove fallen leaves",
+        "Maintain vineyard hygiene"
+      ],
+      "riskMonths": [
+        6,
+        7,
+        8,
+        9
+      ],
+      "spreadMethod": "Rain splash and wind dispersal of conidia",
+      "imagePath": "assets/data/disease_images/grape_leaf_blight_1.jpg",
+      "images": [
+        "assets/data/disease_images/grape_leaf_blight_1.jpg",
+        "assets/data/disease_images/grape_leaf_blight_2.jpg",
+        "assets/data/disease_images/grape_leaf_blight_3.jpg",
+        "assets/data/disease_images/grape_leaf_blight_4.jpg",
+        "assets/data/disease_images/grape_leaf_blight_5.jpg",
+        "assets/data/disease_images/grape_leaf_blight_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "orange_citrus_greening",
+      "name": "Citrus Greening (HLB)",
+      "nameFr": "Maladie du verdissement des agrumes",
+      "scientificName": "Candidatus Liberibacter asiaticus",
+      "type": "bacterial",
+      "crops": [
+        "Orange",
+        "Citrus"
+      ],
+      "cropsFr": [
+        "Orange",
+        "Agrumes"
+      ],
+      "emoji": "🍊",
+      "severity": "critical",
+      "detectable": true,
+      "symptoms": [
+        "Asymmetric blotchy mottling on leaves",
+        "Yellow shoots (yellow dragon symptom)",
+        "Lopsided, small, bitter fruit with green color retained at stem end",
+        "Premature fruit drop",
+        "Tree decline and dieback over 3-5 years"
+      ],
+      "symptomsFr": [
+        "Marbrure tachetée asymétrique sur les feuilles",
+        "Pousses jaunes (symptôme du dragon jaune)",
+        "Fruits déséquilibrés, petits, amers avec couleur verte persistante",
+        "Chute prématurée des fruits",
+        "Déclin de l'arbre et dépérissement sur 3-5 ans"
+      ],
+      "conditions": "Transmitted by Asian citrus psyllid insect. No cure exists.",
+      "conditionsFr": "Transmis par le psylle asiatique des agrumes. Aucun remède n'existe.",
+      "treatments": [
+        "No cure — manage insect vector (psyllid)",
+        "Apply imidacloprid or dimethoate for psyllid control",
+        "Remove severely infected trees",
+        "Apply nutritional sprays to extend tree productivity",
+        "Use thermotherapy (heat treatment) on young trees"
+      ],
+      "treatmentsFr": [
+        "Aucun remède — gérer le vecteur insecte (psylle)",
+        "Appliquer imidaclopride ou diméthoate contre le psylle",
+        "Retirer les arbres sévèrement infectés",
+        "Appliquer des pulvérisations nutritives pour prolonger la productivité",
+        "Utiliser la thermothérapie (traitement thermique) sur les jeunes arbres"
+      ],
+      "prevention": [
+        "Control psyllid populations aggressively",
+        "Use certified disease-free nursery stock",
+        "Scout regularly for psyllids and symptoms",
+        "Remove infected trees promptly"
+      ],
+      "riskMonths": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "spreadMethod": "Asian citrus psyllid (Diaphorina citri) insect vector",
+      "imagePath": "assets/data/disease_images/orange_citrus_greening_1.jpg",
+      "images": [
+        "assets/data/disease_images/orange_citrus_greening_1.jpg",
+        "assets/data/disease_images/orange_citrus_greening_2.jpg",
+        "assets/data/disease_images/orange_citrus_greening_3.jpg",
+        "assets/data/disease_images/orange_citrus_greening_4.jpg",
+        "assets/data/disease_images/orange_citrus_greening_5.jpg",
+        "assets/data/disease_images/orange_citrus_greening_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "peach_bacterial_spot",
+      "name": "Bacterial Spot (Peach)",
+      "nameFr": "Tache bactérienne (Pêche)",
+      "scientificName": "Xanthomonas arboricola pv. pruni",
+      "type": "bacterial",
+      "crops": [
+        "Peach",
+        "Nectarine",
+        "Plum"
+      ],
+      "cropsFr": [
+        "Pêche",
+        "Nectarine",
+        "Prune"
+      ],
+      "emoji": "🍑",
+      "severity": "medium",
+      "detectable": true,
+      "symptoms": [
+        "Small dark water-soaked spots on leaves",
+        "Leaf spots may coalesce, causing shot-hole appearance",
+        "Cracked, sunken lesions on fruit",
+        "Premature defoliation",
+        "Cankers on twigs"
+      ],
+      "symptomsFr": [
+        "Petites taches sombres aqueuses sur les feuilles",
+        "Les taches peuvent fusionner, créant un aspect criblé",
+        "Lésions fissurées et enfoncées sur les fruits",
+        "Défoliation prématurée",
+        "Chancres sur les rameaux"
+      ],
+      "conditions": "Warm, wet, windy weather. Sand particles cause micro-wounds for entry.",
+      "conditionsFr": "Temps chaud, humide et venteux. Les particules de sable causent des micro-blessures.",
+      "treatments": [
+        "Apply copper sprays at leaf fall and before bud break",
+        "Use oxytetracycline during bloom if severe",
+        "Avoid overhead irrigation",
+        "Plant resistant varieties",
+        "Maintain adequate tree nutrition"
+      ],
+      "treatmentsFr": [
+        "Appliquer des pulvérisations de cuivre à la chute des feuilles et avant le débourrement",
+        "Utiliser l'oxytétracycline pendant la floraison si sévère",
+        "Éviter l'irrigation par aspersion",
+        "Planter des variétés résistantes",
+        "Maintenir une nutrition adéquate de l'arbre"
+      ],
+      "prevention": [
+        "Select resistant cultivars",
+        "Apply dormant copper sprays",
+        "Provide windbreaks in sandy areas"
+      ],
+      "riskMonths": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "spreadMethod": "Wind-driven rain splash, contaminated tools",
+      "imagePath": "assets/data/disease_images/peach_bacterial_spot_1.jpg",
+      "images": [
+        "assets/data/disease_images/peach_bacterial_spot_1.jpg",
+        "assets/data/disease_images/peach_bacterial_spot_2.jpg",
+        "assets/data/disease_images/peach_bacterial_spot_3.jpg",
+        "assets/data/disease_images/peach_bacterial_spot_4.jpg",
+        "assets/data/disease_images/peach_bacterial_spot_5.jpg",
+        "assets/data/disease_images/peach_bacterial_spot_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "pepper_bacterial_spot",
+      "name": "Bacterial Spot (Pepper)",
+      "nameFr": "Tache bactérienne (Poivron)",
+      "scientificName": "Xanthomonas campestris pv. vesicatoria",
+      "type": "bacterial",
+      "crops": [
+        "Pepper",
+        "Tomato"
+      ],
+      "cropsFr": [
+        "Poivron",
+        "Tomate"
+      ],
+      "emoji": "🫑",
+      "severity": "high",
+      "detectable": true,
+      "symptoms": [
+        "Small, water-soaked, greasy-looking spots on leaves",
+        "Spots turn brown with yellow halos",
+        "Raised, scab-like lesions on fruit",
+        "Severe defoliation exposing fruit to sunscald",
+        "Stunted plant growth"
+      ],
+      "symptomsFr": [
+        "Petites taches aqueuses d'aspect graisseux sur les feuilles",
+        "Les taches deviennent brunes avec des halos jaunes",
+        "Lésions surélevées croûteuses sur les fruits",
+        "Défoliation sévère exposant les fruits aux brûlures solaires",
+        "Croissance rabougrie de la plante"
+      ],
+      "conditions": "Warm, humid conditions (24-30°C). Overhead irrigation and rain splash.",
+      "conditionsFr": "Conditions chaudes et humides (24-30°C). Irrigation par aspersion et pluie.",
+      "treatments": [
+        "Apply copper hydroxide + mancozeb tank mix",
+        "Use bacteriophage-based products",
+        "Remove infected plant debris",
+        "Rotate crops for 2-3 years",
+        "Apply acibenzolar-S-methyl as resistance inducer"
+      ],
+      "treatmentsFr": [
+        "Appliquer un mélange hydroxyde de cuivre + mancozèbe",
+        "Utiliser des produits à base de bactériophages",
+        "Retirer les débris de plantes infectées",
+        "Rotation des cultures pendant 2-3 ans",
+        "Appliquer acibenzolar-S-méthyle comme inducteur de résistance"
+      ],
+      "prevention": [
+        "Use certified disease-free seed",
+        "Avoid working in wet fields",
+        "Crop rotation with non-solanaceous crops",
+        "Drip irrigation instead of overhead"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "spreadMethod": "Contaminated seed, rain splash, infected transplants",
+      "imagePath": "assets/data/disease_images/pepper_bacterial_spot_1.jpg",
+      "images": [
+        "assets/data/disease_images/pepper_bacterial_spot_1.jpg",
+        "assets/data/disease_images/pepper_bacterial_spot_2.jpg",
+        "assets/data/disease_images/pepper_bacterial_spot_3.jpg",
+        "assets/data/disease_images/pepper_bacterial_spot_4.jpg",
+        "assets/data/disease_images/pepper_bacterial_spot_5.jpg",
+        "assets/data/disease_images/pepper_bacterial_spot_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "potato_early_blight",
+      "name": "Early Blight (Potato)",
+      "nameFr": "Alternariose (Pomme de terre)",
+      "scientificName": "Alternaria solani",
+      "type": "fungal",
+      "crops": [
+        "Potato",
+        "Tomato"
+      ],
+      "cropsFr": [
+        "Pomme de terre",
+        "Tomate"
+      ],
+      "emoji": "🥔",
+      "severity": "high",
+      "detectable": true,
+      "symptoms": [
+        "Dark brown concentric ring spots (target-board pattern)",
+        "Yellow chlorotic halo around lesions",
+        "Lower older leaves affected first",
+        "Tuber lesions — dark, sunken, circular",
+        "Progressive defoliation reducing tuber size"
+      ],
+      "symptomsFr": [
+        "Taches à anneaux concentriques brun foncé (aspect de cible)",
+        "Halo chlorotique jaune autour des lésions",
+        "Feuilles inférieures âgées affectées en premier",
+        "Lésions sur tubercules — sombres, enfoncées, circulaires",
+        "Défoliation progressive réduisant la taille des tubercules"
+      ],
+      "conditions": "Warm temperatures (24-29°C), alternating wet and dry periods.",
+      "conditionsFr": "Températures chaudes (24-29°C), périodes alternant humidité et sécheresse.",
+      "treatments": [
+        "Apply chlorothalonil or mancozeb preventively",
+        "Use azoxystrobin or difenoconazole for active infection",
+        "Ensure adequate fertilization (especially nitrogen)",
+        "Irrigate early in the day",
+        "Destroy volunteer potatoes"
+      ],
+      "treatmentsFr": [
+        "Appliquer chlorothalonil ou mancozèbe préventivement",
+        "Utiliser azoxystrobine ou difénoconazole pour l'infection active",
+        "Assurer une fertilisation adéquate (surtout azote)",
+        "Irriguer tôt dans la journée",
+        "Détruire les repousses de pommes de terre"
+      ],
+      "prevention": [
+        "Crop rotation (3+ years)",
+        "Use certified seed tubers",
+        "Adequate soil fertility management",
+        "Remove and destroy crop debris"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "spreadMethod": "Wind-dispersed conidia from infected debris",
+      "imagePath": "assets/data/disease_images/potato_early_blight_1.jpg",
+      "images": [
+        "assets/data/disease_images/potato_early_blight_1.jpg",
+        "assets/data/disease_images/potato_early_blight_2.jpg",
+        "assets/data/disease_images/potato_early_blight_3.jpg",
+        "assets/data/disease_images/potato_early_blight_4.jpg",
+        "assets/data/disease_images/potato_early_blight_5.jpg",
+        "assets/data/disease_images/potato_early_blight_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "potato_late_blight",
+      "name": "Late Blight (Potato)",
+      "nameFr": "Mildiou (Pomme de terre)",
+      "scientificName": "Phytophthora infestans",
+      "type": "oomycete",
+      "crops": [
+        "Potato",
+        "Tomato"
+      ],
+      "cropsFr": [
+        "Pomme de terre",
+        "Tomate"
+      ],
+      "emoji": "🥔",
+      "severity": "critical",
+      "detectable": true,
+      "symptoms": [
+        "Large, irregular water-soaked lesions on leaves",
+        "White fuzzy sporulation on leaf undersides in humid conditions",
+        "Dark brown lesions spreading rapidly across foliar canopy",
+        "Firm reddish-brown rot in tubers",
+        "Entire field can be destroyed within days"
+      ],
+      "symptomsFr": [
+        "Grandes lésions aqueuses irrégulières sur les feuilles",
+        "Sporulation blanche duveteuse sous les feuilles en conditions humides",
+        "Lésions brun foncé se propageant rapidement sur le feuillage",
+        "Pourriture ferme brun-rougeâtre des tubercules",
+        "Un champ entier peut être détruit en quelques jours"
+      ],
+      "conditions": "Cool, wet weather (10-20°C). Devastated Irish potato crop in 1840s famine.",
+      "conditionsFr": "Temps frais et humide (10-20°C). A dévasté la récolte irlandaise lors de la famine des années 1840.",
+      "treatments": [
+        "Apply metalaxyl/mancozeb or cyazofamid immediately",
+        "Destroy infected plants — do not compost",
+        "Apply preventive fungicides before rain events",
+        "Harvest during dry weather",
+        "Kill vines 2-3 weeks before harvest to prevent tuber infection"
+      ],
+      "treatmentsFr": [
+        "Appliquer métalaxyl/mancozèbe ou cyazofamide immédiatement",
+        "Détruire les plantes infectées — ne pas composter",
+        "Appliquer des fongicides préventifs avant les pluies",
+        "Récolter par temps sec",
+        "Défaner 2-3 semaines avant la récolte pour éviter l'infection des tubercules"
+      ],
+      "prevention": [
+        "Monitor weather forecasts for blight conditions",
+        "Plant certified seed only",
+        "Destroy cull piles and volunteer potatoes",
+        "Use resistant cultivars"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "spreadMethod": "Wind-blown sporangia, rain splash, infected seed tubers",
+      "imagePath": "assets/data/disease_images/potato_late_blight_1.jpg",
+      "images": [
+        "assets/data/disease_images/potato_late_blight_1.jpg",
+        "assets/data/disease_images/potato_late_blight_2.jpg",
+        "assets/data/disease_images/potato_late_blight_3.jpg",
+        "assets/data/disease_images/potato_late_blight_4.jpg",
+        "assets/data/disease_images/potato_late_blight_5.jpg",
+        "assets/data/disease_images/potato_late_blight_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "squash_powdery_mildew",
+      "name": "Powdery Mildew (Squash)",
+      "nameFr": "Oïdium (Courge)",
+      "scientificName": "Podosphaera xanthii",
+      "type": "fungal",
+      "crops": [
+        "Squash",
+        "Cucumber",
+        "Melon",
+        "Pumpkin"
+      ],
+      "cropsFr": [
+        "Courge",
+        "Concombre",
+        "Melon",
+        "Citrouille"
+      ],
+      "emoji": "🥒",
+      "severity": "medium",
+      "detectable": true,
+      "symptoms": [
+        "White powdery spots on upper leaf surfaces",
+        "Spots expand to cover entire leaf",
+        "Leaves turn yellow and die",
+        "Reduced fruit size and sugar content",
+        "Stems may also become coated"
+      ],
+      "symptomsFr": [
+        "Taches blanches poudreuses sur la face supérieure des feuilles",
+        "Les taches s'étendent pour couvrir toute la feuille",
+        "Les feuilles jaunissent et meurent",
+        "Taille réduite des fruits et teneur en sucre",
+        "Les tiges peuvent aussi être recouvertes"
+      ],
+      "conditions": "Warm, dry days (20-27°C) with cool, humid nights. No free water needed.",
+      "conditionsFr": "Journées chaudes et sèches (20-27°C) avec nuits fraîches et humides. Pas d'eau libre nécessaire.",
+      "treatments": [
+        "Apply sulfur or potassium bicarbonate early",
+        "Use neem oil or milk spray (organic)",
+        "Apply myclobutanil or trifloxystrobin",
+        "Remove severely infected leaves",
+        "Plant resistant varieties (PM-resistant)"
+      ],
+      "treatmentsFr": [
+        "Appliquer du soufre ou bicarbonate de potassium tôt",
+        "Utiliser de l'huile de neem ou du lait en pulvérisation (bio)",
+        "Appliquer myclobutanil ou trifloxystrobine",
+        "Retirer les feuilles sévèrement infectées",
+        "Planter des variétés résistantes"
+      ],
+      "prevention": [
+        "Select resistant varieties",
+        "Provide good air circulation",
+        "Avoid excessive nitrogen fertilization",
+        "Begin preventive applications at first bloom"
+      ],
+      "riskMonths": [
+        6,
+        7,
+        8,
+        9
+      ],
+      "spreadMethod": "Wind-dispersed conidia",
+      "imagePath": "assets/data/disease_images/squash_powdery_mildew_1.jpg",
+      "images": [
+        "assets/data/disease_images/squash_powdery_mildew_1.jpg",
+        "assets/data/disease_images/squash_powdery_mildew_2.jpg",
+        "assets/data/disease_images/squash_powdery_mildew_3.jpg",
+        "assets/data/disease_images/squash_powdery_mildew_4.jpg",
+        "assets/data/disease_images/squash_powdery_mildew_5.jpg",
+        "assets/data/disease_images/squash_powdery_mildew_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "strawberry_leaf_scorch",
+      "name": "Leaf Scorch",
+      "nameFr": "Brûlure des feuilles (Fraise)",
+      "scientificName": "Diplocarpon earlianum",
+      "type": "fungal",
+      "crops": [
+        "Strawberry"
+      ],
+      "cropsFr": [
+        "Fraise"
+      ],
+      "emoji": "🍓",
+      "severity": "medium",
+      "detectable": true,
+      "symptoms": [
+        "Small dark purple spots on upper leaf surface",
+        "Spots enlarge and merge, creating burnt appearance",
+        "Leaf margins curl upward",
+        "Severe defoliation weakening plants",
+        "Reduced runner production and fruit yield"
+      ],
+      "symptomsFr": [
+        "Petites taches violet foncé sur la face supérieure des feuilles",
+        "Les taches s'agrandissent et fusionnent, créant un aspect brûlé",
+        "Les marges des feuilles s'enroulent vers le haut",
+        "Défoliation sévère affaiblissant les plantes",
+        "Production réduite de stolons et rendement en fruits"
+      ],
+      "conditions": "Warm, wet conditions. Frequent rain or overhead irrigation.",
+      "conditionsFr": "Conditions chaudes et humides. Pluies fréquentes ou irrigation par aspersion.",
+      "treatments": [
+        "Apply captan or thiram fungicides",
+        "Remove old infected leaves after harvest",
+        "Renovate beds by mowing after harvest",
+        "Improve air circulation by proper spacing",
+        "Drip irrigation to keep foliage dry"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides captane ou thirame",
+        "Retirer les vieilles feuilles infectées après la récolte",
+        "Rénover les planches par fauchage après la récolte",
+        "Améliorer la circulation d'air par un espacement adéquat",
+        "Irrigation au goutte-à-goutte pour garder le feuillage sec"
+      ],
+      "prevention": [
+        "Use certified disease-free plants",
+        "Remove old foliage in spring",
+        "Avoid overhead watering",
+        "Rotate strawberry plantings (3-year cycle)"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "spreadMethod": "Rain splash of conidia from infected leaves",
+      "imagePath": "assets/data/disease_images/strawberry_leaf_scorch_1.jpg",
+      "images": [
+        "assets/data/disease_images/strawberry_leaf_scorch_1.jpg",
+        "assets/data/disease_images/strawberry_leaf_scorch_2.jpg",
+        "assets/data/disease_images/strawberry_leaf_scorch_3.jpg",
+        "assets/data/disease_images/strawberry_leaf_scorch_4.jpg",
+        "assets/data/disease_images/strawberry_leaf_scorch_5.jpg",
+        "assets/data/disease_images/strawberry_leaf_scorch_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "tomato_bacterial_spot",
+      "name": "Bacterial Spot (Tomato)",
+      "nameFr": "Tache bactérienne (Tomate)",
+      "scientificName": "Xanthomonas vesicatoria",
+      "type": "bacterial",
+      "crops": [
+        "Tomato",
+        "Pepper"
+      ],
+      "cropsFr": [
+        "Tomate",
+        "Poivron"
+      ],
+      "emoji": "🍅",
+      "severity": "high",
+      "detectable": true,
+      "symptoms": [
+        "Small dark water-soaked spots on leaves",
+        "Spots may have yellow halos",
+        "Raised scab-like spots on green fruit",
+        "Severe defoliation in wet weather",
+        "Flower abortion reducing yield"
+      ],
+      "symptomsFr": [
+        "Petites taches aqueuses sombres sur les feuilles",
+        "Les taches peuvent avoir des halos jaunes",
+        "Taches surélevées croûteuses sur les fruits verts",
+        "Défoliation sévère par temps humide",
+        "Avortement des fleurs réduisant le rendement"
+      ],
+      "conditions": "Warm (24-30°C), wet weather with wind-driven rain.",
+      "conditionsFr": "Temps chaud (24-30°C), humide avec pluie poussée par le vent.",
+      "treatments": [
+        "Apply copper-based bactericides + mancozeb",
+        "Use streptomycin during transplant stage",
+        "Remove severely infected plants",
+        "Avoid working in wet fields",
+        "Use drip irrigation"
+      ],
+      "treatmentsFr": [
+        "Appliquer des bactéricides à base de cuivre + mancozèbe",
+        "Utiliser la streptomycine au stade transplantation",
+        "Retirer les plantes sévèrement infectées",
+        "Éviter de travailler dans les champs humides",
+        "Utiliser l'irrigation au goutte-à-goutte"
+      ],
+      "prevention": [
+        "Use disease-free seed and transplants",
+        "Crop rotation (2+ years)",
+        "Sanitize stakes and tools",
+        "Avoid overhead irrigation"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "spreadMethod": "Contaminated seed, rain splash, infected transplants",
+      "imagePath": "assets/data/disease_images/tomato_bacterial_spot_1.jpg",
+      "images": [
+        "assets/data/disease_images/tomato_bacterial_spot_1.jpg",
+        "assets/data/disease_images/tomato_bacterial_spot_2.jpg",
+        "assets/data/disease_images/tomato_bacterial_spot_3.jpg",
+        "assets/data/disease_images/tomato_bacterial_spot_4.jpg",
+        "assets/data/disease_images/tomato_bacterial_spot_5.jpg",
+        "assets/data/disease_images/tomato_bacterial_spot_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "tomato_early_blight",
+      "name": "Early Blight (Tomato)",
+      "nameFr": "Alternariose (Tomate)",
+      "scientificName": "Alternaria solani",
+      "type": "fungal",
+      "crops": [
+        "Tomato",
+        "Potato"
+      ],
+      "cropsFr": [
+        "Tomate",
+        "Pomme de terre"
+      ],
+      "emoji": "🍅",
+      "severity": "high",
+      "detectable": true,
+      "symptoms": [
+        "Concentric ring (target) spots on lower leaves",
+        "Yellow halo surrounding brown lesions",
+        "Progressive defoliation from bottom up",
+        "Dark leathery spots at stem end of fruit",
+        "Collar rot of seedlings at soil line"
+      ],
+      "symptomsFr": [
+        "Taches à anneaux concentriques (cible) sur les feuilles inférieures",
+        "Halo jaune entourant les lésions brunes",
+        "Défoliation progressive du bas vers le haut",
+        "Taches sombres coriaces à l'extrémité pédonculaire du fruit",
+        "Fonte du collet des semis au niveau du sol"
+      ],
+      "conditions": "Warm (24-29°C), humid conditions, heavy dew, alternating wet/dry.",
+      "conditionsFr": "Conditions chaudes (24-29°C), humides, rosée abondante, alternance humide/sec.",
+      "treatments": [
+        "Apply chlorothalonil or azoxystrobin fungicides",
+        "Mulch around plants to prevent soil splash",
+        "Staking to improve air circulation",
+        "Remove lower infected leaves",
+        "Apply copper-based sprays organically"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides chlorothalonil ou azoxystrobine",
+        "Pailler autour des plantes pour éviter les éclaboussures de sol",
+        "Tuteurer pour améliorer la circulation d'air",
+        "Retirer les feuilles inférieures infectées",
+        "Appliquer des pulvérisations à base de cuivre (bio)"
+      ],
+      "prevention": [
+        "Crop rotation (3+ years)",
+        "Remove crop debris after season",
+        "Mulch to prevent rain splash",
+        "Adequate plant spacing"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "spreadMethod": "Wind and rain splash from infected debris",
+      "imagePath": "assets/data/disease_images/tomato_early_blight_1.jpg",
+      "images": [
+        "assets/data/disease_images/tomato_early_blight_1.jpg",
+        "assets/data/disease_images/tomato_early_blight_2.jpg",
+        "assets/data/disease_images/tomato_early_blight_3.jpg",
+        "assets/data/disease_images/tomato_early_blight_4.jpg",
+        "assets/data/disease_images/tomato_early_blight_5.jpg",
+        "assets/data/disease_images/tomato_early_blight_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "tomato_late_blight",
+      "name": "Late Blight (Tomato)",
+      "nameFr": "Mildiou (Tomate)",
+      "scientificName": "Phytophthora infestans",
+      "type": "oomycete",
+      "crops": [
+        "Tomato",
+        "Potato"
+      ],
+      "cropsFr": [
+        "Tomate",
+        "Pomme de terre"
+      ],
+      "emoji": "🍅",
+      "severity": "critical",
+      "detectable": true,
+      "symptoms": [
+        "Large, irregular, water-soaked pale green to brown lesions",
+        "White cottony mold on leaf undersides",
+        "Rapid browning and death of entire plant",
+        "Greasy-brown firm lesions on fruit",
+        "Entire field can collapse in days"
+      ],
+      "symptomsFr": [
+        "Grandes lésions aqueuses irrégulières, vert pâle à brunes",
+        "Moisissure blanche cotonneuse sous les feuilles",
+        "Brunissement rapide et mort de la plante entière",
+        "Lésions brun-graisseuses fermes sur les fruits",
+        "Un champ entier peut s'effondrer en quelques jours"
+      ],
+      "conditions": "Cool, wet weather (12-18°C). Devastating in prolonged humid conditions.",
+      "conditionsFr": "Temps frais et humide (12-18°C). Dévastateur en conditions humides prolongées.",
+      "treatments": [
+        "Apply chlorothalonil or metalaxyl-M/mancozeb immediately",
+        "Destroy all infected plants — burn or bag, do not compost",
+        "Preventive sprays before and after rain",
+        "Remove entire plant at first symptom",
+        "Use cyazofamid or mandipropamid for resistance management"
+      ],
+      "treatmentsFr": [
+        "Appliquer chlorothalonil ou métalaxyl-M/mancozèbe immédiatement",
+        "Détruire toutes les plantes infectées — brûler ou ensacher, ne pas composter",
+        "Pulvérisations préventives avant et après la pluie",
+        "Retirer la plante entière au premier symptôme",
+        "Utiliser cyazofamide ou mandipropamide pour la gestion des résistances"
+      ],
+      "prevention": [
+        "Monitor weather-based blight alerts",
+        "Space plants for air circulation",
+        "Water at base — never overhead",
+        "Start preventive sprays during wet forecasts"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "spreadMethod": "Wind-blown sporangia over long distances",
+      "imagePath": "assets/data/disease_images/tomato_late_blight_1.jpg",
+      "images": [
+        "assets/data/disease_images/tomato_late_blight_1.jpg",
+        "assets/data/disease_images/tomato_late_blight_2.jpg",
+        "assets/data/disease_images/tomato_late_blight_3.jpg",
+        "assets/data/disease_images/tomato_late_blight_4.jpg",
+        "assets/data/disease_images/tomato_late_blight_5.jpg",
+        "assets/data/disease_images/tomato_late_blight_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "tomato_leaf_mold",
+      "name": "Leaf Mold",
+      "nameFr": "Moisissure des feuilles (Tomate)",
+      "scientificName": "Passalora fulva",
+      "type": "fungal",
+      "crops": [
+        "Tomato"
+      ],
+      "cropsFr": [
+        "Tomate"
+      ],
+      "emoji": "🍅",
+      "severity": "medium",
+      "detectable": true,
+      "symptoms": [
+        "Pale green to yellow spots on upper leaf surface",
+        "Olive-green to brown velvety mold on leaf undersides",
+        "Leaves curl, wither, and drop",
+        "May affect stems and fruit in severe cases",
+        "Plants in greenhouses especially susceptible"
+      ],
+      "symptomsFr": [
+        "Taches vert pâle à jaunes sur la face supérieure des feuilles",
+        "Moisissure veloutée vert olive à brune sous les feuilles",
+        "Les feuilles s'enroulent, se flétrissent et tombent",
+        "Peut affecter tiges et fruits dans les cas sévères",
+        "Plantes sous serre particulièrement sensibles"
+      ],
+      "conditions": "High humidity (>85%), poor ventilation, 20-25°C. Common in greenhouses.",
+      "conditionsFr": "Forte humidité (>85%), mauvaise ventilation, 20-25°C. Fréquent en serre.",
+      "treatments": [
+        "Improve greenhouse ventilation",
+        "Apply copper-based fungicides",
+        "Remove infected leaves immediately",
+        "Reduce relative humidity below 85%",
+        "Space plants adequately"
+      ],
+      "treatmentsFr": [
+        "Améliorer la ventilation de la serre",
+        "Appliquer des fongicides à base de cuivre",
+        "Retirer les feuilles infectées immédiatement",
+        "Réduire l'humidité relative sous 85%",
+        "Espacer adéquatement les plantes"
+      ],
+      "prevention": [
+        "Ventilate greenhouses properly",
+        "Avoid high planting density",
+        "Water at base of plants",
+        "Use resistant cultivars"
+      ],
+      "riskMonths": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "spreadMethod": "Airborne conidia in enclosed environments",
+      "imagePath": "assets/data/disease_images/tomato_leaf_mold_1.jpg",
+      "images": [
+        "assets/data/disease_images/tomato_leaf_mold_1.jpg",
+        "assets/data/disease_images/tomato_leaf_mold_2.jpg",
+        "assets/data/disease_images/tomato_leaf_mold_3.jpg",
+        "assets/data/disease_images/tomato_leaf_mold_4.jpg",
+        "assets/data/disease_images/tomato_leaf_mold_5.jpg",
+        "assets/data/disease_images/tomato_leaf_mold_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "tomato_septoria",
+      "name": "Septoria Leaf Spot",
+      "nameFr": "Septoriose (Tomate)",
+      "scientificName": "Septoria lycopersici",
+      "type": "fungal",
+      "crops": [
+        "Tomato"
+      ],
+      "cropsFr": [
+        "Tomate"
+      ],
+      "emoji": "🍅",
+      "severity": "high",
+      "detectable": true,
+      "symptoms": [
+        "Numerous small (2-3mm) circular spots with dark borders and gray centers",
+        "Tiny black dots (pycnidia) visible in spot centers",
+        "Lower leaves affected first",
+        "Severe defoliation exposing fruit to sunscald",
+        "Rarely affects fruit directly"
+      ],
+      "symptomsFr": [
+        "Nombreuses petites taches circulaires (2-3mm) à bords foncés et centres gris",
+        "Petits points noirs (pycnides) visibles au centre des taches",
+        "Feuilles inférieures affectées en premier",
+        "Défoliation sévère exposant les fruits aux brûlures solaires",
+        "Rarement affecte les fruits directement"
+      ],
+      "conditions": "Warm, wet weather (20-25°C). Extended leaf wetness from rain or irrigation.",
+      "conditionsFr": "Temps chaud et humide (20-25°C). Humidité foliaire prolongée par pluie ou irrigation.",
+      "treatments": [
+        "Apply chlorothalonil or copper-based fungicides",
+        "Remove infected lower foliage",
+        "Mulch to prevent rain splash",
+        "Stake plants for better airflow",
+        "Apply mancozeb preventively"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides chlorothalonil ou à base de cuivre",
+        "Retirer le feuillage inférieur infecté",
+        "Pailler pour éviter les éclaboussures de pluie",
+        "Tuteurer les plantes pour un meilleur flux d'air",
+        "Appliquer du mancozèbe préventivement"
+      ],
+      "prevention": [
+        "Crop rotation away from solanaceous crops",
+        "Mulch to prevent soil splash",
+        "Drip irrigation",
+        "Remove weeds (nightshade family)"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "spreadMethod": "Rain splash of conidia from infected leaves",
+      "imagePath": "assets/data/disease_images/tomato_septoria_1.jpg",
+      "images": [
+        "assets/data/disease_images/tomato_septoria_1.jpg",
+        "assets/data/disease_images/tomato_septoria_2.jpg",
+        "assets/data/disease_images/tomato_septoria_3.jpg",
+        "assets/data/disease_images/tomato_septoria_4.jpg",
+        "assets/data/disease_images/tomato_septoria_5.jpg",
+        "assets/data/disease_images/tomato_septoria_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "tomato_spider_mites",
+      "name": "Spider Mites",
+      "nameFr": "Acariens (Tomate)",
+      "scientificName": "Tetranychus urticae",
+      "type": "pest",
+      "crops": [
+        "Tomato",
+        "Pepper",
+        "Cucumber",
+        "Strawberry"
+      ],
+      "cropsFr": [
+        "Tomate",
+        "Poivron",
+        "Concombre",
+        "Fraise"
+      ],
+      "emoji": "🍅",
+      "severity": "medium",
+      "detectable": true,
+      "symptoms": [
+        "Fine stippling (tiny white/yellow dots) on upper leaf surface",
+        "Fine silken webbing on leaf undersides",
+        "Leaves turn bronze, then brown and drop",
+        "Tiny mites visible with magnification (0.5mm, 8 legs)",
+        "Plants appear dusty or faded"
+      ],
+      "symptomsFr": [
+        "Fine ponctuation (petits points blanc/jaune) sur la face supérieure des feuilles",
+        "Fines toiles soyeuses sous les feuilles",
+        "Les feuilles deviennent bronze, puis brunes et tombent",
+        "Acariens minuscules visibles à la loupe (0,5mm, 8 pattes)",
+        "Les plantes paraissent poussiéreuses ou décolorées"
+      ],
+      "conditions": "Hot, dry, dusty conditions. Populations explode above 30°C.",
+      "conditionsFr": "Conditions chaudes, sèches, poussiéreuses. Populations explosent au-dessus de 30°C.",
+      "treatments": [
+        "Apply miticides (abamectin, bifenthrin)",
+        "Release predatory mites (Phytoseiulus persimilis)",
+        "Spray insecticidal soap or neem oil",
+        "Strong water spray to dislodge mites",
+        "Apply sulfur-based sprays"
+      ],
+      "treatmentsFr": [
+        "Appliquer des acaricides (abamectine, bifenthrine)",
+        "Lâcher des acariens prédateurs (Phytoseiulus persimilis)",
+        "Pulvériser du savon insecticide ou huile de neem",
+        "Jet d'eau puissant pour déloger les acariens",
+        "Appliquer des pulvérisations à base de soufre"
+      ],
+      "prevention": [
+        "Monitor regularly, especially in hot weather",
+        "Avoid broad-spectrum pesticides that kill natural enemies",
+        "Maintain adequate plant moisture",
+        "Reduce dust near fields"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "spreadMethod": "Wind dispersal, movement on clothing/equipment",
+      "imagePath": "assets/data/disease_images/tomato_spider_mites_1.jpg",
+      "images": [
+        "assets/data/disease_images/tomato_spider_mites_1.jpg",
+        "assets/data/disease_images/tomato_spider_mites_2.jpg",
+        "assets/data/disease_images/tomato_spider_mites_3.jpg",
+        "assets/data/disease_images/tomato_spider_mites_4.jpg",
+        "assets/data/disease_images/tomato_spider_mites_5.jpg",
+        "assets/data/disease_images/tomato_spider_mites_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "tomato_target_spot",
+      "name": "Target Spot",
+      "nameFr": "Taches ciblées (Tomate)",
+      "scientificName": "Corynespora cassiicola",
+      "type": "fungal",
+      "crops": [
+        "Tomato",
+        "Cucumber",
+        "Soybean"
+      ],
+      "cropsFr": [
+        "Tomate",
+        "Concombre",
+        "Soja"
+      ],
+      "emoji": "🍅",
+      "severity": "medium",
+      "detectable": true,
+      "symptoms": [
+        "Small, dark brown spots with concentric rings",
+        "Spots enlarge to 1-2 cm diameter",
+        "Often confused with early blight — spots rounder, less defined rings",
+        "Defoliation of lower canopy",
+        "Large, pitted lesions on fruit near calyx"
+      ],
+      "symptomsFr": [
+        "Petites taches brun foncé avec anneaux concentriques",
+        "Les taches s'agrandissent à 1-2 cm de diamètre",
+        "Souvent confondu avec l'alternariose — taches plus rondes, anneaux moins définis",
+        "Défoliation du couvert inférieur",
+        "Grandes lésions piquées sur les fruits près du calice"
+      ],
+      "conditions": "Warm, humid conditions with prolonged leaf wetness.",
+      "conditionsFr": "Conditions chaudes et humides avec humidité foliaire prolongée.",
+      "treatments": [
+        "Apply chlorothalonil or azoxystrobin fungicides",
+        "Remove infected lower leaves",
+        "Stake and prune for airflow",
+        "Apply copper fungicides preventively",
+        "Rotate away from solanaceous crops"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides chlorothalonil ou azoxystrobine",
+        "Retirer les feuilles inférieures infectées",
+        "Tuteurer et tailler pour la circulation d'air",
+        "Appliquer des fongicides cupriques préventivement",
+        "Rotation hors solanacées"
+      ],
+      "prevention": [
+        "Crop rotation",
+        "Good air circulation",
+        "Drip irrigation",
+        "Remove crop debris"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "spreadMethod": "Airborne conidia, rain splash",
+      "imagePath": "assets/data/disease_images/tomato_target_spot_1.jpg",
+      "images": [
+        "assets/data/disease_images/tomato_target_spot_1.jpg",
+        "assets/data/disease_images/tomato_target_spot_2.jpg",
+        "assets/data/disease_images/tomato_target_spot_3.jpg",
+        "assets/data/disease_images/tomato_target_spot_4.jpg",
+        "assets/data/disease_images/tomato_target_spot_5.jpg",
+        "assets/data/disease_images/tomato_target_spot_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "tomato_yellow_leaf_curl",
+      "name": "Tomato Yellow Leaf Curl Virus",
+      "nameFr": "Virus de l'enroulement jaune (Tomate)",
+      "scientificName": "TYLCV (Begomovirus)",
+      "type": "viral",
+      "crops": [
+        "Tomato"
+      ],
+      "cropsFr": [
+        "Tomate"
+      ],
+      "emoji": "🍅",
+      "severity": "critical",
+      "detectable": true,
+      "symptoms": [
+        "Severe upward curling and cupping of leaves",
+        "Interveinal yellowing and chlorosis",
+        "Stunted, bushy plant growth",
+        "Flower drop — dramatic yield loss (up to 100%)",
+        "Leaves become leathery and thickened"
+      ],
+      "symptomsFr": [
+        "Enroulement et recroquevillement vers le haut des feuilles",
+        "Jaunissement et chlorose internervaire",
+        "Croissance rabougrie et buissonnante",
+        "Chute des fleurs — perte de rendement dramatique (jusqu'à 100%)",
+        "Les feuilles deviennent coriaces et épaissies"
+      ],
+      "conditions": "Spread by whiteflies (Bemisia tabaci). No cure — manage vector.",
+      "conditionsFr": "Propagé par les mouches blanches (Bemisia tabaci). Pas de remède — gérer le vecteur.",
+      "treatments": [
+        "No cure once infected — remove infected plants",
+        "Control whiteflies with imidacloprid or pyriproxyfen",
+        "Use yellow sticky traps for monitoring",
+        "Apply reflective mulch to repel whiteflies",
+        "Use insect-proof netting in greenhouses"
+      ],
+      "treatmentsFr": [
+        "Pas de remède une fois infecté — retirer les plantes infectées",
+        "Contrôler les mouches blanches avec imidaclopride ou pyriproxyfène",
+        "Utiliser des pièges jaunes collants pour la surveillance",
+        "Appliquer un paillis réfléchissant pour repousser les mouches blanches",
+        "Utiliser des filets anti-insectes en serre"
+      ],
+      "prevention": [
+        "Plant TYLCV-resistant varieties",
+        "Control whitefly populations early",
+        "Remove infected plants immediately",
+        "Use reflective mulches",
+        "Implement whitefly-free transplant production"
+      ],
+      "riskMonths": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "spreadMethod": "Whitefly (Bemisia tabaci) insect vector — persistent transmission",
+      "imagePath": "assets/data/disease_images/tomato_yellow_leaf_curl_1.jpg",
+      "images": [
+        "assets/data/disease_images/tomato_yellow_leaf_curl_1.jpg",
+        "assets/data/disease_images/tomato_yellow_leaf_curl_2.jpg",
+        "assets/data/disease_images/tomato_yellow_leaf_curl_3.jpg",
+        "assets/data/disease_images/tomato_yellow_leaf_curl_4.jpg",
+        "assets/data/disease_images/tomato_yellow_leaf_curl_5.jpg",
+        "assets/data/disease_images/tomato_yellow_leaf_curl_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "tomato_mosaic_virus",
+      "name": "Tomato Mosaic Virus",
+      "nameFr": "Virus de la mosaïque (Tomate)",
+      "scientificName": "ToMV (Tobamovirus)",
+      "type": "viral",
+      "crops": [
+        "Tomato",
+        "Pepper",
+        "Tobacco"
+      ],
+      "cropsFr": [
+        "Tomate",
+        "Poivron",
+        "Tabac"
+      ],
+      "emoji": "🍅",
+      "severity": "high",
+      "detectable": true,
+      "symptoms": [
+        "Mosaic pattern of light and dark green on leaves",
+        "Leaf distortion and fernleaf (filiform) symptoms",
+        "Stunted plant growth",
+        "Brown internal browning of fruit (brownwall)",
+        "Reduced fruit size and yield"
+      ],
+      "symptomsFr": [
+        "Motif mosaïque de vert clair et foncé sur les feuilles",
+        "Déformation foliaire et symptômes filifornes",
+        "Croissance rabougrie de la plante",
+        "Brunissement interne des fruits (brownwall)",
+        "Taille et rendement des fruits réduits"
+      ],
+      "conditions": "Extremely stable virus. Survives on surfaces, in soil, on tools. Easily spread mechanically.",
+      "conditionsFr": "Virus extrêmement stable. Survit sur les surfaces, dans le sol, sur les outils. Facilement propagé mécaniquement.",
+      "treatments": [
+        "No cure — remove and destroy infected plants",
+        "Disinfect all tools with 10% bleach or milk",
+        "Wash hands with soap before handling plants",
+        "Remove all plant debris at season end",
+        "Do not smoke near tomato plants (tobacco mosaic)"
+      ],
+      "treatmentsFr": [
+        "Pas de remède — retirer et détruire les plantes infectées",
+        "Désinfecter tous les outils avec 10% d'eau de Javel ou du lait",
+        "Se laver les mains au savon avant de manipuler les plantes",
+        "Retirer tous les débris végétaux en fin de saison",
+        "Ne pas fumer près des plants de tomates (mosaïque du tabac)"
+      ],
+      "prevention": [
+        "Use resistant varieties (Tm-2 gene)",
+        "Sanitize tools between plants",
+        "Use certified virus-free seed",
+        "Avoid using tobacco products around plants"
+      ],
+      "riskMonths": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "spreadMethod": "Mechanical transmission — hands, tools, contaminated seed",
+      "imagePath": "assets/data/disease_images/tomato_mosaic_virus_1.jpg",
+      "images": [
+        "assets/data/disease_images/tomato_mosaic_virus_1.jpg",
+        "assets/data/disease_images/tomato_mosaic_virus_2.jpg",
+        "assets/data/disease_images/tomato_mosaic_virus_3.jpg",
+        "assets/data/disease_images/tomato_mosaic_virus_4.jpg",
+        "assets/data/disease_images/tomato_mosaic_virus_5.jpg",
+        "assets/data/disease_images/tomato_mosaic_virus_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "wheat_rust",
+      "name": "Wheat Stem Rust",
+      "nameFr": "Rouille noire du blé",
+      "scientificName": "Puccinia graminis",
+      "type": "fungal",
+      "crops": [
+        "Wheat",
+        "Barley",
+        "Oat"
+      ],
+      "cropsFr": [
+        "Blé",
+        "Orge",
+        "Avoine"
+      ],
+      "emoji": "🌾",
+      "severity": "critical",
+      "detectable": false,
+      "symptoms": [
+        "Reddish-brown oval pustules on stems and leaves",
+        "Pustules rupture releasing masses of spores",
+        "Weakened stems may lodge (fall over)",
+        "Shriveled, lightweight grain",
+        "Total crop loss possible with Ug99 race"
+      ],
+      "symptomsFr": [
+        "Pustules ovales brun-rougeâtre sur les tiges et feuilles",
+        "Les pustules se rompent libérant des masses de spores",
+        "Les tiges affaiblies peuvent verser",
+        "Grain ratatiné et léger",
+        "Perte totale de récolte possible avec la race Ug99"
+      ],
+      "conditions": "Warm (15-35°C), humid conditions. Ug99 race is a global threat.",
+      "conditionsFr": "Conditions chaudes (15-35°C) et humides. La race Ug99 est une menace mondiale.",
+      "treatments": [
+        "Apply triazole fungicides (propiconazole, tebuconazole)",
+        "Plant resistant varieties with Sr genes",
+        "Early harvest if severe infection",
+        "Eradicate alternate host (barberry)",
+        "Monitor for new virulent races"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides triazoles (propiconazole, tébuconazole)",
+        "Planter des variétés résistantes avec gènes Sr",
+        "Récolte précoce si infection sévère",
+        "Éradiquer l'hôte alternatif (épine-vinette)",
+        "Surveiller les nouvelles races virulentes"
+      ],
+      "prevention": [
+        "Plant resistant cultivars",
+        "Early planting to avoid peak rust season",
+        "Monitor weather-based rust alerts",
+        "Eradicate barberry bushes"
+      ],
+      "riskMonths": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "spreadMethod": "Long-distance wind transport of urediniospores"
+    },
+    {
+      "id": "wheat_powdery_mildew",
+      "name": "Wheat Powdery Mildew",
+      "nameFr": "Oïdium du blé",
+      "scientificName": "Blumeria graminis f. sp. tritici",
+      "type": "fungal",
+      "crops": [
+        "Wheat"
+      ],
+      "cropsFr": [
+        "Blé"
+      ],
+      "emoji": "🌾",
+      "severity": "medium",
+      "detectable": false,
+      "symptoms": [
+        "White to grayish powdery patches on leaves and stems",
+        "Patches may turn gray-brown with age",
+        "Small black fruiting bodies (cleistothecia) develop",
+        "Reduced photosynthesis and grain fill",
+        "Lower leaves affected first"
+      ],
+      "symptomsFr": [
+        "Taches poudreuses blanches à grisâtres sur feuilles et tiges",
+        "Les taches peuvent devenir gris-brun avec l'âge",
+        "Petits corps fructifères noirs (cléistothèces) se développent",
+        "Photosynthèse et remplissage des grains réduits",
+        "Feuilles inférieures affectées en premier"
+      ],
+      "conditions": "Cool, humid weather (15-22°C). Dense canopy, high nitrogen fertility.",
+      "conditionsFr": "Temps frais et humide (15-22°C). Couvert dense, forte fertilisation azotée.",
+      "treatments": [
+        "Apply strobilurin or triazole fungicides",
+        "Reduce nitrogen application rates",
+        "Improve air circulation with proper seeding rates",
+        "Apply sulfur-based sprays organic",
+        "Timely application at flag leaf emergence"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides strobilurines ou triazoles",
+        "Réduire les doses d'azote",
+        "Améliorer la circulation d'air avec des taux de semis appropriés",
+        "Appliquer des pulvérisations à base de soufre (bio)",
+        "Application opportune à l'émergence de la feuille étendard"
+      ],
+      "prevention": [
+        "Plant resistant varieties",
+        "Avoid excessive nitrogen",
+        "Balanced plant density",
+        "Remove volunteer wheat"
+      ],
+      "riskMonths": [
+        3,
+        4,
+        5
+      ],
+      "spreadMethod": "Wind-dispersed conidia"
+    },
+    {
+      "id": "rice_blast",
+      "name": "Rice Blast",
+      "nameFr": "Pyriculariose du riz",
+      "scientificName": "Magnaporthe oryzae",
+      "type": "fungal",
+      "crops": [
+        "Rice"
+      ],
+      "cropsFr": [
+        "Riz"
+      ],
+      "emoji": "🍚",
+      "severity": "critical",
+      "detectable": false,
+      "symptoms": [
+        "Diamond-shaped lesions with gray centers on leaves",
+        "Lesions may coalesce, killing leaves",
+        "Node blast — dark lesions on stem nodes",
+        "Neck blast — gray-brown lesion at panicle base causing empty grains",
+        "Severe yield loss — up to 50% in susceptible varieties"
+      ],
+      "symptomsFr": [
+        "Lésions en forme de losange à centres gris sur les feuilles",
+        "Les lésions peuvent fusionner, tuant les feuilles",
+        "Blast des nœuds — lésions sombres sur les nœuds de tige",
+        "Blast du cou — lésion gris-brun à la base de la panicule causant des grains vides",
+        "Pertes de rendement sévères — jusqu'à 50% chez les variétés sensibles"
+      ],
+      "conditions": "Cool nights, warm days, prolonged dew, excess nitrogen. Major global rice disease.",
+      "conditionsFr": "Nuits fraîches, journées chaudes, rosée prolongée, excès d'azote. Maladie majeure mondiale du riz.",
+      "treatments": [
+        "Apply tricyclazole or isoprothiolane fungicides",
+        "Reduce nitrogen fertilization",
+        "Drain fields periodically",
+        "Plant resistant varieties",
+        "Adjust planting date to avoid cool, wet periods"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides tricyclazole ou isoprothiolane",
+        "Réduire la fertilisation azotée",
+        "Drainer les champs périodiquement",
+        "Planter des variétés résistantes",
+        "Ajuster la date de semis pour éviter les périodes fraîches et humides"
+      ],
+      "prevention": [
+        "Use resistant cultivars",
+        "Balanced nitrogen management",
+        "Proper water management",
+        "Remove infected stubble"
+      ],
+      "riskMonths": [
+        6,
+        7,
+        8,
+        9
+      ],
+      "spreadMethod": "Wind and rain splash of conidia"
+    },
+    {
+      "id": "olive_peacock_spot",
+      "name": "Peacock Spot (Olive Leaf Spot)",
+      "nameFr": "Œil de paon (Olivier)",
+      "scientificName": "Spilocaea oleaginea",
+      "type": "fungal",
+      "crops": [
+        "Olive"
+      ],
+      "cropsFr": [
+        "Olivier"
+      ],
+      "emoji": "🫒",
+      "severity": "medium",
+      "detectable": false,
+      "symptoms": [
+        "Circular dark spots with concentric yellow-green halos on upper leaf surface",
+        "Spots resemble peacock tail feathers",
+        "Premature leaf drop",
+        "Reduced fruit set and quality",
+        "Weakened trees over successive years"
+      ],
+      "symptomsFr": [
+        "Taches circulaires sombres avec halos concentriques jaune-vert sur la face supérieure",
+        "Les taches ressemblent aux plumes de queue de paon",
+        "Chute prématurée des feuilles",
+        "Nouaison et qualité des fruits réduites",
+        "Affaiblissement des arbres sur plusieurs années"
+      ],
+      "conditions": "Cool, wet weather (15-20°C). Common in Mediterranean climates.",
+      "conditionsFr": "Temps frais et humide (15-20°C). Fréquent en climat méditerranéen.",
+      "treatments": [
+        "Apply copper-based fungicides (Bordeaux mixture)",
+        "Spray after harvest and before spring rains",
+        "Prune for good air circulation",
+        "Remove fallen leaves",
+        "Apply dodine as alternative fungicide"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides à base de cuivre (bouillie bordelaise)",
+        "Pulvériser après la récolte et avant les pluies printanières",
+        "Tailler pour une bonne circulation d'air",
+        "Ramasser les feuilles tombées",
+        "Appliquer la dodine comme fongicide alternatif"
+      ],
+      "prevention": [
+        "Copper applications in autumn and spring",
+        "Good pruning for canopy openness",
+        "Plant resistant varieties",
+        "Avoid dense planting"
+      ],
+      "riskMonths": [
+        10,
+        11,
+        12,
+        1,
+        2,
+        3,
+        4
+      ],
+      "spreadMethod": "Rain splash of conidia from infected leaves"
+    },
+    {
+      "id": "olive_verticillium_wilt",
+      "name": "Verticillium Wilt (Olive)",
+      "nameFr": "Verticilliose de l'olivier",
+      "scientificName": "Verticillium dahliae",
+      "type": "fungal",
+      "crops": [
+        "Olive",
+        "Cotton",
+        "Tomato"
+      ],
+      "cropsFr": [
+        "Olivier",
+        "Coton",
+        "Tomate"
+      ],
+      "emoji": "🫒",
+      "severity": "critical",
+      "detectable": false,
+      "symptoms": [
+        "Sudden wilting and death of branches (apoplexy)",
+        "Browning of xylem vessels visible in cross-section",
+        "Leaf rolling and desiccation on affected branches",
+        "Partial or complete tree death",
+        "Progressive decline with gradual branch death"
+      ],
+      "symptomsFr": [
+        "Flétrissement soudain et mort des branches (apoplexie)",
+        "Brunissement des vaisseaux du xylème visible en coupe",
+        "Enroulement et dessication des feuilles sur les branches affectées",
+        "Mort partielle ou totale de l'arbre",
+        "Déclin progressif avec dépérissement graduel des branches"
+      ],
+      "conditions": "Soil-borne pathogen. Survives as microsclerotia for 10+ years in soil.",
+      "conditionsFr": "Pathogène tellurique. Survit sous forme de microsclérotes 10+ ans dans le sol.",
+      "treatments": [
+        "No effective chemical cure",
+        "Solarize soil before planting",
+        "Avoid planting after susceptible crops (cotton, tomato)",
+        "Apply Trichoderma biofungicides to soil",
+        "Prune affected branches — disinfect tools"
+      ],
+      "treatmentsFr": [
+        "Pas de traitement chimique efficace",
+        "Solariser le sol avant la plantation",
+        "Éviter de planter après des cultures sensibles (coton, tomate)",
+        "Appliquer des biofongicides Trichoderma au sol",
+        "Tailler les branches affectées — désinfecter les outils"
+      ],
+      "prevention": [
+        "Soil testing before planting",
+        "Avoid fields with Verticillium history",
+        "Use tolerant rootstocks",
+        "Soil solarization",
+        "Avoid excessive irrigation"
+      ],
+      "riskMonths": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "spreadMethod": "Soil-borne, root infection from microsclerotia"
+    },
+    {
+      "id": "citrus_canker",
+      "name": "Citrus Canker",
+      "nameFr": "Chancre des agrumes",
+      "scientificName": "Xanthomonas citri subsp. citri",
+      "type": "bacterial",
+      "crops": [
+        "Orange",
+        "Lemon",
+        "Grapefruit",
+        "Lime"
+      ],
+      "cropsFr": [
+        "Orange",
+        "Citron",
+        "Pamplemousse",
+        "Lime"
+      ],
+      "emoji": "🍊",
+      "severity": "high",
+      "detectable": false,
+      "symptoms": [
+        "Raised corky brown lesions with oily, water-soaked margins",
+        "Yellow halo around lesions on leaves",
+        "Premature fruit drop",
+        "Lesions on fruit reduce market value",
+        "Defoliation and twig dieback in severe cases"
+      ],
+      "symptomsFr": [
+        "Lésions surélevées liégeuses brunes avec marges huileuses aqueuses",
+        "Halo jaune autour des lésions sur les feuilles",
+        "Chute prématurée des fruits",
+        "Les lésions sur fruits réduisent la valeur marchande",
+        "Défoliation et dépérissement des rameaux dans les cas sévères"
+      ],
+      "conditions": "Warm, rainy, windy conditions. Wind-driven rain is main dispersal.",
+      "conditionsFr": "Conditions chaudes, pluvieuses, venteuses. La pluie poussée par le vent est le principal vecteur.",
+      "treatments": [
+        "Apply copper-based bactericides regularly",
+        "Windbreak installation to reduce spread",
+        "Remove severely infected trees",
+        "Sanitize pruning tools",
+        "Apply copper + mancozeb tank mix"
+      ],
+      "treatmentsFr": [
+        "Appliquer des bactéricides à base de cuivre régulièrement",
+        "Installation de brise-vent pour réduire la propagation",
+        "Retirer les arbres sévèrement infectés",
+        "Désinfecter les outils de taille",
+        "Appliquer un mélange cuivre + mancozèbe"
+      ],
+      "prevention": [
+        "Use certified disease-free nursery stock",
+        "Windbreaks around orchards",
+        "Regular copper spray program",
+        "Quarantine measures for new material"
+      ],
+      "riskMonths": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "spreadMethod": "Wind-driven rain, contaminated tools, infected nursery stock"
+    },
+    {
+      "id": "downy_mildew_vine",
+      "name": "Downy Mildew (Grapevine)",
+      "nameFr": "Mildiou de la vigne",
+      "scientificName": "Plasmopara viticola",
+      "type": "oomycete",
+      "crops": [
+        "Grape"
+      ],
+      "cropsFr": [
+        "Raisin"
+      ],
+      "emoji": "🍇",
+      "severity": "critical",
+      "detectable": false,
+      "symptoms": [
+        "Yellow oily spots on upper leaf surface (oil spots)",
+        "White downy growth on leaf underside",
+        "Brown shriveled inflorescences",
+        "Soft rot of young berries",
+        "Complete defoliation and crop loss possible"
+      ],
+      "symptomsFr": [
+        "Taches jaunes huileuses sur la face supérieure des feuilles (taches d'huile)",
+        "Duvet blanc sur la face inférieure des feuilles",
+        "Inflorescences brunes et ratatinées",
+        "Pourriture molle des jeunes baies",
+        "Défoliation complète et perte de récolte possibles"
+      ],
+      "conditions": "Warm, wet spring (>10°C). Requires rain for zoospore release. The 10-10-24 rule.",
+      "conditionsFr": "Printemps chaud et humide (>10°C). Nécessite la pluie pour la libération des zoospores. Règle du 10-10-24.",
+      "treatments": [
+        "Apply copper-based fungicides (Bordeaux mixture)",
+        "Use systemic fungicides (metalaxyl, dimethomorph)",
+        "Begin sprays when shoots reach 10 cm",
+        "Repeat applications after rain events",
+        "Apply mancozeb as contact fungicide"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides à base de cuivre (bouillie bordelaise)",
+        "Utiliser des fongicides systémiques (métalaxyl, diméthomorphe)",
+        "Commencer les pulvérisations quand les pousses atteignent 10 cm",
+        "Renouveler les applications après les pluies",
+        "Appliquer du mancozèbe comme fongicide de contact"
+      ],
+      "prevention": [
+        "Open canopy management for air circulation",
+        "Remove suckers to reduce humidity",
+        "Plant tolerant varieties",
+        "Weather-based forecasting models"
+      ],
+      "riskMonths": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "spreadMethod": "Rain splash of sporangia, wind dispersal of zoospores"
+    },
+    {
+      "id": "botrytis_gray_mold",
+      "name": "Gray Mold (Botrytis)",
+      "nameFr": "Pourriture grise (Botrytis)",
+      "scientificName": "Botrytis cinerea",
+      "type": "fungal",
+      "crops": [
+        "Grape",
+        "Strawberry",
+        "Tomato",
+        "Lettuce"
+      ],
+      "cropsFr": [
+        "Raisin",
+        "Fraise",
+        "Tomate",
+        "Laitue"
+      ],
+      "emoji": "🍇",
+      "severity": "high",
+      "detectable": false,
+      "symptoms": [
+        "Fuzzy gray mold growth on fruit, flowers, and leaves",
+        "Soft, watery rot of fruit",
+        "Brown, wilted flowers",
+        "Stem cankers with gray sporulation",
+        "Fruit mummies covered in gray mold"
+      ],
+      "symptomsFr": [
+        "Moisissure grise duveteuse sur fruits, fleurs et feuilles",
+        "Pourriture molle et aqueuse des fruits",
+        "Fleurs brunes et flétries",
+        "Chancres de tige avec sporulation grise",
+        "Fruits momifiés recouverts de moisissure grise"
+      ],
+      "conditions": "Cool, humid conditions (15-25°C). Requires free water/high humidity for infection.",
+      "conditionsFr": "Conditions fraîches et humides (15-25°C). Nécessite de l'eau libre/forte humidité pour l'infection.",
+      "treatments": [
+        "Apply iprodione, fenhexamid, or cyprodinil + fludioxonil",
+        "Remove infected fruit and plant parts",
+        "Improve ventilation in greenhouses",
+        "Avoid excess nitrogen",
+        "Apply biocontrol agents (Bacillus subtilis)"
+      ],
+      "treatmentsFr": [
+        "Appliquer iprodione, fenhexamide, ou cyprodinil + fludioxonil",
+        "Retirer les fruits et parties de plantes infectés",
+        "Améliorer la ventilation en serre",
+        "Éviter l'excès d'azote",
+        "Appliquer des agents de biocontrôle (Bacillus subtilis)"
+      ],
+      "prevention": [
+        "Reduce humidity and improve airflow",
+        "Avoid overhead irrigation",
+        "Remove dead plant material promptly",
+        "Harvest promptly at maturity"
+      ],
+      "riskMonths": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "spreadMethod": "Airborne conidia, water splash, contact with infected tissue"
+    },
+    {
+      "id": "fusarium_wilt",
+      "name": "Fusarium Wilt",
+      "nameFr": "Fusariose vasculaire",
+      "scientificName": "Fusarium oxysporum",
+      "type": "fungal",
+      "crops": [
+        "Tomato",
+        "Banana",
+        "Melon",
+        "Cotton"
+      ],
+      "cropsFr": [
+        "Tomate",
+        "Banane",
+        "Melon",
+        "Coton"
+      ],
+      "emoji": "🍅",
+      "severity": "critical",
+      "detectable": false,
+      "symptoms": [
+        "Yellowing of lower leaves, often one-sided",
+        "Progressive wilting despite adequate irrigation",
+        "Brown discoloration of vascular tissue",
+        "Stunted growth and plant death",
+        "Rarely affects fruit directly but kills plant"
+      ],
+      "symptomsFr": [
+        "Jaunissement des feuilles inférieures, souvent unilatéral",
+        "Flétrissement progressif malgré une irrigation adéquate",
+        "Décoloration brune des tissus vasculaires",
+        "Croissance rabougrie et mort de la plante",
+        "Rarement affecte les fruits directement mais tue la plante"
+      ],
+      "conditions": "Warm soil temperatures (>24°C). Soil-borne, persists indefinitely.",
+      "conditionsFr": "Températures du sol chaudes (>24°C). Tellurique, persiste indéfiniment.",
+      "treatments": [
+        "No effective chemical cure once established",
+        "Soil fumigation before planting",
+        "Use resistant varieties",
+        "Solarize soil for 4-6 weeks",
+        "Apply biological agents (Trichoderma, Bacillus)"
+      ],
+      "treatmentsFr": [
+        "Pas de traitement chimique efficace une fois établi",
+        "Fumigation du sol avant la plantation",
+        "Utiliser des variétés résistantes",
+        "Solariser le sol pendant 4-6 semaines",
+        "Appliquer des agents biologiques (Trichoderma, Bacillus)"
+      ],
+      "prevention": [
+        "Plant resistant varieties",
+        "Long crop rotation",
+        "Keep soil pH neutral (6.5-7.0)",
+        "Avoid moving infested soil between fields"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "spreadMethod": "Soil-borne, contaminated tools, infected transplants"
+    },
+    {
+      "id": "bacterial_wilt",
+      "name": "Bacterial Wilt",
+      "nameFr": "Flétrissement bactérien",
+      "scientificName": "Ralstonia solanacearum",
+      "type": "bacterial",
+      "crops": [
+        "Tomato",
+        "Potato",
+        "Pepper",
+        "Eggplant",
+        "Banana"
+      ],
+      "cropsFr": [
+        "Tomate",
+        "Pomme de terre",
+        "Poivron",
+        "Aubergine",
+        "Banane"
+      ],
+      "emoji": "🍅",
+      "severity": "critical",
+      "detectable": false,
+      "symptoms": [
+        "Rapid wilting of entire plant without yellowing",
+        "Bacterial streaming visible when cut stem placed in water",
+        "Brown discoloration of vascular tissue",
+        "Slimy sticky ooze from cut stems",
+        "Plant death within days of symptoms appearing"
+      ],
+      "symptomsFr": [
+        "Flétrissement rapide de la plante entière sans jaunissement",
+        "Flux bactérien visible quand tige coupée placée dans l'eau",
+        "Décoloration brune des tissus vasculaires",
+        "Suintement visqueux collant des tiges coupées",
+        "Mort de la plante en quelques jours après apparition des symptômes"
+      ],
+      "conditions": "Warm, wet soils (>25°C). Soil-borne, enters through wounds or root tips.",
+      "conditionsFr": "Sols chauds et humides (>25°C). Tellurique, pénètre par les blessures ou les pointes racinaires.",
+      "treatments": [
+        "No effective chemical treatment",
+        "Remove infected plants immediately with surrounding soil",
+        "Solarize soil before planting",
+        "Grafting onto resistant rootstock",
+        "Apply Bacillus and Trichoderma biocontrol"
+      ],
+      "treatmentsFr": [
+        "Pas de traitement chimique efficace",
+        "Retirer les plantes infectées immédiatement avec le sol environnant",
+        "Solariser le sol avant la plantation",
+        "Greffer sur porte-greffes résistants",
+        "Appliquer du biocontrôle Bacillus et Trichoderma"
+      ],
+      "prevention": [
+        "Use resistant cultivars or rootstocks",
+        "Improve soil drainage",
+        "Rotate with non-host crops (cereals)",
+        "Avoid root damage during cultivation"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "spreadMethod": "Soil, contaminated water, infected transplants"
+    },
+    {
+      "id": "fire_blight",
+      "name": "Fire Blight",
+      "nameFr": "Feu bactérien",
+      "scientificName": "Erwinia amylovora",
+      "type": "bacterial",
+      "crops": [
+        "Apple",
+        "Pear",
+        "Quince"
+      ],
+      "cropsFr": [
+        "Pommier",
+        "Poirier",
+        "Cognassier"
+      ],
+      "emoji": "🍎",
+      "severity": "critical",
+      "detectable": false,
+      "symptoms": [
+        "Blackened, shriveled blossoms (blossom blight)",
+        "Shepherd's crook — young shoots bend over and turn black",
+        "Bacterial ooze (amber droplets) on cankers",
+        "Reddish-brown water-soaked bark",
+        "Entire tree can die if rootstock is infected"
+      ],
+      "symptomsFr": [
+        "Fleurs noircies et ratatinées (brûlure des fleurs)",
+        "Crosse du berger — jeunes pousses se courbent et noircissent",
+        "Suintement bactérien (gouttelettes ambrées) sur les chancres",
+        "Écorce brun-rougeâtre d'aspect aqueux",
+        "L'arbre entier peut mourir si le porte-greffe est infecté"
+      ],
+      "conditions": "Warm (21-28°C), wet weather during bloom. Rain and insects spread bacteria.",
+      "conditionsFr": "Temps chaud (21-28°C) et humide pendant la floraison. La pluie et les insectes propagent les bactéries.",
+      "treatments": [
+        "Apply streptomycin during bloom (where allowed)",
+        "Prune infected branches 30-45 cm below visible symptoms",
+        "Sterilize tools between each cut (10% bleach)",
+        "Apply copper at green tip stage",
+        "Use biological control (Bacillus subtilis, Pantoea vagans)"
+      ],
+      "treatmentsFr": [
+        "Appliquer la streptomycine pendant la floraison (où autorisé)",
+        "Tailler les branches infectées 30-45 cm sous les symptômes visibles",
+        "Stériliser les outils entre chaque coupe (10% eau de Javel)",
+        "Appliquer du cuivre au stade pointe verte",
+        "Utiliser le biocontrôle (Bacillus subtilis, Pantoea vagans)"
+      ],
+      "prevention": [
+        "Avoid excessive nitrogen promoting succulent growth",
+        "Monitor weather-based blight risk models",
+        "Plant less susceptible varieties",
+        "Prune during dry dormant season"
+      ],
+      "riskMonths": [
+        4,
+        5,
+        6
+      ],
+      "spreadMethod": "Rain splash, insects (bees), contaminated pruning tools"
+    },
+    {
+      "id": "anthracnose",
+      "name": "Anthracnose",
+      "nameFr": "Anthracnose",
+      "scientificName": "Colletotrichum spp.",
+      "type": "fungal",
+      "crops": [
+        "Mango",
+        "Avocado",
+        "Pepper",
+        "Bean",
+        "Strawberry"
+      ],
+      "cropsFr": [
+        "Mangue",
+        "Avocat",
+        "Poivron",
+        "Haricot",
+        "Fraise"
+      ],
+      "emoji": "🥭",
+      "severity": "high",
+      "detectable": false,
+      "symptoms": [
+        "Dark, sunken, circular lesions on fruit",
+        "Salmon-pink spore masses in lesions when moist",
+        "Leaf spots with brown centers and dark margins",
+        "Stem and petiole lesions causing dieback",
+        "Post-harvest fruit rot"
+      ],
+      "symptomsFr": [
+        "Lésions sombres, enfoncées, circulaires sur les fruits",
+        "Masses de spores rose saumon dans les lésions en conditions humides",
+        "Taches foliaires à centres bruns et marges sombres",
+        "Lésions sur tiges et pétioles causant le dépérissement",
+        "Pourriture des fruits post-récolte"
+      ],
+      "conditions": "Warm, humid, rainy conditions (25-30°C). Requires free water for infection.",
+      "conditionsFr": "Conditions chaudes, humides, pluvieuses (25-30°C). Nécessite de l'eau libre pour l'infection.",
+      "treatments": [
+        "Apply mancozeb or azoxystrobin fungicides",
+        "Hot water treatment of harvested fruit (52°C, 5 min)",
+        "Apply copper-based sprays preventively",
+        "Remove infected plant material",
+        "Post-harvest fungicide dip"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides mancozèbe ou azoxystrobine",
+        "Traitement à l'eau chaude des fruits récoltés (52°C, 5 min)",
+        "Appliquer des pulvérisations à base de cuivre préventivement",
+        "Retirer le matériel végétal infecté",
+        "Trempage fongicide post-récolte"
+      ],
+      "prevention": [
+        "Avoid overhead irrigation during fruiting",
+        "Prune for canopy openness",
+        "Harvest before over-ripening",
+        "Cold chain management post-harvest"
+      ],
+      "riskMonths": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "spreadMethod": "Rain splash of conidia, wind dispersal"
+    },
+    {
+      "id": "black_sigatoka",
+      "name": "Black Sigatoka",
+      "nameFr": "Cercosporiose noire du bananier",
+      "scientificName": "Mycosphaerella fijiensis",
+      "type": "fungal",
+      "crops": [
+        "Banana",
+        "Plantain"
+      ],
+      "cropsFr": [
+        "Banane",
+        "Plantain"
+      ],
+      "emoji": "🍌",
+      "severity": "critical",
+      "detectable": false,
+      "symptoms": [
+        "Small dark streaks on lower leaf surface",
+        "Streaks enlarge into dark brown to black lesions",
+        "Lesions coalesce, causing large necrotic areas",
+        "Premature fruit ripening",
+        "Severe defoliation — up to 50% yield loss"
+      ],
+      "symptomsFr": [
+        "Petites stries sombres sur la face inférieure des feuilles",
+        "Les stries s'agrandissent en lésions brun foncé à noires",
+        "Les lésions fusionnent, causant de grandes zones nécrotiques",
+        "Maturation prématurée des fruits",
+        "Défoliation sévère — jusqu'à 50% de perte de rendement"
+      ],
+      "conditions": "Warm, humid tropical conditions (>25°C, >90% RH). Major banana disease globally.",
+      "conditionsFr": "Conditions tropicales chaudes et humides (>25°C, >90% HR). Maladie majeure mondiale du bananier.",
+      "treatments": [
+        "Apply systemic fungicides (propiconazole, trifloxystrobin)",
+        "Rotate fungicide groups to prevent resistance",
+        "De-leaf — remove affected leaves",
+        "Apply mineral oil sprays with fungicide",
+        "Use aerial spraying for large plantations"
+      ],
+      "treatmentsFr": [
+        "Appliquer des fongicides systémiques (propiconazole, trifloxystrobine)",
+        "Alterner les groupes de fongicides pour prévenir la résistance",
+        "Effeuiller — retirer les feuilles affectées",
+        "Appliquer des pulvérisations d'huile minérale avec fongicide",
+        "Utiliser la pulvérisation aérienne pour les grandes plantations"
+      ],
+      "prevention": [
+        "Regular leaf removal program",
+        "Good drainage management",
+        "Adequate plant spacing",
+        "Use resistant cultivars (FHIA hybrids)"
+      ],
+      "riskMonths": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "spreadMethod": "Wind-dispersed ascospores and conidia"
+    },
+    {
+      "id": "apple_healthy",
+      "name": "Apple (Healthy)",
+      "nameFr": "Apple (Sain)",
+      "scientificName": "—",
+      "type": "healthy",
+      "crops": [
+        "Apple"
+      ],
+      "cropsFr": [
+        "Apple"
+      ],
+      "emoji": "✅",
+      "severity": "none",
+      "detectable": true,
+      "imagePath": "assets/data/disease_images/apple_healthy_1.jpg",
+      "symptoms": [],
+      "symptomsFr": [],
+      "conditions": "No disease present — reference for healthy plant tissue.",
+      "conditionsFr": "Aucune maladie présente — référence pour le tissu végétal sain.",
+      "treatments": [],
+      "treatmentsFr": [],
+      "prevention": [
+        "Maintain good agricultural practices"
+      ],
+      "riskMonths": [],
+      "spreadMethod": "—",
+      "images": [
+        "assets/data/disease_images/apple_healthy_1.jpg",
+        "assets/data/disease_images/apple_healthy_2.jpg",
+        "assets/data/disease_images/apple_healthy_3.jpg",
+        "assets/data/disease_images/apple_healthy_4.jpg",
+        "assets/data/disease_images/apple_healthy_5.jpg",
+        "assets/data/disease_images/apple_healthy_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "blueberry_healthy",
+      "name": "Blueberry (Healthy)",
+      "nameFr": "Blueberry (Sain)",
+      "scientificName": "—",
+      "type": "healthy",
+      "crops": [
+        "Blueberry"
+      ],
+      "cropsFr": [
+        "Blueberry"
+      ],
+      "emoji": "✅",
+      "severity": "none",
+      "detectable": true,
+      "imagePath": "assets/data/disease_images/blueberry_healthy_1.jpg",
+      "symptoms": [],
+      "symptomsFr": [],
+      "conditions": "No disease present — reference for healthy plant tissue.",
+      "conditionsFr": "Aucune maladie présente — référence pour le tissu végétal sain.",
+      "treatments": [],
+      "treatmentsFr": [],
+      "prevention": [
+        "Maintain good agricultural practices"
+      ],
+      "riskMonths": [],
+      "spreadMethod": "—",
+      "images": [
+        "assets/data/disease_images/blueberry_healthy_1.jpg",
+        "assets/data/disease_images/blueberry_healthy_2.jpg",
+        "assets/data/disease_images/blueberry_healthy_3.jpg",
+        "assets/data/disease_images/blueberry_healthy_4.jpg",
+        "assets/data/disease_images/blueberry_healthy_5.jpg",
+        "assets/data/disease_images/blueberry_healthy_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "cherry_healthy",
+      "name": "Cherry (Healthy)",
+      "nameFr": "Cherry (Sain)",
+      "scientificName": "—",
+      "type": "healthy",
+      "crops": [
+        "Cherry"
+      ],
+      "cropsFr": [
+        "Cherry"
+      ],
+      "emoji": "✅",
+      "severity": "none",
+      "detectable": true,
+      "imagePath": "assets/data/disease_images/cherry_healthy_1.jpg",
+      "symptoms": [],
+      "symptomsFr": [],
+      "conditions": "No disease present — reference for healthy plant tissue.",
+      "conditionsFr": "Aucune maladie présente — référence pour le tissu végétal sain.",
+      "treatments": [],
+      "treatmentsFr": [],
+      "prevention": [
+        "Maintain good agricultural practices"
+      ],
+      "riskMonths": [],
+      "spreadMethod": "—",
+      "images": [
+        "assets/data/disease_images/cherry_healthy_1.jpg",
+        "assets/data/disease_images/cherry_healthy_2.jpg",
+        "assets/data/disease_images/cherry_healthy_3.jpg",
+        "assets/data/disease_images/cherry_healthy_4.jpg",
+        "assets/data/disease_images/cherry_healthy_5.jpg",
+        "assets/data/disease_images/cherry_healthy_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "corn_healthy",
+      "name": "Corn (Healthy)",
+      "nameFr": "Corn (Sain)",
+      "scientificName": "—",
+      "type": "healthy",
+      "crops": [
+        "Corn"
+      ],
+      "cropsFr": [
+        "Corn"
+      ],
+      "emoji": "✅",
+      "severity": "none",
+      "detectable": true,
+      "imagePath": "assets/data/disease_images/corn_healthy_1.jpg",
+      "symptoms": [],
+      "symptomsFr": [],
+      "conditions": "No disease present — reference for healthy plant tissue.",
+      "conditionsFr": "Aucune maladie présente — référence pour le tissu végétal sain.",
+      "treatments": [],
+      "treatmentsFr": [],
+      "prevention": [
+        "Maintain good agricultural practices"
+      ],
+      "riskMonths": [],
+      "spreadMethod": "—",
+      "images": [
+        "assets/data/disease_images/corn_healthy_1.jpg",
+        "assets/data/disease_images/corn_healthy_2.jpg",
+        "assets/data/disease_images/corn_healthy_3.jpg",
+        "assets/data/disease_images/corn_healthy_4.jpg",
+        "assets/data/disease_images/corn_healthy_5.jpg",
+        "assets/data/disease_images/corn_healthy_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "grape_healthy",
+      "name": "Grape (Healthy)",
+      "nameFr": "Grape (Sain)",
+      "scientificName": "—",
+      "type": "healthy",
+      "crops": [
+        "Grape"
+      ],
+      "cropsFr": [
+        "Grape"
+      ],
+      "emoji": "✅",
+      "severity": "none",
+      "detectable": true,
+      "imagePath": "assets/data/disease_images/grape_healthy_1.jpg",
+      "symptoms": [],
+      "symptomsFr": [],
+      "conditions": "No disease present — reference for healthy plant tissue.",
+      "conditionsFr": "Aucune maladie présente — référence pour le tissu végétal sain.",
+      "treatments": [],
+      "treatmentsFr": [],
+      "prevention": [
+        "Maintain good agricultural practices"
+      ],
+      "riskMonths": [],
+      "spreadMethod": "—",
+      "images": [
+        "assets/data/disease_images/grape_healthy_1.jpg",
+        "assets/data/disease_images/grape_healthy_2.jpg",
+        "assets/data/disease_images/grape_healthy_3.jpg",
+        "assets/data/disease_images/grape_healthy_4.jpg",
+        "assets/data/disease_images/grape_healthy_5.jpg",
+        "assets/data/disease_images/grape_healthy_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "peach_healthy",
+      "name": "Peach (Healthy)",
+      "nameFr": "Peach (Sain)",
+      "scientificName": "—",
+      "type": "healthy",
+      "crops": [
+        "Peach"
+      ],
+      "cropsFr": [
+        "Peach"
+      ],
+      "emoji": "✅",
+      "severity": "none",
+      "detectable": true,
+      "imagePath": "assets/data/disease_images/peach_healthy_1.jpg",
+      "symptoms": [],
+      "symptomsFr": [],
+      "conditions": "No disease present — reference for healthy plant tissue.",
+      "conditionsFr": "Aucune maladie présente — référence pour le tissu végétal sain.",
+      "treatments": [],
+      "treatmentsFr": [],
+      "prevention": [
+        "Maintain good agricultural practices"
+      ],
+      "riskMonths": [],
+      "spreadMethod": "—",
+      "images": [
+        "assets/data/disease_images/peach_healthy_1.jpg",
+        "assets/data/disease_images/peach_healthy_2.jpg",
+        "assets/data/disease_images/peach_healthy_3.jpg",
+        "assets/data/disease_images/peach_healthy_4.jpg",
+        "assets/data/disease_images/peach_healthy_5.jpg",
+        "assets/data/disease_images/peach_healthy_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "pepper_healthy",
+      "name": "Pepper (Healthy)",
+      "nameFr": "Pepper (Sain)",
+      "scientificName": "—",
+      "type": "healthy",
+      "crops": [
+        "Pepper"
+      ],
+      "cropsFr": [
+        "Pepper"
+      ],
+      "emoji": "✅",
+      "severity": "none",
+      "detectable": true,
+      "imagePath": "assets/data/disease_images/pepper_healthy_1.jpg",
+      "symptoms": [],
+      "symptomsFr": [],
+      "conditions": "No disease present — reference for healthy plant tissue.",
+      "conditionsFr": "Aucune maladie présente — référence pour le tissu végétal sain.",
+      "treatments": [],
+      "treatmentsFr": [],
+      "prevention": [
+        "Maintain good agricultural practices"
+      ],
+      "riskMonths": [],
+      "spreadMethod": "—",
+      "images": [
+        "assets/data/disease_images/pepper_healthy_1.jpg",
+        "assets/data/disease_images/pepper_healthy_2.jpg",
+        "assets/data/disease_images/pepper_healthy_3.jpg",
+        "assets/data/disease_images/pepper_healthy_4.jpg",
+        "assets/data/disease_images/pepper_healthy_5.jpg",
+        "assets/data/disease_images/pepper_healthy_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "potato_healthy",
+      "name": "Potato (Healthy)",
+      "nameFr": "Potato (Sain)",
+      "scientificName": "—",
+      "type": "healthy",
+      "crops": [
+        "Potato"
+      ],
+      "cropsFr": [
+        "Potato"
+      ],
+      "emoji": "✅",
+      "severity": "none",
+      "detectable": true,
+      "imagePath": "assets/data/disease_images/potato_healthy_1.jpg",
+      "symptoms": [],
+      "symptomsFr": [],
+      "conditions": "No disease present — reference for healthy plant tissue.",
+      "conditionsFr": "Aucune maladie présente — référence pour le tissu végétal sain.",
+      "treatments": [],
+      "treatmentsFr": [],
+      "prevention": [
+        "Maintain good agricultural practices"
+      ],
+      "riskMonths": [],
+      "spreadMethod": "—",
+      "images": [
+        "assets/data/disease_images/potato_healthy_1.jpg",
+        "assets/data/disease_images/potato_healthy_2.jpg",
+        "assets/data/disease_images/potato_healthy_3.jpg",
+        "assets/data/disease_images/potato_healthy_4.jpg",
+        "assets/data/disease_images/potato_healthy_5.jpg",
+        "assets/data/disease_images/potato_healthy_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "raspberry_healthy",
+      "name": "Raspberry (Healthy)",
+      "nameFr": "Raspberry (Sain)",
+      "scientificName": "—",
+      "type": "healthy",
+      "crops": [
+        "Raspberry"
+      ],
+      "cropsFr": [
+        "Raspberry"
+      ],
+      "emoji": "✅",
+      "severity": "none",
+      "detectable": true,
+      "imagePath": "assets/data/disease_images/raspberry_healthy_1.jpg",
+      "symptoms": [],
+      "symptomsFr": [],
+      "conditions": "No disease present — reference for healthy plant tissue.",
+      "conditionsFr": "Aucune maladie présente — référence pour le tissu végétal sain.",
+      "treatments": [],
+      "treatmentsFr": [],
+      "prevention": [
+        "Maintain good agricultural practices"
+      ],
+      "riskMonths": [],
+      "spreadMethod": "—",
+      "images": [
+        "assets/data/disease_images/raspberry_healthy_1.jpg",
+        "assets/data/disease_images/raspberry_healthy_2.jpg",
+        "assets/data/disease_images/raspberry_healthy_3.jpg",
+        "assets/data/disease_images/raspberry_healthy_4.jpg",
+        "assets/data/disease_images/raspberry_healthy_5.jpg",
+        "assets/data/disease_images/raspberry_healthy_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "soybean_healthy",
+      "name": "Soybean (Healthy)",
+      "nameFr": "Soybean (Sain)",
+      "scientificName": "—",
+      "type": "healthy",
+      "crops": [
+        "Soybean"
+      ],
+      "cropsFr": [
+        "Soybean"
+      ],
+      "emoji": "✅",
+      "severity": "none",
+      "detectable": true,
+      "imagePath": "assets/data/disease_images/soybean_healthy_1.jpg",
+      "symptoms": [],
+      "symptomsFr": [],
+      "conditions": "No disease present — reference for healthy plant tissue.",
+      "conditionsFr": "Aucune maladie présente — référence pour le tissu végétal sain.",
+      "treatments": [],
+      "treatmentsFr": [],
+      "prevention": [
+        "Maintain good agricultural practices"
+      ],
+      "riskMonths": [],
+      "spreadMethod": "—",
+      "images": [
+        "assets/data/disease_images/soybean_healthy_1.jpg",
+        "assets/data/disease_images/soybean_healthy_2.jpg",
+        "assets/data/disease_images/soybean_healthy_3.jpg",
+        "assets/data/disease_images/soybean_healthy_4.jpg",
+        "assets/data/disease_images/soybean_healthy_5.jpg",
+        "assets/data/disease_images/soybean_healthy_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "strawberry_healthy",
+      "name": "Strawberry (Healthy)",
+      "nameFr": "Strawberry (Sain)",
+      "scientificName": "—",
+      "type": "healthy",
+      "crops": [
+        "Strawberry"
+      ],
+      "cropsFr": [
+        "Strawberry"
+      ],
+      "emoji": "✅",
+      "severity": "none",
+      "detectable": true,
+      "imagePath": "assets/data/disease_images/strawberry_healthy_1.jpg",
+      "symptoms": [],
+      "symptomsFr": [],
+      "conditions": "No disease present — reference for healthy plant tissue.",
+      "conditionsFr": "Aucune maladie présente — référence pour le tissu végétal sain.",
+      "treatments": [],
+      "treatmentsFr": [],
+      "prevention": [
+        "Maintain good agricultural practices"
+      ],
+      "riskMonths": [],
+      "spreadMethod": "—",
+      "images": [
+        "assets/data/disease_images/strawberry_healthy_1.jpg",
+        "assets/data/disease_images/strawberry_healthy_2.jpg",
+        "assets/data/disease_images/strawberry_healthy_3.jpg",
+        "assets/data/disease_images/strawberry_healthy_4.jpg",
+        "assets/data/disease_images/strawberry_healthy_5.jpg",
+        "assets/data/disease_images/strawberry_healthy_6.jpg"
+      ],
+      "imageCount": 6
+    },
+    {
+      "id": "tomato_healthy",
+      "name": "Tomato (Healthy)",
+      "nameFr": "Tomato (Sain)",
+      "scientificName": "—",
+      "type": "healthy",
+      "crops": [
+        "Tomato"
+      ],
+      "cropsFr": [
+        "Tomato"
+      ],
+      "emoji": "✅",
+      "severity": "none",
+      "detectable": true,
+      "imagePath": "assets/data/disease_images/tomato_healthy_1.jpg",
+      "symptoms": [],
+      "symptomsFr": [],
+      "conditions": "No disease present — reference for healthy plant tissue.",
+      "conditionsFr": "Aucune maladie présente — référence pour le tissu végétal sain.",
+      "treatments": [],
+      "treatmentsFr": [],
+      "prevention": [
+        "Maintain good agricultural practices"
+      ],
+      "riskMonths": [],
+      "spreadMethod": "—",
+      "images": [
+        "assets/data/disease_images/tomato_healthy_1.jpg",
+        "assets/data/disease_images/tomato_healthy_2.jpg",
+        "assets/data/disease_images/tomato_healthy_3.jpg",
+        "assets/data/disease_images/tomato_healthy_4.jpg",
+        "assets/data/disease_images/tomato_healthy_5.jpg",
+        "assets/data/disease_images/tomato_healthy_6.jpg"
+      ],
+      "imageCount": 6
+    }
+  ]
+}

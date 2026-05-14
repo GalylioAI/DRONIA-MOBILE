@@ -79,10 +79,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: SafeArea(
         child: _isLoading
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(color: AppColors.primaryGreen),
               )
             : _errorMessage != null
@@ -94,22 +93,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
                 color: AppColors.primaryGreen,
                 child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
+                  physics: AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
                       _buildProfileHeader(context),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       _buildRegionsSection(),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       _buildPersonalInfo(),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       _buildCulturesSection(),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       _buildLocationSection(),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       _buildAccountSection(),
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32),
                     ],
                   ),
                 ),
@@ -130,20 +129,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               size: 64,
               color: AppColors.error.withValues(alpha: 0.7),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
               _errorMessage ?? 'Erreur de chargement',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: context.colors.textSecondary,
                 fontSize: 14,
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _loadProfile,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Réessayer'),
+              icon: Icon(Icons.refresh),
+              label: Text('Réessayer'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryGreen,
                 foregroundColor: Colors.white,
@@ -159,9 +158,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.dividerColor),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         children: [
@@ -169,30 +168,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             children: [
               _buildAvatar(),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       _user?.fullName ?? 'Utilisateur',
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    const Text(
+                    SizedBox(height: 2),
+                    Text(
                       'AGRICULTEUR',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
@@ -202,7 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         color: AppColors.primaryGreen.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
@@ -227,17 +226,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           // Edit button
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () => _showEditProfileDialog(context),
-              icon: const Icon(Icons.edit, size: 16),
-              label: const Text('Modifier le Profil'),
+              icon: Icon(Icons.edit, size: 16),
+              label: Text('Modifier le Profil'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.primaryGreen,
-                side: const BorderSide(color: AppColors.primaryGreen),
+                side: BorderSide(color: AppColors.primaryGreen),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -245,7 +244,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           // Stats row - only Cultures
           _buildProfileStat(
             Icons.eco,
@@ -310,7 +309,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Center(
         child: Text(
           _user?.initials ?? 'U',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
             color: AppColors.primaryGreen,
@@ -324,26 +323,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.backgroundDark,
+        color: context.colors.bg,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.dividerColor),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         children: [
           Icon(icon, color: AppColors.primaryGreen, size: 20),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: context.colors.textPrimary,
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontSize: 11,
             ),
           ),
@@ -356,9 +355,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.dividerColor),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -371,24 +370,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: AppColors.primaryGreen.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.map,
                   color: AppColors.primaryGreen,
                   size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
-              const Text(
+              SizedBox(width: 12),
+              Text(
                 'Mes régions',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -398,7 +397,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   '$_regionsCount',
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: _buildRegionStat(
                   Icons.landscape,
@@ -417,21 +416,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.backgroundDark,
+        color: context.colors.bg,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         children: [
           Icon(icon, color: AppColors.primaryGreen, size: 20),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   value,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: context.colors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -440,8 +439,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 11,
                   ),
                 ),
@@ -457,14 +456,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.dividerColor),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(Icons.person, color: AppColors.primaryGreen, size: 18),
               SizedBox(width: 8),
@@ -473,12 +472,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           _buildInfoRow(
             Icons.badge,
             'PRÉNOM',
@@ -491,7 +490,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             'TÉLÉPHONE',
             _user?.phone ?? 'Non renseigné',
           ),
-          const Divider(color: AppColors.dividerColor, height: 24),
+          Divider(color: context.colors.divider, height: 24),
           _buildInfoRow(
             Icons.terrain,
             'TYPE DE SOL',
@@ -511,20 +510,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: AppColors.backgroundDark,
+              color: context.colors.bg,
               borderRadius: BorderRadius.circular(6),
             ),
-            child: Icon(icon, color: AppColors.textSecondary, size: 16),
+            child: Icon(icon, color: context.colors.textSecondary, size: 16),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 9,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.5,
@@ -534,8 +533,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   value,
                   style: TextStyle(
                     color: isPlaceholder
-                        ? AppColors.textHint
-                        : AppColors.textPrimary,
+                        ? context.colors.textHint
+                        : context.colors.textPrimary,
                     fontSize: 13,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -553,29 +552,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.dividerColor),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.eco, color: AppColors.primaryGreen, size: 18),
-              const SizedBox(width: 8),
-              const Text(
+              Icon(Icons.eco, color: AppColors.primaryGreen, size: 18),
+              SizedBox(width: 8),
+              Text(
                 'Mes Cultures',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
-              const Spacer(),
+              Spacer(),
               Text(
                 '${cultures.length}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.primaryGreen,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -583,28 +582,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           if (cultures.isEmpty)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.backgroundDark,
+                color: context.colors.bg,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.dividerColor),
+                border: Border.all(color: context.colors.divider),
               ),
               child: Column(
                 children: [
                   Icon(
                     Icons.eco_outlined,
                     size: 32,
-                    color: AppColors.textSecondary.withValues(alpha: 0.5),
+                    color: context.colors.textSecondary.withValues(alpha: 0.5),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
+                  SizedBox(height: 8),
+                  Text(
                     'Aucune culture enregistrée',
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       fontSize: 13,
                     ),
                   ),
@@ -631,15 +630,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.eco,
                         color: AppColors.primaryGreen,
                         size: 14,
                       ),
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6),
                       Text(
                         culture,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.primaryGreen,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -663,28 +662,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.dividerColor),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.location_on,
                 color: AppColors.primaryGreen,
                 size: 18,
               ),
-              const SizedBox(width: 8),
-              const Expanded(
+              SizedBox(width: 8),
+              Expanded(
                 child: Text(
                   'LOCALISATION',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ),
@@ -700,7 +699,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: AppColors.primaryGreen.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.edit, size: 14, color: AppColors.primaryGreen),
@@ -719,7 +718,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           // Map preview
           if (hasLocation)
             Container(
@@ -727,7 +726,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.dividerColor),
+                border: Border.all(color: context.colors.divider),
               ),
               clipBehavior: Clip.antiAlias,
               child: FlutterMap(
@@ -737,7 +736,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _user!.location!.lng,
                   ),
                   initialZoom: 14,
-                  interactionOptions: const InteractionOptions(
+                  interactionOptions: InteractionOptions(
                     flags: InteractiveFlag.none, // Disable interactions
                   ),
                 ),
@@ -756,7 +755,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         width: 40,
                         height: 40,
-                        child: const Icon(
+                        child: Icon(
                           Icons.location_pin,
                           color: AppColors.primaryGreen,
                           size: 40,
@@ -767,15 +766,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-          if (hasLocation) const SizedBox(height: 12),
+          if (hasLocation) SizedBox(height: 12),
           // Coordinates display
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.backgroundDark,
+              color: context.colors.bg,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.dividerColor),
+              border: Border.all(color: context.colors.divider),
             ),
             child: hasLocation
                 ? Row(
@@ -783,26 +782,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.place,
                             size: 20,
                             color: AppColors.primaryGreen,
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Latitude',
                                 style: TextStyle(
-                                  color: AppColors.textSecondary,
+                                  color: context.colors.textSecondary,
                                   fontSize: 10,
                                 ),
                               ),
                               Text(
                                 _user!.location!.lat.toStringAsFixed(4),
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
+                                style: TextStyle(
+                                  color: context.colors.textPrimary,
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -814,30 +813,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Container(
                         width: 1,
                         height: 30,
-                        color: AppColors.dividerColor,
+                        color: context.colors.divider,
                       ),
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.place,
                             size: 20,
                             color: AppColors.primaryGreen,
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Longitude',
                                 style: TextStyle(
-                                  color: AppColors.textSecondary,
+                                  color: context.colors.textSecondary,
                                   fontSize: 10,
                                 ),
                               ),
                               Text(
                                 _user!.location!.lng.toStringAsFixed(4),
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
+                                style: TextStyle(
+                                  color: context.colors.textPrimary,
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -853,21 +852,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Icon(
                         Icons.map_outlined,
                         size: 36,
-                        color: AppColors.textSecondary.withValues(alpha: 0.5),
+                        color: context.colors.textSecondary.withValues(alpha: 0.5),
                       ),
-                      const SizedBox(height: 8),
-                      const Text(
+                      SizedBox(height: 8),
+                      Text(
                         'Aucune localisation',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           fontSize: 13,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         'Appuyez sur Modifier pour définir',
                         style: TextStyle(
-                          color: AppColors.textHint,
+                          color: context.colors.textHint,
                           fontSize: 11,
                         ),
                       ),
@@ -884,14 +883,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.dividerColor),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(Icons.settings, color: AppColors.primaryGreen, size: 18),
               SizedBox(width: 8),
@@ -900,22 +899,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           // Delete account button
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () => _showDeleteAccountDialog(),
-              icon: const Icon(Icons.delete_forever, size: 18),
-              label: const Text('Supprimer mon compte'),
+              icon: Icon(Icons.delete_forever, size: 18),
+              label: Text('Supprimer mon compte'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.red,
-                side: const BorderSide(color: Colors.red),
+                side: BorderSide(color: Colors.red),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -923,10 +922,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          const Text(
+          SizedBox(height: 8),
+          Text(
             'Cette action est irréversible. Toutes vos données seront supprimées.',
-            style: TextStyle(color: AppColors.textHint, fontSize: 11),
+            style: TextStyle(color: context.colors.textHint, fontSize: 11),
             textAlign: TextAlign.center,
           ),
         ],
@@ -952,15 +951,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardDark,
+        backgroundColor: context.colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
             SizedBox(width: 10),
             Text(
               'Supprimer le compte',
-              style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
+              style: TextStyle(color: context.colors.textPrimary, fontSize: 18),
             ),
           ],
         ),
@@ -968,90 +967,90 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Êtes-vous sûr de vouloir supprimer définitivement votre compte ?',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              style: TextStyle(color: context.colors.textSecondary, fontSize: 14),
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               'Cette action va supprimer :',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
-            const Row(
+            SizedBox(height: 8),
+            Row(
               children: [
                 Icon(Icons.check_circle, color: Colors.red, size: 16),
                 SizedBox(width: 8),
                 Text(
                   'Toutes vos régions',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
-            const Row(
+            SizedBox(height: 4),
+            Row(
               children: [
                 Icon(Icons.check_circle, color: Colors.red, size: 16),
                 SizedBox(width: 8),
                 Text(
                   'Vos données personnelles',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
-            const Row(
+            SizedBox(height: 4),
+            Row(
               children: [
                 Icon(Icons.check_circle, color: Colors.red, size: 16),
                 SizedBox(width: 8),
                 Text(
                   'Votre historique',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             Text(
               'Pour confirmer, tapez votre prénom : "${_user?.firstName}"',
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: context.colors.textPrimary,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             TextField(
               controller: nameController,
-              style: const TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(color: context.colors.textPrimary),
               decoration: InputDecoration(
                 hintText: 'Votre prénom',
-                hintStyle: const TextStyle(color: AppColors.textHint),
+                hintStyle: TextStyle(color: context.colors.textHint),
                 filled: true,
-                fillColor: AppColors.backgroundDark,
+                fillColor: context.colors.bg,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppColors.dividerColor),
+                  borderSide: BorderSide(color: context.colors.divider),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppColors.dividerColor),
+                  borderSide: BorderSide(color: context.colors.divider),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Colors.red),
+                  borderSide: BorderSide(color: Colors.red),
                 ),
               ),
             ),
@@ -1060,9 +1059,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Annuler',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: context.colors.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -1085,7 +1084,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('Supprimer'),
+            child: Text('Supprimer'),
           ),
         ],
       ),
@@ -1105,7 +1104,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
+        builder: (context) => Center(
           child: CircularProgressIndicator(color: AppColors.primaryGreen),
         ),
       );
@@ -1314,7 +1313,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -1325,7 +1324,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.dividerColor,
+              color: context.colors.divider,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -1335,25 +1334,25 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                  icon: Icon(Icons.close, color: context.colors.textSecondary),
                   onPressed: () => Navigator.pop(context),
                 ),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Modifier le Profil',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                const SizedBox(width: 48),
+                SizedBox(width: 48),
               ],
             ),
           ),
-          const Divider(color: AppColors.dividerColor, height: 1),
+          Divider(color: context.colors.divider, height: 1),
           // Form
           Expanded(
             child: SingleChildScrollView(
@@ -1390,21 +1389,21 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24),
                     // First Name
                     _buildTextField(
                       controller: _firstNameController,
                       label: 'Prénom',
                       icon: Icons.person,
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     // Last Name
                     _buildTextField(
                       controller: _lastNameController,
                       label: 'Nom',
                       icon: Icons.person_outline,
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     // Phone
                     _buildTextField(
                       controller: _phoneController,
@@ -1412,14 +1411,14 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                       icon: Icons.phone,
                       keyboardType: TextInputType.phone,
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     // Soil Type
                     _buildTextField(
                       controller: _soilTypeController,
                       label: 'Type de sol',
                       icon: Icons.terrain,
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32),
                     // Save Button
                     SizedBox(
                       width: double.infinity,
@@ -1527,7 +1526,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
       child: Center(
         child: Text(
           widget.user.initials,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
             color: AppColors.primaryGreen,
@@ -1546,24 +1545,24 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
-      style: const TextStyle(color: AppColors.textPrimary),
+      style: TextStyle(color: context.colors.textPrimary),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: AppColors.textSecondary),
-        prefixIcon: Icon(icon, color: AppColors.textSecondary, size: 20),
+        labelStyle: TextStyle(color: context.colors.textSecondary),
+        prefixIcon: Icon(icon, color: context.colors.textSecondary, size: 20),
         filled: true,
-        fillColor: AppColors.backgroundDark,
+        fillColor: context.colors.bg,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.dividerColor),
+          borderSide: BorderSide(color: context.colors.divider),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.dividerColor),
+          borderSide: BorderSide(color: context.colors.divider),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primaryGreen),
+          borderSide: BorderSide(color: AppColors.primaryGreen),
         ),
       ),
     );
@@ -1654,7 +1653,7 @@ class _LocationEditorSheetState extends State<_LocationEditorSheet> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -1665,7 +1664,7 @@ class _LocationEditorSheetState extends State<_LocationEditorSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.dividerColor,
+              color: context.colors.divider,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -1675,51 +1674,51 @@ class _LocationEditorSheetState extends State<_LocationEditorSheet> {
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                  icon: Icon(Icons.close, color: context.colors.textSecondary),
                   onPressed: () => Navigator.pop(context),
                 ),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Modifier la localisation',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                const SizedBox(width: 48),
+                SizedBox(width: 48),
               ],
             ),
           ),
-          const Divider(color: AppColors.dividerColor, height: 1),
+          Divider(color: context.colors.divider, height: 1),
           // Search bar
           Container(
             margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             decoration: BoxDecoration(
-              color: AppColors.backgroundDark,
+              color: context.colors.bg,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.dividerColor),
+              border: Border.all(color: context.colors.divider),
             ),
             child: TextField(
               controller: _searchController,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: context.colors.textPrimary,
                 fontSize: 14,
               ),
               decoration: InputDecoration(
                 hintText: 'Rechercher une adresse...',
                 hintStyle: TextStyle(
-                  color: AppColors.textSecondary.withOpacity(0.7),
+                  color: context.colors.textSecondary.withOpacity(0.7),
                 ),
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.search,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   size: 20,
                 ),
                 suffixIcon: _isSearching
-                    ? const Padding(
+                    ? Padding(
                         padding: EdgeInsets.all(12),
                         child: SizedBox(
                           width: 16,
@@ -1732,9 +1731,9 @@ class _LocationEditorSheetState extends State<_LocationEditorSheet> {
                       )
                     : _searchController.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.close,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           size: 18,
                         ),
                         onPressed: () {
@@ -1759,11 +1758,11 @@ class _LocationEditorSheetState extends State<_LocationEditorSheet> {
           if (_showSearchResults)
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
-              constraints: const BoxConstraints(maxHeight: 150),
+              constraints: BoxConstraints(maxHeight: 150),
               decoration: BoxDecoration(
-                color: AppColors.cardDark,
+                color: context.colors.card,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.dividerColor),
+                border: Border.all(color: context.colors.divider),
               ),
               child: ListView.builder(
                 shrinkWrap: true,
@@ -1772,22 +1771,22 @@ class _LocationEditorSheetState extends State<_LocationEditorSheet> {
                   final location = _searchResults[index];
                   return ListTile(
                     dense: true,
-                    leading: const Icon(
+                    leading: Icon(
                       Icons.location_on,
                       color: AppColors.primaryGreen,
                       size: 20,
                     ),
                     title: Text(
                       _searchController.text,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
                         fontSize: 13,
                       ),
                     ),
                     subtitle: Text(
                       '${location.latitude.toStringAsFixed(4)}°, ${location.longitude.toStringAsFixed(4)}°',
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 11,
                       ),
                     ),
@@ -1796,14 +1795,14 @@ class _LocationEditorSheetState extends State<_LocationEditorSheet> {
                 },
               ),
             ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           // Map
           Expanded(
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.dividerColor),
+                border: Border.all(color: context.colors.divider),
               ),
               clipBehavior: Clip.antiAlias,
               child: Stack(
@@ -1854,14 +1853,14 @@ class _LocationEditorSheetState extends State<_LocationEditorSheet> {
                             _mapController.camera.zoom + 1,
                           );
                         }),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6),
                         _buildMapControl(Icons.remove, () {
                           _mapController.move(
                             _mapController.camera.center,
                             _mapController.camera.zoom - 1,
                           );
                         }),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6),
                         _buildMapControl(Icons.my_location, _goToMyLocation),
                       ],
                     ),
@@ -1875,7 +1874,7 @@ class _LocationEditorSheetState extends State<_LocationEditorSheet> {
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.backgroundDark,
+              color: context.colors.bg,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
@@ -1883,16 +1882,16 @@ class _LocationEditorSheetState extends State<_LocationEditorSheet> {
               children: [
                 Column(
                   children: [
-                    const Text(
+                    Text(
                       'Latitude',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 11,
                       ),
                     ),
                     Text(
                       _selectedLat.toStringAsFixed(4),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.primaryGreen,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -1900,13 +1899,13 @@ class _LocationEditorSheetState extends State<_LocationEditorSheet> {
                     ),
                   ],
                 ),
-                Container(width: 1, height: 30, color: AppColors.dividerColor),
+                Container(width: 1, height: 30, color: context.colors.divider),
                 Column(
                   children: [
-                    const Text(
+                    Text(
                       'Longitude',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 11,
                       ),
                     ),
@@ -1959,9 +1958,9 @@ class _LocationEditorSheetState extends State<_LocationEditorSheet> {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppColors.backgroundDark.withOpacity(0.9),
+          color: context.colors.bg.withOpacity(0.9),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.dividerColor),
+          border: Border.all(color: context.colors.divider),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.2),
@@ -1970,7 +1969,7 @@ class _LocationEditorSheetState extends State<_LocationEditorSheet> {
             ),
           ],
         ),
-        child: Icon(icon, size: 20, color: AppColors.textPrimary),
+        child: Icon(icon, size: 20, color: context.colors.textPrimary),
       ),
     );
   }

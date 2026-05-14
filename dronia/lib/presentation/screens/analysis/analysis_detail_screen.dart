@@ -255,7 +255,6 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -272,15 +271,14 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
       expandedHeight: 60,
       floating: true,
       pinned: true,
-      backgroundColor: AppColors.backgroundDark,
       leading: IconButton(
         icon: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(14),
           ),
-          child: const Icon(Icons.arrow_back_ios_new, size: 16),
+          child: Icon(Icons.arrow_back_ios_new, size: 16),
         ),
         onPressed: () => Navigator.pop(context),
       ),
@@ -289,19 +287,19 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
         children: [
           Text(
             'Analyse: ${analysis.region ?? analysis.cropType}',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           Text(
             _formattedDate,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
         ],
@@ -310,18 +308,18 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
         TextButton.icon(
           onPressed: _isGeneratingPdf ? null : _generatePdf,
           icon: _isGeneratingPdf
-              ? const SizedBox(
+              ? SizedBox(
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 )
-              : const Icon(Icons.picture_as_pdf, size: 18),
-          label: const Text('PDF'),
+              : Icon(Icons.picture_as_pdf, size: 18),
+          label: Text('PDF'),
           style: TextButton.styleFrom(
-            foregroundColor: AppColors.textSecondary,
+            foregroundColor: context.colors.textSecondary,
             padding: const EdgeInsets.symmetric(horizontal: 12),
           ),
         ),
@@ -337,7 +335,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Terminer'),
+            child: Text('Terminer'),
           ),
         ),
       ],
@@ -351,18 +349,18 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildMainStatusCard(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           _buildDetailsCard(),
-          const SizedBox(height: 16),
-          if (!isHealthy) ...[_buildInsectsCard(), const SizedBox(height: 16)],
+          SizedBox(height: 16),
+          if (!isHealthy) ...[_buildInsectsCard(), SizedBox(height: 16)],
           _buildStatsGrid(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           _buildImageAndMetrics(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           _buildRecommendationsCard(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           _buildBottomInfo(),
-          const SizedBox(height: 100),
+          SizedBox(height: 100),
         ],
       ),
     );
@@ -374,8 +372,8 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isHealthy
-              ? [AppColors.success.withValues(alpha: 0.2), AppColors.cardDark]
-              : [AppColors.error.withValues(alpha: 0.2), AppColors.cardDark],
+              ? [AppColors.success.withValues(alpha: 0.2), context.colors.card]
+              : [AppColors.error.withValues(alpha: 0.2), context.colors.card],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -400,13 +398,13 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                     color: isHealthy ? AppColors.success : AppColors.error,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   isHealthy
                       ? 'Aucune anomalie détectée • Plante en bonne santé'
                       : 'Sévérité: ${analysis.riskLevel ?? 'Modéré'}',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -424,9 +422,9 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                   color: isHealthy ? AppColors.success : AppColors.error,
                 ),
               ),
-              const Text(
+              Text(
                 'Confiance IA',
-                style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 10, color: context.colors.textSecondary),
               ),
             ],
           ),
@@ -439,7 +437,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isHealthy
@@ -457,7 +455,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                 color: isHealthy ? AppColors.success : AppColors.error,
                 size: 20,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 isHealthy
                     ? 'Détails de l\'État Sain'
@@ -470,7 +468,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           if (isHealthy) ...[
             _buildDetailRow(
               'Aucune maladie détectée',
@@ -513,11 +511,11 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('• ', style: TextStyle(color: AppColors.textSecondary)),
+          Text('• ', style: TextStyle(color: context.colors.textSecondary)),
           Text(
             '$label: ',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontWeight: FontWeight.w600,
               fontSize: 12,
             ),
@@ -525,8 +523,8 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: context.colors.textSecondary,
                 fontSize: 12,
               ),
             ),
@@ -547,14 +545,14 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Insectes Potentiels Associés',
             style: TextStyle(
               color: AppColors.error,
@@ -562,12 +560,12 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
               fontSize: 14,
             ),
           ),
-          const SizedBox(height: 4),
-          const Text(
+          SizedBox(height: 4),
+          Text(
             'Les insectes suivants peuvent être responsables ou favoriser cette maladie',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+            style: TextStyle(color: context.colors.textSecondary, fontSize: 11),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -578,7 +576,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundDark,
+                  color: context.colors.bg,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 ),
@@ -587,13 +585,13 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                   children: [
                     Text(
                       insect['name'] as String,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 12,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 6,
@@ -638,7 +636,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
             isHealthy ? AppColors.success : AppColors.error,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Expanded(
           child: _buildStatCard(
             '${healthySurface.toStringAsFixed(1)}%',
@@ -660,7 +658,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -674,17 +672,17 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
               color: color,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontSize: 11,
             ),
           ),
           Text(
             subtitle,
-            style: const TextStyle(color: AppColors.textHint, fontSize: 9),
+            style: TextStyle(color: context.colors.textHint, fontSize: 9),
           ),
         ],
       ),
@@ -701,7 +699,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
           child: Container(
             height: 200,
             decoration: BoxDecoration(
-              color: AppColors.cardDark,
+              color: context.colors.card,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
@@ -733,7 +731,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                             color: AppColors.white,
                             size: 12,
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4),
                           Text(
                             isHealthy ? 'Saine' : 'Critique',
                             style: const TextStyle(
@@ -752,9 +750,9 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                     child: Row(
                       children: [
                         _buildLegendDot('OK', AppColors.success),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         _buildLegendDot('Stress', AppColors.warning),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         _buildLegendDot('Critique', AppColors.error),
                       ],
                     ),
@@ -764,7 +762,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         // Metrics column
         Expanded(
           flex: 1,
@@ -776,21 +774,21 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                 isHealthy ? 'Parcelle saine' : 'Zone sous surveillance',
                 isHealthy ? AppColors.success : AppColors.error,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               _buildMetricCard(
                 '${(analysis.estimatedYieldLoss ?? 0).toStringAsFixed(0)}%',
                 'Perte Rendement Est.',
                 isHealthy ? 'Aucune perte' : 'Si non traité',
                 isHealthy ? AppColors.success : AppColors.error,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               _buildMetricCard(
                 '+${(analysis.propagationRate ?? 0).toStringAsFixed(0)}%',
                 'Propagation/Jour',
                 isHealthy ? 'Nulle' : 'Estimation 5k',
                 isHealthy ? AppColors.success : AppColors.warning,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               _buildMetricCard(
                 analysis.riskLevel ?? 'Faible',
                 'Niveau de Risque',
@@ -823,16 +821,16 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
 
     // Placeholder
     return Container(
-      color: AppColors.backgroundDark,
-      child: const Center(
+      color: context.colors.bg,
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.image, color: AppColors.textHint, size: 48),
+            Icon(Icons.image, color: context.colors.textHint, size: 48),
             SizedBox(height: 8),
             Text(
               'Image non disponible',
-              style: TextStyle(color: AppColors.textHint, fontSize: 12),
+              style: TextStyle(color: context.colors.textHint, fontSize: 12),
             ),
           ],
         ),
@@ -849,10 +847,10 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
           height: 6,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        const SizedBox(width: 3),
+        SizedBox(width: 3),
         Text(
           label,
-          style: const TextStyle(color: AppColors.white, fontSize: 8),
+          style: TextStyle(color: AppColors.white, fontSize: 8),
         ),
       ],
     );
@@ -868,7 +866,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -882,15 +880,15 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
               color: color,
             ),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 9),
+            style: TextStyle(color: context.colors.textSecondary, fontSize: 9),
             textAlign: TextAlign.center,
           ),
           Text(
             subtitle,
-            style: const TextStyle(color: AppColors.textHint, fontSize: 8),
+            style: TextStyle(color: context.colors.textHint, fontSize: 8),
             textAlign: TextAlign.center,
           ),
         ],
@@ -923,8 +921,8 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isHealthy
-              ? [AppColors.success.withValues(alpha: 0.15), AppColors.cardDark]
-              : [AppColors.error.withValues(alpha: 0.15), AppColors.cardDark],
+              ? [AppColors.success.withValues(alpha: 0.15), context.colors.card]
+              : [AppColors.error.withValues(alpha: 0.15), context.colors.card],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -946,13 +944,13 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
               fontSize: 14,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           if (isHealthy) ...[
-            const Text(
+            Text(
               'Aucun traitement nécessaire. Continuez vos bonnes pratiques.',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Row(
               children: [
                 _buildActionChip(
@@ -960,9 +958,9 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                   '2-3 sem.',
                   'Prochaine analyse',
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 _buildActionChip(Icons.delete_outline, '0€', 'Traitement'),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 _buildActionChip(Icons.trending_up, '100%', 'Rendement prévu'),
               ],
             ),
@@ -973,7 +971,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'TRAITEMENT RECOMMANDÉ',
                         style: TextStyle(
                           color: AppColors.error,
@@ -981,33 +979,33 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         analysis.recommendations?.isNotEmpty == true
                             ? analysis.recommendations!.first
                             : 'Fongicides à base de soufre ou bicarbonate de potassium.',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          color: context.colors.textSecondary,
                           fontSize: 11,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.eco,
                             color: AppColors.info,
                             size: 14,
                           ),
-                          const SizedBox(width: 4),
-                          const Text(
+                          SizedBox(width: 4),
+                          Text(
                             'PRÉVENTION',
                             style: TextStyle(
                               color: AppColors.info,
@@ -1017,11 +1015,11 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      const Text(
+                      SizedBox(height: 4),
+                      Text(
                         'Bonne circulation d\'air, éviter l\'arrosage sur les feuilles.',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           fontSize: 11,
                         ),
                       ),
@@ -1030,7 +1028,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -1042,17 +1040,17 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.warning_amber,
                     color: AppColors.error,
                     size: 18,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           '⏱️ Intervention sous 24-48h',
                           style: TextStyle(
                             color: AppColors.error,
@@ -1060,11 +1058,11 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                             fontSize: 12,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2),
                         Text(
                           'Économie potentielle: traitement ciblé sur ${(analysis.affectedSurface ?? 8).toStringAsFixed(0)}% vs 100% de la parcelle',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: context.colors.textSecondary,
                             fontSize: 10,
                           ),
                         ),
@@ -1085,24 +1083,24 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColors.backgroundDark,
+          color: context.colors.bg,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           children: [
-            Icon(icon, color: AppColors.textSecondary, size: 20),
-            const SizedBox(height: 4),
+            Icon(icon, color: context.colors.textSecondary, size: 20),
+            SizedBox(height: 4),
             Text(
               value,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: context.colors.textPrimary,
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
               ),
             ),
             Text(
               label,
-              style: const TextStyle(color: AppColors.textHint, fontSize: 8),
+              style: TextStyle(color: context.colors.textHint, fontSize: 8),
               textAlign: TextAlign.center,
             ),
           ],
@@ -1120,7 +1118,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.cardDark,
+              color: context.colors.card,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
@@ -1129,19 +1127,19 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.cloud, color: AppColors.info, size: 16),
-                    const SizedBox(width: 8),
-                    const Text(
+                    Icon(Icons.cloud, color: AppColors.info, size: 16),
+                    SizedBox(width: 8),
+                    Text(
                       'MÉTÉO ANALYSE',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -1155,18 +1153,18 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Center(
                   child: Text(
                     '${analysis.weather?.windSpeed?.toStringAsFixed(0) ?? '26'} km/h W',
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      color: context.colors.textSecondary,
                       fontSize: 11,
                     ),
                   ),
                 ),
                 if (!isHealthy) ...[
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -1175,13 +1173,13 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.warning_amber,
                           color: AppColors.warning,
                           size: 12,
                         ),
-                        const SizedBox(width: 6),
-                        const Expanded(
+                        SizedBox(width: 6),
+                        Expanded(
                           child: Text(
                             'Humidité favorable propagation',
                             style: TextStyle(
@@ -1198,28 +1196,28 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         // Info card
         Expanded(
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.cardDark,
+              color: context.colors.card,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'INFORMATIONS D\'ANALYSE',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 _buildInfoRow('Source', 'Smartphone'),
                 _buildInfoRow('Appareil', 'Camera Smartphone'),
                 _buildInfoRow('Résolution', 'HD / 4K'),
@@ -1242,7 +1240,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
       children: [
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.primaryGreen,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -1250,7 +1248,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
         ),
         Text(
           label,
-          style: const TextStyle(color: AppColors.textHint, fontSize: 9),
+          style: TextStyle(color: context.colors.textHint, fontSize: 9),
         ),
       ],
     );
@@ -1264,20 +1262,20 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
         children: [
           Text(
             label,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 9),
+            style: TextStyle(color: context.colors.textSecondary, fontSize: 9),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: 2),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.backgroundDark,
+              color: context.colors.bg,
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
               value,
               style: TextStyle(
-                color: valueColor ?? AppColors.textPrimary,
+                color: valueColor ?? context.colors.textPrimary,
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
               ),

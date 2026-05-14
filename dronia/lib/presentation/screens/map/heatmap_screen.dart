@@ -79,7 +79,7 @@ class _HeatmapScreenState extends State<HeatmapScreen>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: Duration(milliseconds: 600),
       vsync: this,
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -142,7 +142,7 @@ class _HeatmapScreenState extends State<HeatmapScreen>
       );
       if (!launched && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Impossible d\'ouvrir le navigateur'),
             backgroundColor: AppColors.error,
           ),
@@ -166,7 +166,7 @@ class _HeatmapScreenState extends State<HeatmapScreen>
       // Force rebuild to reload weather tiles
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text('Données météo actualisées'),
         backgroundColor: AppColors.primaryGreen,
         duration: Duration(seconds: 1),
@@ -184,7 +184,6 @@ class _HeatmapScreenState extends State<HeatmapScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: _isFullscreen
@@ -193,13 +192,13 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                 child: Column(
                   children: [
                     _buildHeader(),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     _buildWeatherLayerSelector(),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     _buildMapStyleSelector(),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     _buildActionButtons(),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Expanded(child: _buildMap()),
                   ],
                 ),
@@ -254,17 +253,17 @@ class _HeatmapScreenState extends State<HeatmapScreen>
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.backgroundDark.withOpacity(0.9),
+                color: context.colors.bg.withOpacity(0.9),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.3),
                     blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    offset: Offset(0, 2),
                   ),
                 ],
               ),
-              child: const Icon(Icons.close, color: Colors.white, size: 24),
+              child: Icon(Icons.close, color: context.colors.textPrimary, size: 24),
             ),
           ),
         ),
@@ -275,7 +274,7 @@ class _HeatmapScreenState extends State<HeatmapScreen>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: AppColors.backgroundDark.withOpacity(0.9),
+              color: context.colors.bg.withOpacity(0.9),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: _weatherLayers
@@ -291,9 +290,9 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                   _weatherLayers
                       .firstWhere((l) => l.id == _selectedWeatherLayer)
                       .icon,
-                  style: const TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 16),
                 ),
-                const SizedBox(width: 6),
+                SizedBox(width: 6),
                 Text(
                   _weatherLayers
                       .firstWhere((l) => l.id == _selectedWeatherLayer)
@@ -316,13 +315,13 @@ class _HeatmapScreenState extends State<HeatmapScreen>
           top: MediaQuery.of(context).padding.top + 12,
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.backgroundDark.withOpacity(0.9),
+              color: context.colors.bg.withOpacity(0.9),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.2),
                   blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  offset: Offset(0, 2),
                 ),
               ],
             ),
@@ -334,7 +333,7 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                     _mapController.camera.zoom + 1,
                   );
                 }),
-                Container(width: 24, height: 1, color: AppColors.dividerColor),
+                Container(width: 24, height: 1, color: context.colors.divider),
                 _buildMapControlButton(Icons.remove, () {
                   _mapController.move(
                     _mapController.camera.center,
@@ -366,11 +365,11 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                   BoxShadow(
                     color: AppColors.primaryGreen.withOpacity(0.3),
                     blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    offset: Offset(0, 2),
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.my_location,
                 color: Colors.white,
                 size: 22,
@@ -409,22 +408,22 @@ class _HeatmapScreenState extends State<HeatmapScreen>
               color: Colors.orange.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Text('🌍', style: TextStyle(fontSize: 28)),
+            child: Text('🌍', style: TextStyle(fontSize: 28)),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 RichText(
-                  text: const TextSpan(
+                  text: TextSpan(
                     children: [
                       TextSpan(
                         text: 'Carte ',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                       TextSpan(
@@ -438,20 +437,20 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                     ],
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Row(
                   children: [
                     Icon(
                       Icons.access_time,
                       size: 12,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4),
                     Text(
                       dateFormat.format(now),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -472,20 +471,20 @@ class _HeatmapScreenState extends State<HeatmapScreen>
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              Icon(Icons.layers, size: 16, color: AppColors.textSecondary),
-              const SizedBox(width: 6),
+              Icon(Icons.layers, size: 16, color: context.colors.textSecondary),
+              SizedBox(width: 6),
               Text(
                 'Couche météo',
                 style: TextStyle(
                   fontSize: 13,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -497,7 +496,7 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                 child: GestureDetector(
                   onTap: () => setState(() => _selectedWeatherLayer = layer.id),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                    duration: Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 10,
@@ -513,12 +512,12 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                               end: Alignment.bottomRight,
                             )
                           : null,
-                      color: isSelected ? null : AppColors.cardDark,
+                      color: isSelected ? null : context.colors.card,
                       borderRadius: BorderRadius.circular(25),
                       border: Border.all(
                         color: isSelected
                             ? layer.color
-                            : AppColors.dividerColor,
+                            : context.colors.divider,
                         width: isSelected ? 2 : 1,
                       ),
                       boxShadow: isSelected
@@ -526,7 +525,7 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                               BoxShadow(
                                 color: layer.color.withOpacity(0.3),
                                 blurRadius: 8,
-                                offset: const Offset(0, 2),
+                                offset: Offset(0, 2),
                               ),
                             ]
                           : null,
@@ -534,14 +533,14 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(layer.icon, style: const TextStyle(fontSize: 16)),
-                        const SizedBox(width: 8),
+                        Text(layer.icon, style: TextStyle(fontSize: 16)),
+                        SizedBox(width: 8),
                         Text(
                           layer.name,
                           style: TextStyle(
                             color: isSelected
                                 ? Colors.white
-                                : AppColors.textPrimary,
+                                : context.colors.textPrimary,
                             fontSize: 13,
                             fontWeight: isSelected
                                 ? FontWeight.w600
@@ -571,21 +570,21 @@ class _HeatmapScreenState extends State<HeatmapScreen>
               Icon(
                 Icons.map_outlined,
                 size: 16,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: 6),
               Text(
                 'Style de carte',
                 style: TextStyle(
                   fontSize: 13,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -597,7 +596,7 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                 child: GestureDetector(
                   onTap: () => setState(() => _selectedMapStyle = style.id),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                    duration: Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 10,
@@ -605,26 +604,26 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.primaryGreen.withOpacity(0.15)
-                          : AppColors.cardDark,
+                          : context.colors.card,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected
                             ? AppColors.primaryGreen
-                            : AppColors.dividerColor,
+                            : context.colors.divider,
                         width: isSelected ? 2 : 1,
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(style.icon, style: const TextStyle(fontSize: 14)),
-                        const SizedBox(width: 6),
+                        Text(style.icon, style: TextStyle(fontSize: 14)),
+                        SizedBox(width: 6),
                         Text(
                           style.name,
                           style: TextStyle(
                             color: isSelected
                                 ? AppColors.primaryGreen
-                                : AppColors.textPrimary,
+                                : context.colors.textPrimary,
                             fontSize: 13,
                             fontWeight: isSelected
                                 ? FontWeight.w600
@@ -668,11 +667,11 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                     BoxShadow(
                       color: AppColors.primaryGreen.withOpacity(0.3),
                       blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.refresh, color: Colors.white, size: 20),
@@ -690,7 +689,7 @@ class _HeatmapScreenState extends State<HeatmapScreen>
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           // Zoom.Earth button
           Expanded(
             child: GestureDetector(
@@ -708,11 +707,11 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                     BoxShadow(
                       color: Colors.purple.withOpacity(0.3),
                       blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text('🚀', style: TextStyle(fontSize: 16)),
@@ -740,12 +739,12 @@ class _HeatmapScreenState extends State<HeatmapScreen>
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.dividerColor, width: 1.5),
+        border: Border.all(color: context.colors.divider, width: 1.5),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
             blurRadius: 12,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -798,7 +797,7 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundDark.withOpacity(0.95),
+                  color: context.colors.bg.withOpacity(0.95),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: _weatherLayers
@@ -810,7 +809,7 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                     BoxShadow(
                       color: Colors.black.withOpacity(0.2),
                       blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
@@ -821,9 +820,9 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                       _weatherLayers
                           .firstWhere((l) => l.id == _selectedWeatherLayer)
                           .icon,
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16),
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Text(
                       _weatherLayers
                           .firstWhere((l) => l.id == _selectedWeatherLayer)
@@ -846,13 +845,13 @@ class _HeatmapScreenState extends State<HeatmapScreen>
               top: 12,
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundDark.withOpacity(0.95),
+                  color: context.colors.bg.withOpacity(0.95),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.2),
                       blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
@@ -867,7 +866,7 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                     Container(
                       width: 24,
                       height: 1,
-                      color: AppColors.dividerColor,
+                      color: context.colors.divider,
                     ),
                     _buildMapControlButton(Icons.remove, () {
                       _mapController.move(
@@ -892,7 +891,7 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: AppColors.backgroundDark.withOpacity(0.95),
+                        color: context.colors.bg.withOpacity(0.95),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
@@ -902,9 +901,9 @@ class _HeatmapScreenState extends State<HeatmapScreen>
                           ),
                         ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.fullscreen,
-                        color: Colors.white,
+                        color: context.colors.textPrimary,
                         size: 24,
                       ),
                     ),
@@ -957,7 +956,7 @@ class _HeatmapScreenState extends State<HeatmapScreen>
         width: 40,
         height: 40,
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
-        child: Icon(icon, color: AppColors.textPrimary, size: 20),
+        child: Icon(icon, color: context.colors.textPrimary, size: 20),
       ),
     );
   }

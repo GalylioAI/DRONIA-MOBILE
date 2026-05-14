@@ -21,14 +21,14 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: Duration(milliseconds: 800),
       vsync: this,
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
     _slideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+        Tween<Offset>(begin: Offset(0, 0.1), end: Offset.zero).animate(
           CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
         );
     _animationController.forward();
@@ -43,7 +43,6 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: SlideTransition(
@@ -64,15 +63,14 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
       expandedHeight: 120,
       floating: true,
       pinned: true,
-      backgroundColor: AppColors.backgroundDark,
       leading: IconButton(
         icon: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.cardDark.withValues(alpha: 0.8),
+            color: context.colors.card.withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: const Icon(Icons.arrow_back_ios_new, size: 18),
+          child: Icon(Icons.arrow_back_ios_new, size: 18),
         ),
         onPressed: () => Navigator.pop(context),
       ),
@@ -83,10 +81,10 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
             icon: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.cardDark.withValues(alpha: 0.8),
+                color: context.colors.card.withValues(alpha: 0.8),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(Icons.settings, size: 20),
+              child: Icon(Icons.settings, size: 20),
             ),
             onPressed: () {},
           ),
@@ -98,7 +96,7 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
             gradient: LinearGradient(
               colors: [
                 AppColors.primaryGreen.withValues(alpha: 0.2),
-                AppColors.backgroundDark,
+                context.colors.bg,
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -123,18 +121,18 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
                         BoxShadow(
                           color: AppColors.info.withValues(alpha: 0.4),
                           blurRadius: 12,
-                          offset: const Offset(0, 4),
+                          offset: Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.water_drop,
                       color: AppColors.white,
                       size: 24,
                     ),
                   ),
-                  const SizedBox(width: 14),
-                  const Column(
+                  SizedBox(width: 14),
+                  Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -143,14 +141,14 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                       Text(
                         'Parcelle Nord • Zone 3',
                         style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     ],
@@ -171,15 +169,15 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildCurrentReading(),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           _buildStatsRow(),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           _buildChartSection(),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           _buildSensorInfo(),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           _buildActionButtons(),
-          const SizedBox(height: 100),
+          SizedBox(height: 100),
         ],
       ),
     );
@@ -199,7 +197,7 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
           BoxShadow(
             color: AppColors.info.withValues(alpha: 0.4),
             blurRadius: 20,
-            offset: const Offset(0, 8),
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -211,13 +209,13 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
               color: AppColors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.water_drop,
               color: AppColors.white,
               size: 44,
             ),
           ),
-          const SizedBox(width: 20),
+          SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,8 +227,8 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
                     fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Row(
+                SizedBox(height: 4),
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
@@ -254,7 +252,7 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
                     ),
                   ],
                 ),
-                const Text(
+                Text(
                   'Humidité du sol',
                   style: TextStyle(color: AppColors.white70, fontSize: 14),
                 ),
@@ -273,7 +271,7 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
                 ),
               ],
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.check_circle, color: AppColors.white, size: 16),
@@ -305,7 +303,7 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
             color: AppColors.info,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Expanded(
           child: _buildStatCard(
             label: 'Maximum',
@@ -314,7 +312,7 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
             color: AppColors.warning,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Expanded(
           child: _buildStatCard(
             label: 'Moyenne',
@@ -336,7 +334,7 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
@@ -350,20 +348,20 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
             ),
             child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: context.colors.textPrimary,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontSize: 12,
             ),
           ),
@@ -376,7 +374,7 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
@@ -403,46 +401,46 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.timeline,
                   color: AppColors.white,
                   size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
-              const Text(
+              SizedBox(width: 12),
+              Text(
                 'Historique 24h',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
-              const Spacer(),
+              Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundDark,
+                  color: context.colors.bg,
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Text(
+                child: Text(
                   'Aujourd\'hui',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           Container(
             height: 180,
             decoration: BoxDecoration(
-              color: AppColors.backgroundDark,
+              color: context.colors.bg,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Center(
@@ -454,11 +452,11 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
                     size: 48,
                     color: AppColors.primaryGreen.withValues(alpha: 0.5),
                   ),
-                  const SizedBox(height: 12),
-                  const Text(
+                  SizedBox(height: 12),
+                  Text(
                     'Graphique en cours de chargement...',
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       fontSize: 14,
                     ),
                   ),
@@ -475,7 +473,7 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
@@ -502,24 +500,24 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.info_outline,
                   color: AppColors.white,
                   size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
-              const Text(
+              SizedBox(width: 12),
+              Text(
                 'Informations du Capteur',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           _buildInfoRow('ID Capteur', 'S-001', Icons.tag),
           _buildDivider(),
           _buildInfoRow('Emplacement', 'Parcelle A, Zone 3', Icons.location_on),
@@ -553,20 +551,20 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.textSecondary, size: 20),
-          const SizedBox(width: 12),
+          Icon(icon, color: context.colors.textSecondary, size: 20),
+          SizedBox(width: 12),
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontSize: 14,
             ),
           ),
-          const Spacer(),
+          Spacer(),
           Text(
             value,
             style: TextStyle(
-              color: valueColor ?? AppColors.textPrimary,
+              color: valueColor ?? context.colors.textPrimary,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -577,7 +575,7 @@ class _SensorDetailScreenState extends State<SensorDetailScreen>
   }
 
   Widget _buildDivider() {
-    return const Divider(color: AppColors.dividerColor, height: 1);
+    return Divider(color: context.colors.divider, height: 1);
   }
 
   Widget _buildActionButtons() {

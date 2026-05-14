@@ -73,14 +73,14 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: Duration(milliseconds: 800),
       vsync: this,
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
     _slideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+        Tween<Offset>(begin: Offset(0, 0.1), end: Offset.zero).animate(
           CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
         );
     _animationController.forward();
@@ -98,7 +98,6 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: SlideTransition(
@@ -118,13 +117,13 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           _buildHistoryButton(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           _buildWelcomeCard(),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           _buildConfigCard(),
-          const SizedBox(height: 100),
+          SizedBox(height: 100),
         ],
       ),
     );
@@ -139,7 +138,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
@@ -151,21 +150,21 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                   color: AppColors.primaryGreen.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.history,
                   color: AppColors.primaryGreen,
                   size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
-              const Expanded(
+              SizedBox(width: 12),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Historique des conversations',
                       style: TextStyle(
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                         fontWeight: FontWeight.w500,
                         fontSize: 14,
                       ),
@@ -174,14 +173,14 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                     Text(
                       'Reprendre une discussion précédente',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+              Icon(Icons.chevron_right, color: context.colors.textSecondary),
             ],
           ),
         ),
@@ -266,14 +265,14 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
-          text: const TextSpan(
+          text: TextSpan(
             children: [
               TextSpan(
                 text: 'Conseiller ',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               TextSpan(
@@ -287,10 +286,10 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
             ],
           ),
         ),
-        const SizedBox(height: 4),
-        const Text(
+        SizedBox(height: 4),
+        Text(
           'Assistant agricole intelligent',
-          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
         ),
       ],
     );
@@ -313,7 +312,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
           BoxShadow(
             color: AppColors.primaryGreen.withValues(alpha: 0.4),
             blurRadius: 20,
-            offset: const Offset(0, 8),
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -328,14 +327,14 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                   color: AppColors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.lightbulb_outline,
                   color: AppColors.white,
                   size: 24,
                 ),
               ),
-              const SizedBox(width: 14),
-              const Expanded(
+              SizedBox(width: 14),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -357,7 +356,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -366,13 +365,13 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
             ),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.auto_awesome,
                   color: AppColors.white,
                   size: 20,
                 ),
-                const SizedBox(width: 12),
-                const Expanded(
+                SizedBox(width: 12),
+                Expanded(
                   child: Text(
                     'Diagnostic de maladies • Conseils d\'irrigation • Optimisation des cultures',
                     style: TextStyle(color: AppColors.white, fontSize: 12),
@@ -390,54 +389,54 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 20,
-            offset: const Offset(0, 8),
+            offset: Offset(0, 8),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Configuration',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
-          const SizedBox(height: 6),
-          const Text(
+          SizedBox(height: 6),
+          Text(
             'Personnalisez votre assistant',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            style: TextStyle(color: context.colors.textSecondary, fontSize: 13),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
 
           _buildStepHeader('1', 'Sélectionnez votre culture', Icons.eco),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           _buildCultureGrid(),
 
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           _buildStepHeader('2', 'Localisation (optionnel)', Icons.location_on),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           _buildLocationButton(),
 
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           _buildStepHeader(
             '3',
             'Préoccupations (optionnel)',
             Icons.help_outline,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           _buildConcernsInput(),
 
-          const SizedBox(height: 28),
+          SizedBox(height: 28),
           _buildStartButton(),
         ],
       ),
@@ -462,7 +461,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
           child: Center(
             child: Text(
               number,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
@@ -470,13 +469,13 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Icon(icon, color: AppColors.primaryGreen, size: 20),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: context.colors.textPrimary,
             fontWeight: FontWeight.w600,
             fontSize: 15,
           ),
@@ -494,7 +493,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
         return GestureDetector(
           onTap: () => setState(() => _selectedCulture = culture.name),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+            duration: Duration(milliseconds: 200),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               gradient: isSelected
@@ -505,10 +504,10 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                       ],
                     )
                   : null,
-              color: isSelected ? null : AppColors.backgroundDark,
+              color: isSelected ? null : context.colors.bg,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isSelected ? culture.color : AppColors.dividerColor,
+                color: isSelected ? culture.color : context.colors.divider,
                 width: isSelected ? 2 : 1,
               ),
               boxShadow: isSelected
@@ -516,7 +515,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                       BoxShadow(
                         color: culture.color.withValues(alpha: 0.3),
                         blurRadius: 8,
-                        offset: const Offset(0, 2),
+                        offset: Offset(0, 2),
                       ),
                     ]
                   : null,
@@ -524,12 +523,12 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(culture.emoji, style: const TextStyle(fontSize: 18)),
-                const SizedBox(width: 8),
+                Text(culture.emoji, style: TextStyle(fontSize: 18)),
+                SizedBox(width: 8),
                 Text(
                   culture.name,
                   style: TextStyle(
-                    color: isSelected ? culture.color : AppColors.textPrimary,
+                    color: isSelected ? culture.color : context.colors.textPrimary,
                     fontWeight: isSelected
                         ? FontWeight.w600
                         : FontWeight.normal,
@@ -557,12 +556,12 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
           decoration: BoxDecoration(
             color: hasLocation
                 ? AppColors.primaryGreen.withValues(alpha: 0.1)
-                : AppColors.backgroundDark,
+                : context.colors.bg,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: hasLocation
                   ? AppColors.primaryGreen
-                  : AppColors.dividerColor,
+                  : context.colors.divider,
             ),
           ),
           child: Row(
@@ -581,7 +580,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                   size: 22,
                 ),
               ),
-              const SizedBox(width: 14),
+              SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -593,18 +592,18 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                       style: TextStyle(
                         color: hasLocation
                             ? AppColors.primaryGreen
-                            : AppColors.textPrimary,
+                            : context.colors.textPrimary,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       hasLocation
                           ? '${_selectedLat!.toStringAsFixed(4)}°, ${_selectedLng!.toStringAsFixed(4)}°'
                           : 'Détection automatique disponible',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 11,
                       ),
                     ),
@@ -615,7 +614,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                 hasLocation ? Icons.edit : Icons.chevron_right,
                 color: hasLocation
                     ? AppColors.primaryGreen
-                    : AppColors.textSecondary,
+                    : context.colors.textSecondary,
               ),
             ],
           ),
@@ -663,18 +662,18 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
   Widget _buildConcernsInput() {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.backgroundDark,
+        color: context.colors.bg,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: TextField(
         controller: _concernsController,
         maxLines: 3,
-        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+        style: TextStyle(color: context.colors.textPrimary, fontSize: 14),
         decoration: InputDecoration(
           hintText: 'Décrivez vos préoccupations ou questions...',
           hintStyle: TextStyle(
-            color: AppColors.textSecondary.withValues(alpha: 0.7),
+            color: context.colors.textSecondary.withValues(alpha: 0.7),
             fontSize: 14,
           ),
           border: InputBorder.none,
@@ -683,10 +682,10 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
             padding: const EdgeInsets.only(left: 16, right: 12),
             child: Icon(
               Icons.edit_note,
-              color: AppColors.textSecondary.withValues(alpha: 0.5),
+              color: context.colors.textSecondary.withValues(alpha: 0.5),
             ),
           ),
-          prefixIconConstraints: const BoxConstraints(
+          prefixIconConstraints: BoxConstraints(
             minWidth: 0,
             minHeight: 0,
           ),
@@ -703,7 +702,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
         onTap: isEnabled ? _startConversation : null,
         borderRadius: BorderRadius.circular(16),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: Duration(milliseconds: 200),
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 18),
           decoration: BoxDecoration(
@@ -715,14 +714,14 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                     ],
                   )
                 : null,
-            color: isEnabled ? null : AppColors.dividerColor,
+            color: isEnabled ? null : context.colors.divider,
             borderRadius: BorderRadius.circular(16),
             boxShadow: isEnabled
                 ? [
                     BoxShadow(
                       color: AppColors.primaryGreen.withValues(alpha: 0.4),
                       blurRadius: 12,
-                      offset: const Offset(0, 4),
+                      offset: Offset(0, 4),
                     ),
                   ]
                 : null,
@@ -732,14 +731,14 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
             children: [
               Icon(
                 Icons.chat,
-                color: isEnabled ? AppColors.white : AppColors.textSecondary,
+                color: isEnabled ? AppColors.white : context.colors.textSecondary,
                 size: 22,
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               Text(
                 'Démarrer la conversation',
                 style: TextStyle(
-                  color: isEnabled ? AppColors.white : AppColors.textSecondary,
+                  color: isEnabled ? AppColors.white : context.colors.textSecondary,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -771,13 +770,13 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
-        border: const Border(bottom: BorderSide(color: AppColors.dividerColor)),
+        color: context.colors.card,
+        border: Border(bottom: BorderSide(color: context.colors.divider)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -794,33 +793,33 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
               ),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.psychology,
               color: AppColors.white,
               size: 24,
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Conseiller IA',
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Row(
                   children: [
                     Text(
                       selectedCultureData.emoji,
-                      style: const TextStyle(fontSize: 14),
+                      style: TextStyle(fontSize: 14),
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Text(
                       _selectedCulture,
                       style: TextStyle(
@@ -829,7 +828,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     if (_isTyping)
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -840,7 +839,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                           color: AppColors.primaryGreen.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text(
+                        child: Text(
                           'écrit...',
                           style: TextStyle(
                             color: AppColors.primaryGreen,
@@ -867,13 +866,13 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundDark,
+                  color: context.colors.bg,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.refresh,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   size: 20,
                 ),
               ),
@@ -901,26 +900,26 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                 ),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.auto_awesome,
                 size: 48,
                 color: AppColors.primaryGreen,
               ),
             ),
-            const SizedBox(height: 20),
-            const Text(
+            SizedBox(height: 20),
+            Text(
               'Prêt à vous aider !',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               'Posez-moi vos questions sur $_selectedCulture',
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: context.colors.textSecondary,
                 fontSize: 14,
               ),
             ),
@@ -943,15 +942,15 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Questions suggérées',
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -978,7 +977,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                     ),
                     child: Text(
                       question,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.primaryGreen,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -1016,13 +1015,13 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                 ),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.psychology,
                 color: AppColors.white,
                 size: 18,
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
           ],
           Flexible(
             child: Container(
@@ -1036,7 +1035,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                         ],
                       )
                     : null,
-                color: isUser ? null : AppColors.cardDark,
+                color: isUser ? null : context.colors.card,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(18),
                   topRight: const Radius.circular(18),
@@ -1052,21 +1051,21 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                         ? AppColors.primaryGreen.withValues(alpha: 0.3)
                         : Colors.black.withValues(alpha: 0.1),
                     blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    offset: Offset(0, 2),
                   ),
                 ],
               ),
               child: Text(
                 message.text,
                 style: TextStyle(
-                  color: isUser ? AppColors.white : AppColors.textPrimary,
+                  color: isUser ? AppColors.white : context.colors.textPrimary,
                   fontSize: 14,
                   height: 1.4,
                 ),
               ),
             ),
           ),
-          if (isUser) const SizedBox(width: 10),
+          if (isUser) SizedBox(width: 10),
         ],
       ),
     );
@@ -1076,13 +1075,13 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
-        border: const Border(top: BorderSide(color: AppColors.dividerColor)),
+        color: context.colors.card,
+        border: Border(top: BorderSide(color: context.colors.divider)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
-            offset: const Offset(0, -2),
+            offset: Offset(0, -2),
           ),
         ],
       ),
@@ -1121,7 +1120,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                           color: Colors.black.withValues(alpha: 0.6),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.close,
                           color: Colors.white,
                           size: 16,
@@ -1143,36 +1142,36 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundDark,
+                      color: context.colors.bg,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.image,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       size: 22,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.backgroundDark,
+                    color: context.colors.bg,
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: TextField(
                     controller: _messageController,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
+                    style: TextStyle(
+                      color: context.colors.textPrimary,
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       hintText: 'Posez votre question...',
                       hintStyle: TextStyle(
-                        color: AppColors.textSecondary.withValues(alpha: 0.7),
+                        color: context.colors.textSecondary.withValues(alpha: 0.7),
                         fontSize: 14,
                       ),
                       border: InputBorder.none,
@@ -1185,7 +1184,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Material(
                 color: Colors.transparent,
                 child: InkWell(
@@ -1209,7 +1208,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.send,
                       color: AppColors.white,
                       size: 22,
@@ -1227,8 +1226,8 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
   Future<void> _pickImage() async {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.cardDark,
-      shape: const RoundedRectangleBorder(
+      backgroundColor: context.colors.card,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => SafeArea(
@@ -1237,15 +1236,15 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'Ajouter une image',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -1281,7 +1280,7 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
             ],
           ),
         ),
@@ -1306,10 +1305,10 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
             ),
             child: Icon(icon, color: AppColors.primaryGreen, size: 32),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             label,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+            style: TextStyle(color: context.colors.textPrimary, fontSize: 14),
           ),
         ],
       ),
@@ -1363,11 +1362,11 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
     }
 
     // Scroll to bottom
-    Future.delayed(const Duration(milliseconds: 100), () {
+    Future.delayed(Duration(milliseconds: 100), () {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
+          duration: Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
       }
@@ -1426,11 +1425,11 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
       await _saveCurrentSession();
 
       // Scroll to bottom after response
-      Future.delayed(const Duration(milliseconds: 100), () {
+      Future.delayed(Duration(milliseconds: 100), () {
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
             _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
+            duration: Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
         }
@@ -1590,7 +1589,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -1601,7 +1600,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.dividerColor,
+              color: context.colors.divider,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -1611,51 +1610,51 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                  icon: Icon(Icons.close, color: context.colors.textSecondary),
                   onPressed: () => Navigator.pop(context),
                 ),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Sélectionner une position',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                const SizedBox(width: 48),
+                SizedBox(width: 48),
               ],
             ),
           ),
-          const Divider(color: AppColors.dividerColor, height: 1),
+          Divider(color: context.colors.divider, height: 1),
           // Search bar
           Container(
             margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             decoration: BoxDecoration(
-              color: AppColors.backgroundDark,
+              color: context.colors.bg,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
             child: TextField(
               controller: _searchController,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: context.colors.textPrimary,
                 fontSize: 14,
               ),
               decoration: InputDecoration(
                 hintText: 'Rechercher une adresse...',
                 hintStyle: TextStyle(
-                  color: AppColors.textSecondary.withOpacity(0.7),
+                  color: context.colors.textSecondary.withOpacity(0.7),
                 ),
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.search,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   size: 20,
                 ),
                 suffixIcon: _isSearching
-                    ? const Padding(
+                    ? Padding(
                         padding: EdgeInsets.all(12),
                         child: SizedBox(
                           width: 16,
@@ -1668,9 +1667,9 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                       )
                     : _searchController.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.close,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           size: 18,
                         ),
                         onPressed: () {
@@ -1695,9 +1694,9 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
           if (_showSearchResults)
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
-              constraints: const BoxConstraints(maxHeight: 150),
+              constraints: BoxConstraints(maxHeight: 150),
               decoration: BoxDecoration(
-                color: AppColors.cardDark,
+                color: context.colors.card,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
@@ -1708,22 +1707,22 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                   final location = _searchResults[index];
                   return ListTile(
                     dense: true,
-                    leading: const Icon(
+                    leading: Icon(
                       Icons.location_on,
                       color: AppColors.primaryGreen,
                       size: 20,
                     ),
                     title: Text(
                       _searchController.text,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
                         fontSize: 13,
                       ),
                     ),
                     subtitle: Text(
                       '${location.latitude.toStringAsFixed(4)}°, ${location.longitude.toStringAsFixed(4)}°',
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 11,
                       ),
                     ),
@@ -1732,7 +1731,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                 },
               ),
             ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           // Map
           Expanded(
             child: Container(
@@ -1790,14 +1789,14 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                             _mapController.camera.zoom + 1,
                           );
                         }),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6),
                         _buildMapControl(Icons.remove, () {
                           _mapController.move(
                             _mapController.camera.center,
                             _mapController.camera.zoom - 1,
                           );
                         }),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6),
                         _buildMapControl(
                           _isLoadingLocation
                               ? Icons.hourglass_empty
@@ -1816,7 +1815,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.backgroundDark,
+              color: context.colors.bg,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
@@ -1824,16 +1823,16 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
               children: [
                 Column(
                   children: [
-                    const Text(
+                    Text(
                       'Latitude',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 11,
                       ),
                     ),
                     Text(
                       _selectedLat.toStringAsFixed(4),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.primaryGreen,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -1841,19 +1840,19 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                     ),
                   ],
                 ),
-                Container(width: 1, height: 30, color: AppColors.dividerColor),
+                Container(width: 1, height: 30, color: context.colors.divider),
                 Column(
                   children: [
-                    const Text(
+                    Text(
                       'Longitude',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 11,
                       ),
                     ),
                     Text(
                       _selectedLng.toStringAsFixed(4),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.primaryGreen,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -1876,8 +1875,8 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                     'lng': _selectedLng,
                   });
                 },
-                icon: const Icon(Icons.check, size: 20),
-                label: const Text('Confirmer la position'),
+                icon: Icon(Icons.check, size: 20),
+                label: Text('Confirmer la position'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryGreen,
                   foregroundColor: Colors.white,
@@ -1900,14 +1899,14 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppColors.backgroundDark.withOpacity(0.9),
+          color: context.colors.bg.withOpacity(0.9),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.2),
               blurRadius: 4,
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2),
             ),
           ],
         ),
@@ -1915,8 +1914,8 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
           icon,
           size: 20,
           color: onPressed == null
-              ? AppColors.textSecondary
-              : AppColors.textPrimary,
+              ? context.colors.textSecondary
+              : context.colors.textPrimary,
         ),
       ),
     );
@@ -1969,7 +1968,7 @@ class _ChatHistorySheet extends StatelessWidget {
     return Container(
       height: MediaQuery.of(context).size.height * 0.7,
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -1980,7 +1979,7 @@ class _ChatHistorySheet extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.dividerColor,
+              color: context.colors.divider,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -1990,21 +1989,21 @@ class _ChatHistorySheet extends StatelessWidget {
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                  icon: Icon(Icons.close, color: context.colors.textSecondary),
                   onPressed: () => Navigator.pop(context),
                 ),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Historique des conversations',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                const SizedBox(width: 48),
+                SizedBox(width: 48),
               ],
             ),
           ),
@@ -2018,13 +2017,13 @@ class _ChatHistorySheet extends StatelessWidget {
                         Icon(
                           Icons.chat_bubble_outline,
                           size: 64,
-                          color: AppColors.textSecondary.withOpacity(0.5),
+                          color: context.colors.textSecondary.withOpacity(0.5),
                         ),
-                        const SizedBox(height: 16),
-                        const Text(
+                        SizedBox(height: 16),
+                        Text(
                           'Aucune conversation sauvegardée',
                           style: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                             fontSize: 16,
                           ),
                         ),
@@ -2049,7 +2048,7 @@ class _ChatHistorySheet extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.backgroundDark,
+        color: context.colors.bg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -2061,7 +2060,7 @@ class _ChatHistorySheet extends StatelessWidget {
             color: AppColors.primaryGreen.withOpacity(0.2),
             borderRadius: BorderRadius.circular(14),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.chat,
             color: AppColors.primaryGreen,
             size: 20,
@@ -2069,8 +2068,8 @@ class _ChatHistorySheet extends StatelessWidget {
         ),
         title: Text(
           session.culture,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: context.colors.textPrimary,
             fontWeight: FontWeight.w600,
             fontSize: 14,
           ),
@@ -2078,21 +2077,21 @@ class _ChatHistorySheet extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Text(
               session.preview,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: context.colors.textSecondary,
                 fontSize: 12,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Text(
               _formatDate(session.updatedAt),
               style: TextStyle(
-                color: AppColors.textSecondary.withOpacity(0.7),
+                color: context.colors.textSecondary.withOpacity(0.7),
                 fontSize: 11,
               ),
             ),

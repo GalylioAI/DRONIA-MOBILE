@@ -4,7 +4,7 @@ FastAPI application for YOLOv8 plant disease detection
 
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from pathlib import Path
 import uvicorn
 import os
@@ -57,10 +57,12 @@ from api.auth import router as auth_router, init_db, close_db
 from api.regions import router as regions_router
 from api.interventions import router as interventions_router
 from api.analyses import router as analyses_router
+from api.dataset import router as dataset_router
 app.include_router(auth_router)
 app.include_router(regions_router)
 app.include_router(interventions_router)
 app.include_router(analyses_router)
+app.include_router(dataset_router)
 
 # Startup/shutdown events for database
 @app.on_event("startup")
@@ -70,6 +72,105 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     await close_db()
+
+
+# ============ Privacy Policy ============
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy_policy():
+    """Privacy policy page for Google Play Store"""
+    return """
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DronIA - Politique de Confidentialité</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333; background: #f9f9f9; }
+        h1 { color: #2e7d32; border-bottom: 2px solid #2e7d32; padding-bottom: 10px; }
+        h2 { color: #388e3c; margin-top: 30px; }
+        .date { color: #666; font-style: italic; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; }
+        a { color: #2e7d32; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🌿 DronIA - Politique de Confidentialité</h1>
+    <p class="date">Dernière mise à jour : 16 février 2026</p>
+
+    <h2>1. Introduction</h2>
+    <p>DronIA est une application mobile d'agronomie de précision utilisant l'intelligence artificielle pour la détection des maladies des plantes. La présente politique de confidentialité décrit comment nous collectons, utilisons et protégeons vos données personnelles.</p>
+
+    <h2>2. Données collectées</h2>
+    <p>L'application DronIA peut collecter les données suivantes :</p>
+    <ul>
+        <li><strong>Photos et images</strong> : Les photos prises via l'appareil photo ou sélectionnées depuis la galerie sont envoyées à notre serveur pour l'analyse par intelligence artificielle. Ces images sont traitées en temps réel et ne sont pas stockées de manière permanente sur nos serveurs.</li>
+        <li><strong>Données de localisation</strong> : Avec votre autorisation, nous collectons votre position GPS pour géolocaliser vos parcelles agricoles et fournir des données météorologiques locales.</li>
+        <li><strong>Informations de compte</strong> : Si vous créez un compte, nous stockons votre adresse email et vos identifiants de connexion (mot de passe chiffré).</li>
+        <li><strong>Données d'analyse</strong> : L'historique de vos scans de maladies et les rapports générés sont stockés dans votre compte.</li>
+        <li><strong>Données météorologiques</strong> : Nous utilisons votre localisation pour récupérer les données météo via des services tiers (OpenWeather).</li>
+    </ul>
+
+    <h2>3. Utilisation des données</h2>
+    <p>Vos données sont utilisées exclusivement pour :</p>
+    <ul>
+        <li>Analyser les images de plantes et détecter les maladies via notre modèle d'IA</li>
+        <li>Fournir des recommandations de traitement adaptées</li>
+        <li>Afficher les conditions météorologiques de votre zone</li>
+        <li>Gérer votre compte utilisateur et votre historique</li>
+        <li>Améliorer la précision de notre modèle de détection</li>
+    </ul>
+
+    <h2>4. Partage des données</h2>
+    <p>Nous ne vendons, ne louons et ne partageons pas vos données personnelles à des tiers à des fins commerciales. Vos données peuvent être partagées uniquement avec :</p>
+    <ul>
+        <li><strong>OpenWeather API</strong> : Votre localisation est envoyée pour obtenir les données météo (soumis à leur propre politique de confidentialité)</li>
+        <li><strong>Services d'hébergement</strong> : Nos serveurs sont hébergés chez Render.com, soumis à leurs standards de sécurité</li>
+    </ul>
+
+    <h2>5. Stockage et sécurité</h2>
+    <ul>
+        <li>Les données sont stockées dans une base de données MongoDB sécurisée avec chiffrement</li>
+        <li>Les mots de passe sont hachés et ne sont jamais stockés en clair</li>
+        <li>Les communications entre l'application et le serveur sont chiffrées via HTTPS</li>
+        <li>Les tokens d'authentification JWT ont une durée de vie limitée</li>
+    </ul>
+
+    <h2>6. Permissions de l'application</h2>
+    <ul>
+        <li><strong>Appareil photo</strong> : Pour prendre des photos de plantes à analyser</li>
+        <li><strong>Galerie/Stockage</strong> : Pour sélectionner des images existantes et sauvegarder les rapports</li>
+        <li><strong>Localisation</strong> : Pour la géolocalisation des parcelles et les données météo</li>
+        <li><strong>Internet</strong> : Pour communiquer avec notre serveur d'analyse IA</li>
+        <li><strong>Notifications</strong> : Pour vous informer des résultats d'analyse</li>
+    </ul>
+
+    <h2>7. Vos droits</h2>
+    <p>Conformément au RGPD et aux lois applicables, vous avez le droit de :</p>
+    <ul>
+        <li>Accéder à vos données personnelles</li>
+        <li>Rectifier vos données inexactes</li>
+        <li>Supprimer votre compte et vos données</li>
+        <li>Retirer votre consentement à tout moment</li>
+        <li>Exporter vos données</li>
+    </ul>
+
+    <h2>8. Données des enfants</h2>
+    <p>DronIA n'est pas destinée aux enfants de moins de 13 ans. Nous ne collectons pas sciemment de données personnelles auprès d'enfants de moins de 13 ans.</p>
+
+    <h2>9. Modifications</h2>
+    <p>Nous pouvons mettre à jour cette politique de confidentialité. Toute modification sera publiée sur cette page avec la date de mise à jour.</p>
+
+    <h2>10. Contact</h2>
+    <p>Pour toute question concernant cette politique de confidentialité, contactez-nous à :</p>
+    <p>📧 Email : <a href="mailto:dronia.app@gmail.com">dronia.app@gmail.com</a></p>
+</div>
+</body>
+</html>
+"""
 
 
 # ============ OPIE Satellite Mock Endpoint ============

@@ -78,7 +78,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
     super.initState();
     // Default: last 3 months
     _dateEnd = DateTime.now();
-    _dateStart = _dateEnd.subtract(const Duration(days: 90));
+    _dateStart = _dateEnd.subtract(Duration(days: 90));
     // Load saved regions
     _loadSavedRegions();
   }
@@ -394,7 +394,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF161B22),
+        backgroundColor: context.colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
@@ -404,17 +404,17 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 color: AppColors.primaryGreen.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.save_rounded,
                 color: AppColors.primaryGreen,
                 size: 20,
               ),
             ),
-            const SizedBox(width: 12),
-            const Flexible(
+            SizedBox(width: 12),
+            Flexible(
               child: Text(
                 'Enregistrer la parcelle',
-                style: TextStyle(color: Colors.white, fontSize: 18),
+                style: TextStyle(color: context.colors.textPrimary, fontSize: 18),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -426,31 +426,31 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
           children: [
             Text(
               'Surface: ${_fieldArea?.toStringAsFixed(1) ?? "?"} ha',
-              style: const TextStyle(color: Colors.white60, fontSize: 13),
+              style: TextStyle(color: context.colors.textSecondary, fontSize: 13),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             TextField(
               controller: nameController,
               autofocus: true,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: context.colors.textPrimary),
               decoration: InputDecoration(
                 labelText: 'Nom de la parcelle',
-                labelStyle: const TextStyle(color: Colors.white54),
+                labelStyle: TextStyle(color: context.colors.textSecondary),
                 hintText: 'Ex: Champ Nord, Parcelle A...',
-                hintStyle: const TextStyle(color: Colors.white30),
+                hintStyle: TextStyle(color: context.colors.textHint),
                 filled: true,
-                fillColor: const Color(0xFF0D1117),
+                fillColor: context.colors.bgSecondary,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide.none,
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppColors.primaryGreen),
+                  borderSide: BorderSide(color: AppColors.primaryGreen),
                 ),
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.label_outline,
-                  color: Colors.white54,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ),
@@ -459,9 +459,9 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Annuler',
-              style: TextStyle(color: Colors.white54),
+              style: TextStyle(color: context.colors.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -479,15 +479,15 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
               ),
             ),
             child: _isSavingRegion
-                ? const SizedBox(
+                ? SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.white,
+                      color: context.colors.textPrimary,
                     ),
                   )
-                : const Text('Enregistrer'),
+                : Text('Enregistrer'),
           ),
         ],
       ),
@@ -703,62 +703,62 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
 
   /// NDVI: Green → Red
   Color _getNdviColorMap(double v) {
-    if (v >= 0.7) return const Color(0xFF12591C);
-    if (v >= 0.5) return const Color(0xFF2E8C26);
-    if (v >= 0.35) return const Color(0xFF72B833);
-    if (v >= 0.2) return const Color(0xFFCCD933);
-    if (v >= 0.1) return const Color(0xFFED8C26);
-    return const Color(0xFFCC2E1A);
+    if (v >= 0.7) return Color(0xFF12591C);
+    if (v >= 0.5) return Color(0xFF2E8C26);
+    if (v >= 0.35) return Color(0xFF72B833);
+    if (v >= 0.2) return Color(0xFFCCD933);
+    if (v >= 0.1) return Color(0xFFED8C26);
+    return Color(0xFFCC2E1A);
   }
 
   /// NDRE: Yellow-green → Dark red
   Color _getNdreColorMap(double v) {
-    if (v >= 0.5) return const Color(0xFF1A7314);
-    if (v >= 0.35) return const Color(0xFF8CB326);
-    if (v >= 0.2) return const Color(0xFFC7D14D);
-    if (v >= 0.1) return const Color(0xFFE6801F);
-    if (v >= 0.0) return const Color(0xFFC0331A);
-    return const Color(0xFF8C1A0D);
+    if (v >= 0.5) return Color(0xFF1A7314);
+    if (v >= 0.35) return Color(0xFF8CB326);
+    if (v >= 0.2) return Color(0xFFC7D14D);
+    if (v >= 0.1) return Color(0xFFE6801F);
+    if (v >= 0.0) return Color(0xFFC0331A);
+    return Color(0xFF8C1A0D);
   }
 
   /// MSAVI: Dark green → Yellow
   Color _getMsaviColorMap(double v) {
-    if (v >= 0.6) return const Color(0xFF004D0D);
-    if (v >= 0.45) return const Color(0xFF0D801A);
-    if (v >= 0.3) return const Color(0xFF40A62E);
-    if (v >= 0.2) return const Color(0xFF8CC740);
-    if (v >= 0.1) return const Color(0xFFCCD959);
-    return const Color(0xFFF2EB80);
+    if (v >= 0.6) return Color(0xFF004D0D);
+    if (v >= 0.45) return Color(0xFF0D801A);
+    if (v >= 0.3) return Color(0xFF40A62E);
+    if (v >= 0.2) return Color(0xFF8CC740);
+    if (v >= 0.1) return Color(0xFFCCD959);
+    return Color(0xFFF2EB80);
   }
 
   /// RECI: Green → Dark red (range 0–6)
   Color _getReciColorMap(double v) {
-    if (v >= 3.0) return const Color(0xFF0D7314);
-    if (v >= 2.0) return const Color(0xFF339926);
-    if (v >= 1.2) return const Color(0xFF8CC033);
-    if (v >= 0.6) return const Color(0xFFE6A626);
-    if (v >= 0.3) return const Color(0xFFD94D1A);
-    return const Color(0xFF8C0D05);
+    if (v >= 3.0) return Color(0xFF0D7314);
+    if (v >= 2.0) return Color(0xFF339926);
+    if (v >= 1.2) return Color(0xFF8CC033);
+    if (v >= 0.6) return Color(0xFFE6A626);
+    if (v >= 0.3) return Color(0xFFD94D1A);
+    return Color(0xFF8C0D05);
   }
 
   /// NDMI: Blue/purple shades
   Color _getNdmiColorMap(double v) {
-    if (v >= 0.4) return const Color(0xFF2633BF);
-    if (v >= 0.2) return const Color(0xFF4059D1);
-    if (v >= 0.0) return const Color(0xFF6680E0);
-    if (v >= -0.2) return const Color(0xFF99A6E6);
-    if (v >= -0.5) return const Color(0xFFBFC7EB);
-    return const Color(0xFFE0E0F2);
+    if (v >= 0.4) return Color(0xFF2633BF);
+    if (v >= 0.2) return Color(0xFF4059D1);
+    if (v >= 0.0) return Color(0xFF6680E0);
+    if (v >= -0.2) return Color(0xFF99A6E6);
+    if (v >= -0.5) return Color(0xFFBFC7EB);
+    return Color(0xFFE0E0F2);
   }
 
   /// NDWI: Blue → Brown
   Color _getNdwiColorMap(double v) {
-    if (v >= 0.3) return const Color(0xFF0D26B3);
-    if (v >= 0.1) return const Color(0xFF2659CC);
-    if (v >= 0.0) return const Color(0xFF6699D9);
-    if (v >= -0.2) return const Color(0xFFB3BF8C);
-    if (v >= -0.5) return const Color(0xFFD9BF66);
-    return const Color(0xFFA67333);
+    if (v >= 0.3) return Color(0xFF0D26B3);
+    if (v >= 0.1) return Color(0xFF2659CC);
+    if (v >= 0.0) return Color(0xFF6699D9);
+    if (v >= -0.2) return Color(0xFFB3BF8C);
+    if (v >= -0.5) return Color(0xFFD9BF66);
+    return Color(0xFFA67333);
   }
 
   /// Navigate back to the initial selection page (create new area / saved regions)
@@ -799,7 +799,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
   void _finishDrawing() {
     if (_polygonPoints.length < 3) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Dessinez au moins 3 points pour définir la zone'),
           backgroundColor: Colors.orange,
         ),
@@ -836,6 +836,30 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
     _mapController.fitCamera(
       CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(50)),
     );
+  }
+
+  /// Enter fullscreen and re-fit the camera to the polygon — the FlutterMap
+  /// gets rebuilt when the layout switches, which resets `MapOptions.initialCenter`
+  /// to its default. Calling [_zoomToPolygon] after the next frame restores
+  /// the user's selected parcelle in view.
+  void _enterFullscreen() {
+    setState(() => _isMapFullscreen = true);
+    if (_polygonPoints.length >= 3) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _zoomToPolygon();
+      });
+    }
+  }
+
+  /// Exit fullscreen and re-fit the camera to the polygon for the same
+  /// reason as [_enterFullscreen].
+  void _exitFullscreen() {
+    setState(() => _isMapFullscreen = false);
+    if (_polygonPoints.length >= 3) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _zoomToPolygon();
+      });
+    }
   }
 
   double _calculatePolygonArea(List<LatLng> points) {
@@ -880,7 +904,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
     final picked = await showDateRangePicker(
       context: context,
       firstDate: DateTime(2015),
-      lastDate: DateTime.now().add(const Duration(days: 14)),
+      lastDate: DateTime.now().add(Duration(days: 14)),
       initialDateRange: DateTimeRange(start: _dateStart, end: _dateEnd),
       builder: (context, child) {
         return Theme(
@@ -918,7 +942,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
         _polygonPoints.length < 3 || _isDrawingPolygon || _isMapFullscreen;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
+      backgroundColor: context.colors.bg,
       body: isMapOnlyMode
           ? _buildMapOnlyView()
           : Column(
@@ -939,16 +963,16 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [const Color(0xFF1A2332), const Color(0xFF141B24)],
+          colors: [context.colors.bgSecondary, context.colors.bg],
         ),
-        border: const Border(
-          bottom: BorderSide(color: Color(0xFF30363D), width: 0.5),
+        border: Border(
+          bottom: BorderSide(color: context.colors.border, width: 0.5),
         ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -963,17 +987,17 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.08),
+                  color: context.colors.cardElevated,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.tune_rounded,
-                  color: Colors.white70,
+                  color: context.colors.textSecondary,
                   size: 18,
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             // App icon with glow effect
             Container(
               padding: const EdgeInsets.all(8),
@@ -988,18 +1012,18 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.satellite_alt,
                 color: AppColors.primaryGreen,
                 size: 18,
               ),
             ),
-            const SizedBox(width: 12),
-            const Expanded(
+            SizedBox(width: 12),
+            Expanded(
               child: Text(
                 'Surveillance des Cultures',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: context.colors.textPrimary,
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.3,
@@ -1007,7 +1031,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             // Date range button - enhanced
             InkWell(
               onTap: _selectDateRange,
@@ -1021,11 +1045,11 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [const Color(0xFF21262D), const Color(0xFF1C2128)],
+                    colors: [context.colors.cardElevated, context.colors.card],
                   ),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: const Color(0xFF3B82F6).withOpacity(0.3),
+                    color: Color(0xFF3B82F6).withOpacity(0.3),
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -1037,16 +1061,16 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.date_range_rounded,
                       color: Color(0xFF3B82F6),
                       size: 14,
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Text(
                       '${DateFormat('dd/MM').format(_dateStart)} - ${DateFormat('dd/MM/yy').format(_dateEnd)}',
-                      style: const TextStyle(
-                        color: Colors.white70,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -1079,7 +1103,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  const Color(0xFF0D1117).withOpacity(0.8),
+                  context.colors.bg.withValues(alpha: 0.8),
                   Colors.transparent,
                 ],
               ),
@@ -1096,7 +1120,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF161B22).withOpacity(0.95),
+                color: context.colors.card.withOpacity(0.95),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: AppColors.primaryGreen.withOpacity(0.4),
@@ -1106,7 +1130,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                   BoxShadow(
                     color: Colors.black.withOpacity(0.3),
                     blurRadius: 12,
-                    offset: const Offset(0, 4),
+                    offset: Offset(0, 4),
                   ),
                 ],
               ),
@@ -1118,34 +1142,34 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                       color: AppColors.primaryGreen.withOpacity(0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.crop_free_rounded,
                       color: AppColors.primaryGreen,
                       size: 32,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  const Text(
+                  SizedBox(height: 12),
+                  Text(
                     'Sélectionnez votre parcelle',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.colors.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  const Text(
+                  SizedBox(height: 6),
+                  Text(
                     'Dessinez les contours de votre champ sur la carte pour analyser vos cultures',
-                    style: TextStyle(color: Colors.white60, fontSize: 13),
+                    style: TextStyle(color: context.colors.textSecondary, fontSize: 13),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: _startDrawing,
-                      icon: const Icon(Icons.edit_location_alt, size: 20),
-                      label: const Text(
+                      icon: Icon(Icons.edit_location_alt, size: 20),
+                      label: Text(
                         'Dessiner la parcelle',
                         style: TextStyle(
                           fontSize: 15,
@@ -1165,40 +1189,40 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                   ),
                   // Saved regions section
                   if (_savedRegions.isNotEmpty || _isLoadingRegions) ...[
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     Container(
                       height: 1,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
                             Colors.transparent,
-                            const Color(0xFF30363D),
+                            context.colors.border,
                             Colors.transparent,
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.bookmark_rounded,
                           color: Color(0xFF3B82F6),
                           size: 16,
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
+                        SizedBox(width: 8),
+                        Text(
                           'Mes parcelles enregistrées',
                           style: TextStyle(
-                            color: Colors.white70,
+                            color: context.colors.textSecondary,
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const Spacer(),
+                        Spacer(),
                         Text(
                           '${_savedRegions.length}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Color(0xFF3B82F6),
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -1206,9 +1230,9 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     if (_isLoadingRegions)
-                      const Center(
+                      Center(
                         child: Padding(
                           padding: EdgeInsets.all(16),
                           child: CircularProgressIndicator(
@@ -1219,12 +1243,12 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                       )
                     else
                       ConstrainedBox(
-                        constraints: const BoxConstraints(maxHeight: 150),
+                        constraints: BoxConstraints(maxHeight: 150),
                         child: ListView.separated(
                           shrinkWrap: true,
                           itemCount: _savedRegions.length,
                           separatorBuilder: (_, __) =>
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8),
                           itemBuilder: (context, index) {
                             final region = _savedRegions[index];
                             return _buildSavedRegionCard(region);
@@ -1252,17 +1276,17 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 onPressed: _goToCurrentLocation,
                 tooltip: 'Ma position',
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               // Zoom controls
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF161B22).withOpacity(0.95),
+                  color: context.colors.card.withOpacity(0.95),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.3),
                       blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
@@ -1281,7 +1305,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     Container(
                       height: 1,
                       width: 36,
-                      color: const Color(0xFF30363D),
+                      color: context.colors.border,
                     ),
                     _buildMapControlButton(
                       icon: Icons.remove,
@@ -1313,13 +1337,13 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF161B22),
+                  color: context.colors.card,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.4),
                       blurRadius: 12,
-                      offset: const Offset(0, 4),
+                      offset: Offset(0, 4),
                     ),
                   ],
                 ),
@@ -1327,29 +1351,29 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (_ndviTooltipValue == -999) ...[
-                      const SizedBox(
+                      SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white70,
+                          color: context.colors.textSecondary,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      const Text(
+                      SizedBox(height: 4),
+                      Text(
                         'Chargement...',
-                        style: TextStyle(color: Colors.white54, fontSize: 12),
+                        style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
                       ),
                     ] else ...[
                       Text(
                         '${_selectedIndex.code}: $_ndviTooltipValue',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: context.colors.textPrimary,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         _ndviTooltipLabel,
                         style: TextStyle(
@@ -1360,8 +1384,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     ],
                     // Arrow pointing down
                     CustomPaint(
-                      size: const Size(16, 8),
-                      painter: _TooltipArrowPainter(),
+                      size: Size(16, 8),
+                      painter: _TooltipArrowPainter(color: context.colors.card),
                     ),
                   ],
                 ),
@@ -1379,10 +1403,10 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
               children: [
                 // Exit fullscreen button
                 Material(
-                  color: const Color(0xFF161B22).withOpacity(0.95),
+                  color: context.colors.card.withOpacity(0.95),
                   borderRadius: BorderRadius.circular(12),
                   child: InkWell(
-                    onTap: () => setState(() => _isMapFullscreen = false),
+                    onTap: _exitFullscreen,
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
                       width: 44,
@@ -1390,18 +1414,18 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.1),
+                          color: context.colors.border,
                         ),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.fullscreen_exit_rounded,
-                        color: Colors.white,
+                        color: context.colors.textPrimary,
                         size: 24,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 // Field info chip
                 Expanded(
                   child: Container(
@@ -1410,34 +1434,34 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF161B22).withOpacity(0.95),
+                      color: context.colors.card.withOpacity(0.95),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                      border: Border.all(color: context.colors.border),
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.grass_rounded,
                           color: Color(0xFF4CAF50),
                           size: 20,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             _selectedRegion?.name ?? 'Parcelle',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: context.colors.textPrimary,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Text(
                           '${(_fieldArea ?? 0).toStringAsFixed(2)} ha',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
+                            color: context.colors.textSecondary,
                             fontSize: 13,
                           ),
                         ),
@@ -1445,10 +1469,10 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 // Add new region button
                 Material(
-                  color: const Color(0xFF4CAF50),
+                  color: Color(0xFF4CAF50),
                   borderRadius: BorderRadius.circular(12),
                   child: InkWell(
                     onTap: () {
@@ -1466,9 +1490,9 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.add_location_alt_rounded,
-                        color: Colors.white,
+                        color: context.colors.textPrimary,
                         size: 24,
                       ),
                     ),
@@ -1501,7 +1525,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
     return Material(
       color: isGrouped
           ? Colors.transparent
-          : const Color(0xFF161B22).withOpacity(0.95),
+          : context.colors.card.withOpacity(0.95),
       borderRadius: borderRadius,
       child: InkWell(
         onTap: onPressed,
@@ -1517,11 +1541,11 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     BoxShadow(
                       color: Colors.black.withOpacity(0.3),
                       blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
-          child: Icon(icon, color: Colors.white, size: 22),
+          child: Icon(icon, color: context.colors.textPrimary, size: 22),
         ),
       ),
     );
@@ -1542,13 +1566,13 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primaryGreen.withOpacity(0.15)
-              : const Color(0xFF0D1117),
+              ? AppColors.primaryGreen.withValues(alpha: 0.15)
+              : context.colors.bgSecondary,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected
                 ? AppColors.primaryGreen
-                : const Color(0xFF30363D),
+                : context.colors.border,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -1566,15 +1590,15 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 size: 16,
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     region.name,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: context.colors.textPrimary,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1583,7 +1607,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                   ),
                   Text(
                     '${region.hectares.toStringAsFixed(1)} ha',
-                    style: const TextStyle(color: Colors.white54, fontSize: 11),
+                    style: TextStyle(color: context.colors.textSecondary, fontSize: 11),
                   ),
                 ],
               ),
@@ -1591,13 +1615,13 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
             // Delete button
             IconButton(
               onPressed: () => _showDeleteConfirmation(region),
-              icon: const Icon(
+              icon: Icon(
                 Icons.delete_outline,
                 color: Colors.redAccent,
                 size: 18,
               ),
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              constraints: BoxConstraints(minWidth: 32, minHeight: 32),
             ),
           ],
         ),
@@ -1609,22 +1633,22 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF161B22),
+        backgroundColor: context.colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
+        title: Text(
           'Supprimer la parcelle ?',
-          style: TextStyle(color: Colors.white, fontSize: 18),
+          style: TextStyle(color: context.colors.textPrimary, fontSize: 18),
         ),
         content: Text(
           'Voulez-vous vraiment supprimer "${region.name}" ?',
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: context.colors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Annuler',
-              style: TextStyle(color: Colors.white54),
+              style: TextStyle(color: context.colors.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -1636,7 +1660,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text('Supprimer'),
+            child: Text('Supprimer'),
           ),
         ],
       ),
@@ -1654,7 +1678,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
       if (!serviceEnabled) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text('Veuillez activer les services de localisation'),
               backgroundColor: Colors.orange,
             ),
@@ -1670,7 +1694,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
         if (permission == LocationPermission.denied) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text('Permission de localisation refusée'),
                 backgroundColor: Colors.red,
               ),
@@ -1683,7 +1707,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
       if (permission == LocationPermission.deniedForever) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text(
                 'Veuillez autoriser la localisation dans les paramètres',
               ),
@@ -1702,7 +1726,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
       _mapController.move(LatLng(position.latitude, position.longitude), 16);
     } catch (e) {
       // Fallback to default location (Tunisia)
-      _mapController.move(const LatLng(36.7258, 10.1654), 12);
+      _mapController.move(LatLng(36.7258, 10.1654), 12);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1738,20 +1762,19 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                       // Fullscreen toggle button
                       _buildMapControlButton(
                         icon: Icons.fullscreen,
-                        onPressed: () =>
-                            setState(() => _isMapFullscreen = true),
+                        onPressed: _enterFullscreen,
                         tooltip: 'Plein écran',
                       ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6),
                       _buildMapControlButton(
                         icon: Icons.my_location,
                         onPressed: _goToCurrentLocation,
                         tooltip: 'Ma position',
                       ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6),
                       Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFF161B22).withOpacity(0.95),
+                          color: context.colors.card.withOpacity(0.95),
                           borderRadius: BorderRadius.circular(10),
                           boxShadow: [
                             BoxShadow(
@@ -1775,7 +1798,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                             Container(
                               height: 1,
                               width: 32,
-                              color: const Color(0xFF30363D),
+                              color: context.colors.border,
                             ),
                             _buildMapControlButton(
                               icon: Icons.remove,
@@ -1808,7 +1831,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
           if (_weatherData.isNotEmpty || _isLoadingWeather)
             _buildWeatherSection(),
 
-          const SizedBox(height: 32),
+          SizedBox(height: 32),
         ],
       ),
     );
@@ -1822,7 +1845,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
     return FlutterMap(
       mapController: _mapController,
       options: MapOptions(
-        initialCenter: const LatLng(36.7258, 10.1654), // Tunisia default
+        initialCenter: LatLng(36.7258, 10.1654), // Tunisia default
         initialZoom: 14,
         onTap: _onMapTap,
       ),
@@ -1914,14 +1937,14 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFF161B22).withOpacity(0.95),
+          color: context.colors.card.withOpacity(0.95),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF30363D)),
+          border: Border.all(color: context.colors.border),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.3),
               blurRadius: 12,
-              offset: const Offset(0, 4),
+              offset: Offset(0, 4),
             ),
           ],
         ),
@@ -1936,21 +1959,21 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
               ),
               child: Text(
                 '${_polygonPoints.length} pts',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.primaryGreen,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-            const Spacer(),
+            Spacer(),
             // Undo button (icon only)
             IconButton(
               onPressed: _undoLastPoint,
-              icon: const Icon(Icons.undo, size: 18),
-              color: Colors.white70,
+              icon: Icon(Icons.undo, size: 18),
+              color: context.colors.textSecondary,
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              constraints: BoxConstraints(minWidth: 36, minHeight: 36),
               tooltip: 'Annuler',
             ),
             // Quit button
@@ -1964,17 +1987,17 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text(
+              child: Text(
                 'Quitter',
                 style: TextStyle(color: Colors.redAccent, fontSize: 12),
               ),
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: 6),
             // Validate button
             ElevatedButton.icon(
               onPressed: _polygonPoints.length >= 3 ? _finishDrawing : null,
-              icon: const Icon(Icons.check, size: 14),
-              label: const Text('OK', style: TextStyle(fontSize: 12)),
+              icon: Icon(Icons.check, size: 14),
+              label: Text('OK', style: TextStyle(fontSize: 12)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryGreen,
                 foregroundColor: Colors.white,
@@ -2007,8 +2030,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A2332).withOpacity(0.95),
-              const Color(0xFF141B24).withOpacity(0.95),
+              context.colors.bgSecondary.withOpacity(0.95),
+              context.colors.bg.withOpacity(0.95),
             ],
           ),
           borderRadius: BorderRadius.circular(14),
@@ -2017,7 +2040,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
             BoxShadow(
               color: Colors.black.withOpacity(0.3),
               blurRadius: 12,
-              offset: const Offset(0, 4),
+              offset: Offset(0, 4),
             ),
           ],
         ),
@@ -2035,20 +2058,20 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     color: AppColors.primaryGreen.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.crop_square_rounded,
                     color: AppColors.primaryGreen,
                     size: 16,
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Parcelle (${_polygonPoints.length} pts)',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -2057,7 +2080,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                       Text(
                         '~${_fieldArea!.toStringAsFixed(1)} ha',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.5),
+                          color: context.colors.textSecondary,
                           fontSize: 12,
                         ),
                       ),
@@ -2065,7 +2088,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             // Action buttons row
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -2081,14 +2104,14 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withOpacity(0.15),
+                        color: Color(0xFF3B82F6).withOpacity(0.15),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: const Color(0xFF3B82F6).withOpacity(0.4),
+                          color: Color(0xFF3B82F6).withOpacity(0.4),
                         ),
                       ),
                       child: _isSavingRegion
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 14,
                               height: 14,
                               child: CircularProgressIndicator(
@@ -2096,7 +2119,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                                 color: Color(0xFF3B82F6),
                               ),
                             )
-                          : const Row(
+                          : Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
@@ -2121,28 +2144,28 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
             ),
             // Show saved region name if selected
             if (_selectedRegion != null) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withOpacity(0.1),
+                  color: Color(0xFF3B82F6).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.bookmark,
                       color: Color(0xFF3B82F6),
                       size: 12,
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Text(
                       _selectedRegion!.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Color(0xFF3B82F6),
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -2171,18 +2194,18 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [const Color(0xFF1A2332), const Color(0xFF141B24)],
+            colors: [context.colors.bgSecondary, context.colors.bg],
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.2),
               blurRadius: 12,
-              offset: const Offset(0, 4),
+              offset: Offset(0, 4),
             ),
           ],
         ),
-        child: const Center(
+        child: Center(
           child: CircularProgressIndicator(color: AppColors.primaryGreen),
         ),
       );
@@ -2198,15 +2221,15 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [const Color(0xFF1A2332), const Color(0xFF141B24)],
+          colors: [context.colors.bgSecondary, context.colors.bg],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF30363D).withOpacity(0.5)),
+        border: Border.all(color: context.colors.border.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
             blurRadius: 12,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -2226,12 +2249,12 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     Text(
                       'Historical',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.4),
+                        color: context.colors.textHint,
                         fontSize: 12,
                         letterSpacing: 0.5,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     // Index dropdown
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -2240,24 +2263,24 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                       ),
                       decoration: BoxDecoration(
                         border: Border.all(
-                          color: const Color(0xFF3B82F6),
+                          color: Color(0xFF3B82F6),
                           width: 2,
                         ),
                         borderRadius: BorderRadius.circular(10),
-                        color: const Color(0xFF0D1117),
+                        color: context.colors.card,
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<VegetationIndex>(
                           value: _selectedIndex,
                           isDense: true,
-                          dropdownColor: const Color(0xFF1C2128),
-                          icon: const Icon(
+                          dropdownColor: context.colors.cardElevated,
+                          icon: Icon(
                             Icons.keyboard_arrow_down_rounded,
                             color: Color(0xFF3B82F6),
                             size: 20,
                           ),
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: context.colors.textPrimary,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -2287,7 +2310,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     ),
                   ],
                 ),
-                const Spacer(),
+                Spacer(),
                 // Date range badges
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -2295,43 +2318,43 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF21262D),
+                    color: context.colors.cardElevated,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFF30363D)),
+                    border: Border.all(color: context.colors.border),
                   ),
                   child: Text(
                     DateFormat('d MMM yy').format(_dateStart),
-                    style: const TextStyle(color: Colors.white70, fontSize: 11),
+                    style: TextStyle(color: context.colors.textSecondary, fontSize: 11),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF21262D),
+                    color: context.colors.cardElevated,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFF30363D)),
+                    border: Border.all(color: context.colors.border),
                   ),
                   child: Text(
                     DateFormat('d MMM yy').format(_dateEnd),
-                    style: const TextStyle(color: Colors.white70, fontSize: 11),
+                    style: TextStyle(color: context.colors.textSecondary, fontSize: 11),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             // Chart with bidirectional scrolling
             SizedBox(
               height: 280,
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
-                physics: const BouncingScrollPhysics(),
+                physics: BouncingScrollPhysics(),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
+                  physics: BouncingScrollPhysics(),
                   child: Container(
                     padding: const EdgeInsets.only(right: 20, bottom: 20),
                     width: math.max(
@@ -2351,7 +2374,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
   }
 
   Widget _buildHistoricalChart() {
-    if (_indexData.isEmpty) return const SizedBox();
+    if (_indexData.isEmpty) return SizedBox();
 
     // Separate data by source (like agromonitoring: blue for one, cyan for another)
     final allSpots = <FlSpot>[];
@@ -2404,15 +2427,15 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
           horizontalInterval: 0.25,
           verticalInterval: labelInterval,
           getDrawingHorizontalLine: (value) =>
-              FlLine(color: const Color(0xFF21262D), strokeWidth: 0.5),
+              FlLine(color: context.colors.cardElevated, strokeWidth: 0.5),
           getDrawingVerticalLine: (value) =>
-              FlLine(color: const Color(0xFF21262D), strokeWidth: 0.3),
+              FlLine(color: context.colors.cardElevated, strokeWidth: 0.3),
         ),
         titlesData: FlTitlesData(
-          topTitles: const AxisTitles(
+          topTitles: AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
-          rightTitles: const AxisTitles(
+          rightTitles: AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
           leftTitles: AxisTitles(
@@ -2425,8 +2448,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                   padding: const EdgeInsets.only(right: 4),
                   child: Text(
                     value.toStringAsFixed(2),
-                    style: const TextStyle(
-                      color: Colors.white38,
+                    style: TextStyle(
+                      color: context.colors.textHint,
                       fontSize: 10,
                       fontFamily: 'monospace',
                     ),
@@ -2443,7 +2466,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
               getTitlesWidget: (value, _) {
                 final idx = value.toInt();
                 if (idx < 0 || idx >= _indexData.length)
-                  return const SizedBox();
+                  return SizedBox();
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Transform.rotate(
@@ -2451,8 +2474,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     alignment: Alignment.topCenter,
                     child: Text(
                       DateFormat('dd MMM').format(_indexData[idx].date),
-                      style: const TextStyle(
-                        color: Colors.white60,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
                       ),
@@ -2473,13 +2496,13 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
               spots: minSpots,
               isCurved: true,
               curveSmoothness: 0.2,
-              color: const Color(0xFF4DD0E1), // cyan
+              color: Color(0xFF4DD0E1), // cyan
               barWidth: 1.5,
               dotData: FlDotData(
                 show: true,
                 getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(
                   radius: 3,
-                  color: const Color(0xFF4DD0E1),
+                  color: Color(0xFF4DD0E1),
                   strokeColor: Colors.white,
                   strokeWidth: 1,
                 ),
@@ -2491,13 +2514,13 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
               spots: allSpots,
               isCurved: true,
               curveSmoothness: 0.2,
-              color: const Color(0xFF42A5F5), // blue
+              color: Color(0xFF42A5F5), // blue
               barWidth: 2,
               dotData: FlDotData(
                 show: true,
                 getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(
                   radius: 4,
-                  color: const Color(0xFF42A5F5),
+                  color: Color(0xFF42A5F5),
                   strokeColor: Colors.white,
                   strokeWidth: 1.5,
                 ),
@@ -2509,7 +2532,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
             fitInsideHorizontally: true,
             fitInsideVertically: true,
             tooltipPadding: const EdgeInsets.all(8),
-            getTooltipColor: (_) => const Color(0xFF21262D),
+            getTooltipColor: (_) => context.colors.cardElevated,
             getTooltipItems: (touchedSpots) {
               if (touchedSpots.isEmpty) return [];
               final spot = touchedSpots.last;
@@ -2524,7 +2547,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                   'mean: ${d.average?.toStringAsFixed(2) ?? "-"}\n'
                   'min: ${d.min?.toStringAsFixed(2) ?? "-"}  max: ${d.max?.toStringAsFixed(2) ?? "-"}\n'
                   '${d.sceneId}',
-                  const TextStyle(color: Colors.white, fontSize: 10),
+                  TextStyle(color: context.colors.textPrimary, fontSize: 10),
                 ),
               ];
             },
@@ -2544,11 +2567,11 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.all(40),
         decoration: BoxDecoration(
-          color: const Color(0xFF161B22),
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF30363D)),
+          border: Border.all(color: context.colors.border),
         ),
-        child: const Center(
+        child: Center(
           child: CircularProgressIndicator(color: AppColors.primaryGreen),
         ),
       );
@@ -2558,14 +2581,14 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: const Color(0xFF161B22),
+          color: context.colors.card,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF30363D)),
+          border: Border.all(color: context.colors.border),
         ),
-        child: const Center(
+        child: Center(
           child: Text(
             'Aucune donnée météo disponible',
-            style: TextStyle(color: Colors.white60),
+            style: TextStyle(color: context.colors.textSecondary),
           ),
         ),
       );
@@ -2608,15 +2631,15 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [const Color(0xFF1A2332), const Color(0xFF141B24)],
+          colors: [context.colors.bgSecondary, context.colors.bg],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF30363D).withOpacity(0.5)),
+        border: Border.all(color: context.colors.border.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
             blurRadius: 12,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -2636,12 +2659,12 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
-                const SizedBox(width: 6),
+                SizedBox(width: 6),
                 Text(
                   '${_dateStart.year}/${_dateEnd.year}',
-                  style: const TextStyle(color: Colors.white60, fontSize: 11),
+                  style: TextStyle(color: context.colors.textSecondary, fontSize: 11),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Container(
                   width: 10,
                   height: 10,
@@ -2650,47 +2673,47 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: 6),
+                SizedBox(width: 6),
                 Text(
                   _selectedIndex.code,
-                  style: const TextStyle(color: Colors.white60, fontSize: 11),
+                  style: TextStyle(color: context.colors.textSecondary, fontSize: 11),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             // Title
             Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.08),
+                    color: context.colors.textPrimary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(icon, color: Colors.white70, size: 16),
+                  child: Icon(icon, color: context.colors.textSecondary, size: 16),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: context.colors.textPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(width: 6),
-                const Icon(Icons.info_outline, color: Colors.white30, size: 14),
+                SizedBox(width: 6),
+                Icon(Icons.info_outline, color: context.colors.textHint, size: 14),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             SizedBox(
               height: 260,
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
-                physics: const BouncingScrollPhysics(),
+                physics: BouncingScrollPhysics(),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
+                  physics: BouncingScrollPhysics(),
                   child: Container(
                     padding: const EdgeInsets.only(right: 20, bottom: 20),
                     width: math.max(
@@ -2747,19 +2770,19 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
               drawVerticalLine: false,
               horizontalInterval: (maxPrecip / 4).clamp(1.0, 50.0),
               getDrawingHorizontalLine: (value) =>
-                  FlLine(color: const Color(0xFF30363D), strokeWidth: 0.5),
+                  FlLine(color: context.colors.border, strokeWidth: 0.5),
             ),
             titlesData: FlTitlesData(
-              topTitles: const AxisTitles(
+              topTitles: AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
-              rightTitles: const AxisTitles(
+              rightTitles: AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
               leftTitles: AxisTitles(
-                axisNameWidget: const Text(
+                axisNameWidget: Text(
                   'mm',
-                  style: TextStyle(color: Colors.white38, fontSize: 9),
+                  style: TextStyle(color: context.colors.textHint, fontSize: 9),
                 ),
                 sideTitles: SideTitles(
                   showTitles: true,
@@ -2769,8 +2792,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     padding: const EdgeInsets.only(right: 4),
                     child: Text(
                       '${value.toInt()}',
-                      style: const TextStyle(
-                        color: Colors.white38,
+                      style: TextStyle(
+                        color: context.colors.textHint,
                         fontSize: 10,
                         fontFamily: 'monospace',
                       ),
@@ -2786,7 +2809,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                   getTitlesWidget: (value, _) {
                     final idx = value.toInt();
                     if (idx < 0 || idx >= _weatherData.length)
-                      return const SizedBox();
+                      return SizedBox();
                     return Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Transform.rotate(
@@ -2794,8 +2817,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                         alignment: Alignment.topCenter,
                         child: Text(
                           DateFormat('dd MMM').format(_weatherData[idx].date),
-                          style: const TextStyle(
-                            color: Colors.white60,
+                          style: TextStyle(
+                            color: context.colors.textSecondary,
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
                           ),
@@ -2829,7 +2852,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 fitInsideHorizontally: true,
                 fitInsideVertically: true,
                 tooltipPadding: const EdgeInsets.all(6),
-                getTooltipColor: (_) => const Color(0xFF21262D),
+                getTooltipColor: (_) => context.colors.cardElevated,
                 getTooltipItem: (group, groupIndex, rod, rodIndex) {
                   if (groupIndex >= _weatherData.length) return null;
                   final w = _weatherData[groupIndex];
@@ -2847,7 +2870,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                   }
                   return BarTooltipItem(
                     '${DateFormat('dd/MM').format(w.date)}\n${w.dailyPrecipitation.toStringAsFixed(1)} mm$ndviStr',
-                    const TextStyle(color: Colors.white, fontSize: 11),
+                    TextStyle(color: context.colors.textPrimary, fontSize: 11),
                   );
                 },
               ),
@@ -2862,8 +2885,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
               child: SizedBox.expand(
                 child: LineChart(
                   LineChartData(
-                    gridData: const FlGridData(show: false),
-                    titlesData: const FlTitlesData(
+                    gridData: FlGridData(show: false),
+                    titlesData: FlTitlesData(
                       topTitles: AxisTitles(
                         sideTitles: SideTitles(showTitles: false),
                       ),
@@ -2901,7 +2924,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                         ),
                       ),
                     ],
-                    lineTouchData: const LineTouchData(enabled: false),
+                    lineTouchData: LineTouchData(enabled: false),
                   ),
                 ),
               ),
@@ -2951,14 +2974,14 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
           drawVerticalLine: false,
           horizontalInterval: precipInterval,
           getDrawingHorizontalLine: (value) =>
-              FlLine(color: const Color(0xFF30363D), strokeWidth: 0.5),
+              FlLine(color: context.colors.border, strokeWidth: 0.5),
         ),
         titlesData: FlTitlesData(
-          topTitles: const AxisTitles(
+          topTitles: AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
           rightTitles: AxisTitles(
-            axisNameWidget: const Text(
+            axisNameWidget: Text(
               'NDVI',
               style: TextStyle(color: AppColors.primaryGreen, fontSize: 9),
             ),
@@ -2968,12 +2991,12 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
               interval: precipInterval,
               getTitlesWidget: (value, _) {
                 final ndviVal = value / maxAccum;
-                if (ndviVal < 0 || ndviVal > 1.2) return const SizedBox();
+                if (ndviVal < 0 || ndviVal > 1.2) return SizedBox();
                 return Padding(
                   padding: const EdgeInsets.only(left: 4),
                   child: Text(
                     ndviVal.toStringAsFixed(2),
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.primaryGreen,
                       fontSize: 9,
                       fontFamily: 'monospace',
@@ -2984,9 +3007,9 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
             ),
           ),
           leftTitles: AxisTitles(
-            axisNameWidget: const Text(
+            axisNameWidget: Text(
               'mm',
-              style: TextStyle(color: Colors.white38, fontSize: 9),
+              style: TextStyle(color: context.colors.textHint, fontSize: 9),
             ),
             sideTitles: SideTitles(
               showTitles: true,
@@ -2996,8 +3019,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 padding: const EdgeInsets.only(right: 4),
                 child: Text(
                   '${value.toInt()}',
-                  style: const TextStyle(
-                    color: Colors.white38,
+                  style: TextStyle(
+                    color: context.colors.textHint,
                     fontSize: 10,
                     fontFamily: 'monospace',
                   ),
@@ -3013,7 +3036,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
               getTitlesWidget: (value, _) {
                 final idx = value.toInt();
                 if (idx < 0 || idx >= _weatherData.length)
-                  return const SizedBox();
+                  return SizedBox();
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Transform.rotate(
@@ -3021,8 +3044,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     alignment: Alignment.topCenter,
                     child: Text(
                       DateFormat('dd MMM').format(_weatherData[idx].date),
-                      style: const TextStyle(
-                        color: Colors.white60,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
                       ),
@@ -3047,7 +3070,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 label: HorizontalLineLabel(
                   show: true,
                   alignment: Alignment.topRight,
-                  style: const TextStyle(color: Colors.blue, fontSize: 10),
+                  style: TextStyle(color: Colors.blue, fontSize: 10),
                   labelResolver: (_) =>
                       '${_weatherData.last.accumulatedPrecipitation.toStringAsFixed(1)}',
                 ),
@@ -3062,7 +3085,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
             curveSmoothness: 0.2,
             color: Colors.blue,
             barWidth: 2.5,
-            dotData: const FlDotData(show: false),
+            dotData: FlDotData(show: false),
             belowBarData: BarAreaData(
               show: true,
               color: Colors.blue.withOpacity(0.08),
@@ -3092,7 +3115,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
             fitInsideHorizontally: true,
             fitInsideVertically: true,
             tooltipPadding: const EdgeInsets.all(8),
-            getTooltipColor: (_) => const Color(0xFF21262D),
+            getTooltipColor: (_) => context.colors.cardElevated,
             getTooltipItems: (touchedSpots) {
               return touchedSpots.map((spot) {
                 final idx = spot.x.toInt();
@@ -3101,13 +3124,13 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 if (spot.barIndex == 0) {
                   return LineTooltipItem(
                     '${DateFormat('dd/MM/yy').format(w.date)}\n${w.accumulatedPrecipitation.toStringAsFixed(1)} mm',
-                    const TextStyle(color: Colors.blue, fontSize: 11),
+                    TextStyle(color: Colors.blue, fontSize: 11),
                   );
                 } else {
                   final ndviVal = spot.y / maxAccum;
                   return LineTooltipItem(
                     '${_selectedIndex.code}: ${ndviVal.toStringAsFixed(3)}',
-                    const TextStyle(
+                    TextStyle(
                       color: AppColors.primaryGreen,
                       fontSize: 11,
                     ),
@@ -3122,7 +3145,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
   }
 
   Widget _buildTemperatureChart() {
-    if (_weatherData.isEmpty) return const SizedBox();
+    if (_weatherData.isEmpty) return SizedBox();
 
     final minSpots = <FlSpot>[];
     final maxSpots = <FlSpot>[];
@@ -3158,19 +3181,19 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
           drawVerticalLine: false,
           horizontalInterval: tempInterval,
           getDrawingHorizontalLine: (value) =>
-              FlLine(color: const Color(0xFF30363D), strokeWidth: 0.5),
+              FlLine(color: context.colors.border, strokeWidth: 0.5),
         ),
         titlesData: FlTitlesData(
-          topTitles: const AxisTitles(
+          topTitles: AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
-          rightTitles: const AxisTitles(
+          rightTitles: AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
           leftTitles: AxisTitles(
-            axisNameWidget: const Text(
+            axisNameWidget: Text(
               '°C',
-              style: TextStyle(color: Colors.white38, fontSize: 9),
+              style: TextStyle(color: context.colors.textHint, fontSize: 9),
             ),
             sideTitles: SideTitles(
               showTitles: true,
@@ -3180,8 +3203,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 padding: const EdgeInsets.only(right: 4),
                 child: Text(
                   '${value.toInt()}°',
-                  style: const TextStyle(
-                    color: Colors.white38,
+                  style: TextStyle(
+                    color: context.colors.textHint,
                     fontSize: 10,
                     fontFamily: 'monospace',
                   ),
@@ -3197,7 +3220,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
               getTitlesWidget: (value, _) {
                 final idx = value.toInt();
                 if (idx < 0 || idx >= _weatherData.length)
-                  return const SizedBox();
+                  return SizedBox();
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Transform.rotate(
@@ -3205,8 +3228,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     alignment: Alignment.topCenter,
                     child: Text(
                       DateFormat('dd MMM').format(_weatherData[idx].date),
-                      style: const TextStyle(
-                        color: Colors.white60,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
                       ),
@@ -3228,7 +3251,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
               curveSmoothness: 0.2,
               color: Colors.redAccent,
               barWidth: 2,
-              dotData: const FlDotData(show: false),
+              dotData: FlDotData(show: false),
               belowBarData: BarAreaData(
                 show: true,
                 color: Colors.redAccent.withOpacity(0.05),
@@ -3241,7 +3264,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
               curveSmoothness: 0.2,
               color: Colors.lightBlueAccent,
               barWidth: 2,
-              dotData: const FlDotData(show: false),
+              dotData: FlDotData(show: false),
               belowBarData: BarAreaData(
                 show: true,
                 color: Colors.lightBlueAccent.withOpacity(0.05),
@@ -3253,7 +3276,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
             fitInsideHorizontally: true,
             fitInsideVertically: true,
             tooltipPadding: const EdgeInsets.all(8),
-            getTooltipColor: (_) => const Color(0xFF21262D),
+            getTooltipColor: (_) => context.colors.cardElevated,
             getTooltipItems: (touchedSpots) {
               return touchedSpots.map((spot) {
                 final idx = spot.x.toInt();
@@ -3287,18 +3310,18 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [const Color(0xFF1A2332), const Color(0xFF141B24)],
+            colors: [context.colors.bgSecondary, context.colors.bg],
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.2),
               blurRadius: 12,
-              offset: const Offset(0, 4),
+              offset: Offset(0, 4),
             ),
           ],
         ),
-        child: const Center(
+        child: Center(
           child: CircularProgressIndicator(color: Colors.brown),
         ),
       );
@@ -3311,15 +3334,15 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [const Color(0xFF1A2332), const Color(0xFF141B24)],
+            colors: [context.colors.bgSecondary, context.colors.bg],
           ),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF30363D).withOpacity(0.5)),
+          border: Border.all(color: context.colors.border.withOpacity(0.5)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.2),
               blurRadius: 12,
-              offset: const Offset(0, 4),
+              offset: Offset(0, 4),
             ),
           ],
         ),
@@ -3331,17 +3354,17 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 color: Colors.brown.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.water_drop,
                 color: Colors.brown,
                 size: 20,
               ),
             ),
-            const SizedBox(width: 12),
-            const Expanded(
+            SizedBox(width: 12),
+            Expanded(
               child: Text(
                 'Données d\'humidité du sol non disponibles (Sentinel-1)',
-                style: TextStyle(color: Colors.white60, fontSize: 12),
+                style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
               ),
             ),
           ],
@@ -3355,15 +3378,15 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [const Color(0xFF1A2332), const Color(0xFF141B24)],
+          colors: [context.colors.bgSecondary, context.colors.bg],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF30363D).withOpacity(0.5)),
+        border: Border.all(color: context.colors.border.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
             blurRadius: 12,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -3383,14 +3406,14 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
-                const SizedBox(width: 6),
-                const Text(
+                SizedBox(width: 6),
+                Text(
                   'Sentinel-1',
-                  style: TextStyle(color: Colors.white60, fontSize: 11),
+                  style: TextStyle(color: context.colors.textSecondary, fontSize: 11),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             // Title
             Row(
               children: [
@@ -3400,34 +3423,34 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     color: Colors.brown.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.water_drop,
                     color: Colors.brown,
                     size: 16,
                   ),
                 ),
-                const SizedBox(width: 10),
-                const Text(
+                SizedBox(width: 10),
+                Text(
                   'Soil Moisture Index',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: context.colors.textPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(width: 6),
-                const Icon(Icons.info_outline, color: Colors.white30, size: 14),
+                SizedBox(width: 6),
+                Icon(Icons.info_outline, color: context.colors.textHint, size: 14),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             SizedBox(
               height: 260,
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
-                physics: const BouncingScrollPhysics(),
+                physics: BouncingScrollPhysics(),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
+                  physics: BouncingScrollPhysics(),
                   child: Container(
                     padding: const EdgeInsets.only(right: 20, bottom: 20),
                     width: math.max(
@@ -3447,7 +3470,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
   }
 
   Widget _buildSoilMoistureChart() {
-    if (_soilMoistureData.isEmpty) return const SizedBox();
+    if (_soilMoistureData.isEmpty) return SizedBox();
 
     final moistureSpots = <FlSpot>[];
     for (int i = 0; i < _soilMoistureData.length; i++) {
@@ -3467,13 +3490,13 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
           drawVerticalLine: false,
           horizontalInterval: 0.2,
           getDrawingHorizontalLine: (value) =>
-              FlLine(color: const Color(0xFF30363D), strokeWidth: 0.5),
+              FlLine(color: context.colors.border, strokeWidth: 0.5),
         ),
         titlesData: FlTitlesData(
-          topTitles: const AxisTitles(
+          topTitles: AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
-          rightTitles: const AxisTitles(
+          rightTitles: AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
           leftTitles: AxisTitles(
@@ -3485,8 +3508,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 padding: const EdgeInsets.only(right: 4),
                 child: Text(
                   value.toStringAsFixed(1),
-                  style: const TextStyle(
-                    color: Colors.white38,
+                  style: TextStyle(
+                    color: context.colors.textHint,
                     fontSize: 10,
                     fontFamily: 'monospace',
                   ),
@@ -3502,7 +3525,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
               getTitlesWidget: (value, _) {
                 final idx = value.toInt();
                 if (idx < 0 || idx >= _soilMoistureData.length)
-                  return const SizedBox();
+                  return SizedBox();
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Transform.rotate(
@@ -3510,8 +3533,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                     alignment: Alignment.topCenter,
                     child: Text(
                       DateFormat('dd MMM').format(_soilMoistureData[idx].date),
-                      style: const TextStyle(
-                        color: Colors.white60,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
                       ),
@@ -3560,7 +3583,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
             fitInsideHorizontally: true,
             fitInsideVertically: true,
             tooltipPadding: const EdgeInsets.all(8),
-            getTooltipColor: (_) => const Color(0xFF21262D),
+            getTooltipColor: (_) => context.colors.cardElevated,
             getTooltipItems: (touchedSpots) {
               return touchedSpots.map((spot) {
                 final idx = spot.spotIndex;
@@ -3568,7 +3591,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
                 final d = _soilMoistureData[idx];
                 return LineTooltipItem(
                   '${DateFormat('dd MMM yyyy').format(d.date)}\nMoisture: ${((d.moisture ?? 0) * 100).toStringAsFixed(1)}%',
-                  const TextStyle(color: Colors.white, fontSize: 11),
+                  TextStyle(color: context.colors.textPrimary, fontSize: 11),
                 );
               }).toList();
             },
@@ -3615,10 +3638,13 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
 
 /// Custom painter for tooltip arrow
 class _TooltipArrowPainter extends CustomPainter {
+  final Color color;
+  _TooltipArrowPainter({this.color = const Color(0xFF161B22)});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF161B22)
+      ..color = color
       ..style = PaintingStyle.fill;
 
     final path = ui.Path()

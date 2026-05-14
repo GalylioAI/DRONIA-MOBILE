@@ -25,6 +25,8 @@ import '../../presentation/screens/settings/settings_screen.dart';
 import '../../presentation/screens/notifications/notifications_screen.dart';
 import '../../presentation/screens/clawdbot_chat_screen.dart';
 import '../../presentation/screens/map/field_monitoring_screen.dart';
+import '../../presentation/screens/drone/drone_fleet_screen.dart';
+import '../../presentation/screens/diseases/disease_knowledge_screen.dart';
 
 /// Application route names
 class AppRoutes {
@@ -70,6 +72,12 @@ class AppRoutes {
 
   // Field Monitoring
   static const String fieldMonitoring = '/field-monitoring';
+
+  // Drone Fleet Showcase
+  static const String droneFleet = '/drone-fleet';
+
+  // Disease Knowledge Base
+  static const String diseaseKnowledge = '/disease-knowledge';
 }
 
 /// Route generator
@@ -88,7 +96,9 @@ class AppRouter {
 
       // Main routes
       case AppRoutes.home:
-        return _buildRoute(const HomeScreen(), settings);
+        final args = settings.arguments;
+        final initialIndex = args is int ? args : 0;
+        return _buildRoute(HomeScreen(initialIndex: initialIndex), settings);
 
       case AppRoutes.dashboard:
         return _buildRoute(const DashboardScreen(), settings);
@@ -188,6 +198,14 @@ class AppRouter {
       // Field Monitoring
       case AppRoutes.fieldMonitoring:
         return _buildRoute(const FieldMonitoringScreen(), settings);
+
+      // Drone Fleet Showcase
+      case AppRoutes.droneFleet:
+        return _buildRoute(const DroneFleetScreen(), settings);
+
+      // Disease Knowledge Base
+      case AppRoutes.diseaseKnowledge:
+        return _buildRoute(const DiseaseKnowledgeScreen(), settings);
 
       // Default - 404 page
       default:

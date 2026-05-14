@@ -81,7 +81,6 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: SafeArea(
         child: Column(
           children: [
@@ -90,16 +89,16 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
               child: RefreshIndicator(
                 onRefresh: _loadAnalyses,
                 color: AppColors.primaryGreen,
-                backgroundColor: AppColors.cardDark,
+                backgroundColor: context.colors.card,
                 child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
+                  physics: AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
                       _buildStatsRow(),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       _buildFilters(),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       _buildAnalysisList(),
                     ],
                   ),
@@ -116,23 +115,23 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardDark,
-        title: const Text(
+        backgroundColor: context.colors.card,
+        title: Text(
           'Supprimer tout?',
-          style: TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: context.colors.textPrimary),
         ),
-        content: const Text(
+        content: Text(
           'Cela supprimera TOUTES vos analyses de l\'historique. Cette action est irréversible.',
-          style: TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: context.colors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler'),
+            child: Text('Annuler'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
+            child: Text(
               'Supprimer',
               style: TextStyle(color: AppColors.error),
             ),
@@ -145,7 +144,7 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
       final success = await _historyService.deleteAllAnalyses();
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Toutes les analyses ont été supprimées'),
           ),
         );
@@ -158,8 +157,8 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
-        border: Border(bottom: BorderSide(color: AppColors.dividerColor)),
+        color: context.colors.card,
+        border: Border(bottom: BorderSide(color: context.colors.divider)),
       ),
       child: Row(
         children: [
@@ -169,14 +168,14 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
               color: AppColors.primaryGreen.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.history,
               color: AppColors.primaryGreen,
               size: 20,
             ),
           ),
-          const SizedBox(width: 12),
-          const Expanded(
+          SizedBox(width: 12),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -185,13 +184,13 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 Text(
                   'Vos analyses de cultures',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -201,12 +200,12 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
           if (_analyses.isNotEmpty)
             IconButton(
               onPressed: _deleteAllAnalyses,
-              icon: const Icon(Icons.delete_sweep, color: AppColors.error),
+              icon: Icon(Icons.delete_sweep, color: AppColors.error),
               tooltip: 'Supprimer tout',
             ),
           IconButton(
             onPressed: _loadAnalyses,
-            icon: const Icon(Icons.refresh, color: AppColors.primaryGreen),
+            icon: Icon(Icons.refresh, color: AppColors.primaryGreen),
           ),
         ],
       ),
@@ -230,13 +229,13 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
         Expanded(
           child: _buildStatChip('$total', 'Total', AppColors.primaryGreen),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Expanded(child: _buildStatChip('$saines', 'Saines', AppColors.success)),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Expanded(
           child: _buildStatChip('$maladies', 'Maladies', AppColors.error),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Expanded(child: _buildStatChip('$stress', 'Stress', AppColors.warning)),
       ],
     );
@@ -246,9 +245,9 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.dividerColor),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         children: [
@@ -262,8 +261,8 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
           ),
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontSize: 10,
             ),
           ),
@@ -276,28 +275,28 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.dividerColor),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         children: [
           TextField(
             onChanged: (v) => setState(() => _searchQuery = v),
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+            style: TextStyle(color: context.colors.textPrimary, fontSize: 14),
             decoration: InputDecoration(
               hintText: 'Rechercher...',
-              hintStyle: const TextStyle(
-                color: AppColors.textHint,
+              hintStyle: TextStyle(
+                color: context.colors.textHint,
                 fontSize: 14,
               ),
-              prefixIcon: const Icon(
+              prefixIcon: Icon(
                 Icons.search,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 size: 20,
               ),
               filled: true,
-              fillColor: AppColors.backgroundDark,
+              fillColor: context.colors.bg,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 12,
                 vertical: 10,
@@ -308,7 +307,7 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           Row(
             children: [
               Expanded(
@@ -317,7 +316,7 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
                   _loadAnalyses();
                 }),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               Expanded(
                 child: _buildDropdown(_cultureFilter, _cultureOptions, (v) {
                   setState(() => _cultureFilter = v!);
@@ -339,18 +338,18 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: AppColors.backgroundDark,
+        color: context.colors.bg,
         borderRadius: BorderRadius.circular(8),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
-          dropdownColor: AppColors.cardDark,
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-          icon: const Icon(
+          dropdownColor: context.colors.card,
+          style: TextStyle(color: context.colors.textPrimary, fontSize: 13),
+          icon: Icon(
             Icons.keyboard_arrow_down,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
             size: 18,
           ),
           items: options
@@ -364,7 +363,7 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
 
   Widget _buildAnalysisList() {
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: Padding(
           padding: EdgeInsets.all(32),
           child: CircularProgressIndicator(color: AppColors.primaryGreen),
@@ -390,18 +389,18 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
             Icon(
               Icons.search_off,
               size: 48,
-              color: AppColors.textSecondary.withValues(alpha: 0.5),
+              color: context.colors.textSecondary.withValues(alpha: 0.5),
             ),
-            const SizedBox(height: 12),
-            const Text(
+            SizedBox(height: 12),
+            Text(
               'Aucune analyse trouvée',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: context.colors.textSecondary),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             TextButton.icon(
               onPressed: _loadAnalyses,
-              icon: const Icon(Icons.refresh, color: AppColors.primaryGreen),
-              label: const Text(
+              icon: Icon(Icons.refresh, color: AppColors.primaryGreen),
+              label: Text(
                 'Actualiser',
                 style: TextStyle(color: AppColors.primaryGreen),
               ),
@@ -432,7 +431,7 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
         statusColor = AppColors.warning;
         break;
       default:
-        statusColor = AppColors.textSecondary;
+        statusColor = context.colors.textSecondary;
     }
 
     final dateFormatter = DateFormat('dd/MM/yyyy');
@@ -450,29 +449,29 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
           color: AppColors.error,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(Icons.delete, color: AppColors.white),
+        child: Icon(Icons.delete, color: AppColors.white),
       ),
       confirmDismiss: (direction) async {
         return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: AppColors.cardDark,
-            title: const Text(
+            backgroundColor: context.colors.card,
+            title: Text(
               'Supprimer cette analyse ?',
-              style: TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(color: context.colors.textPrimary),
             ),
-            content: const Text(
+            content: Text(
               'Cette action est irréversible.',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: context.colors.textSecondary),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Annuler'),
+                child: Text('Annuler'),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text(
+                child: Text(
                   'Supprimer',
                   style: TextStyle(color: AppColors.error),
                 ),
@@ -494,9 +493,9 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.dividerColor),
+            border: Border.all(color: context.colors.divider),
           ),
           child: Column(
             children: [
@@ -504,9 +503,9 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
                 children: [
                   Text(
                     _getCultureEmoji(analysis.cropType),
-                    style: const TextStyle(fontSize: 24),
+                    style: TextStyle(fontSize: 24),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -516,15 +515,15 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
                             Flexible(
                               child: Text(
                                 analysis.cropType,
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
+                                style: TextStyle(
+                                  color: context.colors.textPrimary,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
@@ -545,7 +544,7 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
                                       shape: BoxShape.circle,
                                     ),
                                   ),
-                                  const SizedBox(width: 4),
+                                  SizedBox(width: 4),
                                   Text(
                                     analysis.healthStatus,
                                     style: TextStyle(
@@ -559,11 +558,11 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2),
                         Text(
                           '${analysis.id.substring(0, 12)}... • $dateStr',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: context.colors.textSecondary,
                             fontSize: 11,
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -572,19 +571,19 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
                     ),
                   ),
                   PopupMenuButton<String>(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.more_vert,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       size: 20,
                     ),
-                    color: AppColors.cardDark,
+                    color: context.colors.card,
                     onSelected: (value) {
                       if (value == 'delete') {
                         _deleteAnalysis(analysis.id);
                       }
                     },
                     itemBuilder: (context) => [
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'delete',
                         child: Row(
                           children: [
@@ -605,7 +604,7 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
@@ -614,29 +613,28 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
                       children: [
                         Row(
                           children: [
-                            const Text(
+                            Text(
                               'Score de santé',
                               style: TextStyle(
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                                 fontSize: 10,
                               ),
                             ),
-                            const Spacer(),
+                            Spacer(),
                             Text(
                               '$confidence%',
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
+                              style: TextStyle(
+                                color: context.colors.textPrimary,
                                 fontSize: 11,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(3),
                           child: LinearProgressIndicator(
                             value: confidence / 100,
-                            backgroundColor: AppColors.backgroundDark,
                             valueColor: const AlwaysStoppedAnimation<Color>(
                               AppColors.primaryGreen,
                             ),
@@ -646,28 +644,28 @@ class _AnalysisHistoryScreenState extends State<AnalysisHistoryScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundDark,
+                      color: context.colors.bg,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       analysis.analysisMode.toUpperCase(),
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 10,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Icon(
                     Icons.chevron_right,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     size: 20,
                   ),
                 ],

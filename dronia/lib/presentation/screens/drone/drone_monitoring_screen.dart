@@ -107,7 +107,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
 
   void _startRecording() {
     _isRecording = true;
-    _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _recordingTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() => _recordingSeconds++);
       }
@@ -121,7 +121,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
 
   void _startDetection() {
     // Run detection every 3-5 seconds
-    _detectionTimer = Timer.periodic(const Duration(seconds: 4), (timer) async {
+    _detectionTimer = Timer.periodic(Duration(seconds: 4), (timer) async {
       if (!_isMissionActive || !mounted) return;
 
       final detection = await _detectionService.runDetection();
@@ -150,7 +150,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
         });
 
         // Hide alert after 2 seconds and resume video
-        Future.delayed(const Duration(seconds: 2), () {
+        Future.delayed(Duration(seconds: 2), () {
           if (mounted) {
             setState(() => _showDetectionAlert = false);
             // Resume video after alert is dismissed
@@ -164,7 +164,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
   }
 
   void _startTelemetrySimulation() {
-    _telemetryTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+    _telemetryTimer = Timer.periodic(Duration(seconds: 2), (timer) {
       if (!mounted) return;
       setState(() {
         // Simulate small variations
@@ -227,7 +227,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
-        transitionDuration: const Duration(milliseconds: 200),
+        transitionDuration: Duration(milliseconds: 200),
       ),
     );
   }
@@ -265,7 +265,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
         backgroundColor: _isMissionActive
             ? AppColors.primaryGreen
             : AppColors.error,
-        duration: const Duration(seconds: 1),
+        duration: Duration(seconds: 1),
       ),
     );
   }
@@ -283,7 +283,6 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: Stack(
         children: [
           SafeArea(
@@ -293,17 +292,17 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildHeader(),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   _buildQuickStats(),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   _buildVideoSection(),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   _buildScreenCaptureSection(),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   _buildDroneControlPalette(isFullScreen: false),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   _buildTelemetry(),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   _buildDetectionHistory(),
                 ],
               ),
@@ -322,7 +321,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -334,42 +333,42 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             label: 'Monter',
             onTap: () => _onDroneCommand('up'),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           _buildCompactButton(
             icon: Icons.arrow_downward,
             label: 'Descendre',
             onTap: () => _onDroneCommand('down'),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           _buildCompactButton(
             icon: Icons.play_arrow,
             label: 'Avancer',
             onTap: () => _onDroneCommand('forward'),
             color: AppColors.primaryGreen,
           ),
-          const Spacer(),
+          Spacer(),
           // More options button
           GestureDetector(
             onTap: _showMoreControls,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.textSecondary.withOpacity(0.2),
+                color: context.colors.textSecondary.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     Icons.more_horiz,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     size: 20,
                   ),
                   SizedBox(width: 4),
                   Text(
                     'Plus',
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       fontSize: 12,
                     ),
                   ),
@@ -388,7 +387,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     required VoidCallback onTap,
     Color? color,
   }) {
-    final buttonColor = color ?? AppColors.textSecondary;
+    final buttonColor = color ?? context.colors.textSecondary;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -406,9 +405,9 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
   void _showMoreControls() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.cardDark,
+      backgroundColor: context.colors.card,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => SingleChildScrollView(
@@ -425,33 +424,33 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.gamepad,
                     color: AppColors.primaryGreen,
                     size: 20,
                   ),
-                  const SizedBox(width: 8),
-                  const Text(
+                  SizedBox(width: 8),
+                  Text(
                     'Commandes Drone',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Spacer(),
+                  Spacer(),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: AppColors.textSecondary.withOpacity(0.2),
+                        color: context.colors.textSecondary.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Voir moins',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           fontSize: 12,
                         ),
                       ),
@@ -459,63 +458,63 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               // Movement controls
-              const Text(
+              Text(
                 'Mouvement',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6),
               Row(
                 children: [
                   _buildOptionButton(Icons.keyboard_arrow_up, 'Avancer', () {
                     _onDroneCommand('forward');
                     Navigator.pop(context);
                   }),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   _buildOptionButton(Icons.keyboard_arrow_down, 'Reculer', () {
                     _onDroneCommand('backward');
                     Navigator.pop(context);
                   }),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   _buildOptionButton(Icons.keyboard_arrow_left, 'Gauche', () {
                     _onDroneCommand('left');
                     Navigator.pop(context);
                   }),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   _buildOptionButton(Icons.keyboard_arrow_right, 'Droite', () {
                     _onDroneCommand('right');
                     Navigator.pop(context);
                   }),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               // Altitude controls
-              const Text(
+              Text(
                 'Altitude',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6),
               Row(
                 children: [
                   _buildOptionButton(Icons.arrow_upward, 'Monter', () {
                     _onDroneCommand('up');
                     Navigator.pop(context);
                   }),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   _buildOptionButton(Icons.arrow_downward, 'Descendre', () {
                     _onDroneCommand('down');
                     Navigator.pop(context);
                   }),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               // Actions
-              const Text(
+              Text(
                 'Actions',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6),
               Row(
                 children: [
                   _buildOptionButton(
@@ -529,7 +528,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                         ? AppColors.error
                         : AppColors.primaryGreen,
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   _buildOptionButton(Icons.home, 'Retour Base', () {
                     _onDroneCommand('return_home');
                     Navigator.pop(context);
@@ -563,7 +562,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
           child: Column(
             children: [
               Icon(icon, color: buttonColor, size: 18),
-              const SizedBox(height: 2),
+              SizedBox(height: 2),
               Text(
                 label,
                 style: TextStyle(color: buttonColor, fontSize: 9),
@@ -609,7 +608,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
       SnackBar(
         content: Text(message),
         backgroundColor: AppColors.primaryGreen,
-        duration: const Duration(milliseconds: 500),
+        duration: Duration(milliseconds: 500),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -619,7 +618,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     if (_isRecording) {
       _stopRecording();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Enregistrement sauvegardé dans la galerie'),
           backgroundColor: AppColors.primaryGreen,
           duration: Duration(seconds: 2),
@@ -628,7 +627,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     } else {
       _startRecording();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Enregistrement démarré'),
           backgroundColor: AppColors.error,
           duration: Duration(seconds: 1),
@@ -652,7 +651,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
           width: 200,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: color, width: 2),
             boxShadow: [
@@ -670,7 +669,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
               Row(
                 children: [
                   Icon(Icons.warning_amber_rounded, color: color, size: 14),
-                  const SizedBox(width: 4),
+                  SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       detection.type == DetectionType.disease
@@ -685,32 +684,32 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   ),
                   GestureDetector(
                     onTap: _dismissDetectionAlert,
-                    child: const Icon(
+                    child: Icon(
                       Icons.close,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       size: 14,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6),
               Text(
                 detection.label,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: context.colors.textPrimary,
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: 2),
               Text(
                 '${(detection.confidence * 100).toStringAsFixed(0)}% • ${detection.zone}',
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: context.colors.textSecondary,
                   fontSize: 10,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -725,7 +724,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
-                  child: const Text('Voir', style: TextStyle(fontSize: 11)),
+                  child: Text('Voir', style: TextStyle(fontSize: 11)),
                 ),
               ),
             ],
@@ -744,14 +743,14 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               RichText(
-                text: const TextSpan(
+                text: TextSpan(
                   children: [
                     TextSpan(
                       text: 'Surveillance ',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     TextSpan(
@@ -765,11 +764,11 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 'Analyse temps réel • ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}',
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: context.colors.textSecondary,
                   fontSize: 12,
                 ),
               ),
@@ -784,7 +783,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const PlannedInterventionsScreen(),
+                    builder: (context) => PlannedInterventionsScreen(),
                   ),
                 );
                 // Refresh count when returning
@@ -793,11 +792,11 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.cardDark,
+                  color: context.colors.card,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.calendar_month,
                   color: AppColors.primaryGreen,
                   size: 22,
@@ -814,11 +813,11 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                     color: AppColors.error,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.backgroundDark,
+                      color: context.colors.bg,
                       width: 2,
                     ),
                   ),
-                  constraints: const BoxConstraints(
+                  constraints: BoxConstraints(
                     minWidth: 18,
                     minHeight: 18,
                   ),
@@ -826,7 +825,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                     _pendingInterventionsCount > 9
                         ? '9+'
                         : '$_pendingInterventionsCount',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.white,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -845,7 +844,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -872,10 +871,10 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             fontSize: 16,
           ),
         ),
-        const SizedBox(height: 2),
+        SizedBox(height: 2),
         Text(
           label,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 10),
+          style: TextStyle(color: context.colors.textSecondary, fontSize: 10),
         ),
       ],
     );
@@ -906,7 +905,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                 height: 220,
                 width: double.infinity,
                 color: Colors.black,
-                child: const Center(
+                child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -914,7 +913,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       SizedBox(height: 12),
                       Text(
                         'Chargement du flux...',
-                        style: TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: context.colors.textSecondary),
                       ),
                     ],
                   ),
@@ -928,13 +927,13 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
               child: Row(
                 children: [
                   _buildVideoBadge('LIVE', AppColors.error, true),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   _buildVideoBadge(
                     'REC $_formattedTime',
                     AppColors.error,
                     _isRecording,
                   ),
-                  const Spacer(),
+                  Spacer(),
                   _buildVideoBadge(
                     '${_altitude.toStringAsFixed(1)}m',
                     AppColors.info,
@@ -956,7 +955,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                     _toggleMission,
                     isRed: _isMissionActive,
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   _buildVideoControl(Icons.fullscreen, _toggleFullScreen),
                 ],
               ),
@@ -1014,7 +1013,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
               });
 
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
+                SnackBar(
                   content: Text('Capture enregistrée dans la galerie'),
                   backgroundColor: AppColors.primaryGreen,
                   duration: Duration(seconds: 2),
@@ -1034,7 +1033,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
           SnackBar(
             content: Text('Erreur lors de la capture: $e'),
             backgroundColor: AppColors.error,
-            duration: const Duration(seconds: 2),
+            duration: Duration(seconds: 2),
           ),
         );
       }
@@ -1049,7 +1048,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -1084,7 +1083,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                         shape: BoxShape.circle,
                       ),
                       child: _isCapturing
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 16,
                               height: 16,
                               child: CircularProgressIndicator(
@@ -1092,13 +1091,13 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                                 strokeWidth: 2,
                               ),
                             )
-                          : const Icon(
+                          : Icon(
                               Icons.camera_alt_outlined,
                               color: Colors.white,
                               size: 18,
                             ),
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Flexible(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -1106,14 +1105,14 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                         children: [
                           Text(
                             _isCapturing ? 'Capture...' : 'Capturer',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const Text(
+                          Text(
                             'Zone',
                             style: TextStyle(
                               color: Colors.white70,
@@ -1128,7 +1127,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
               ),
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           // Last capture status
           Expanded(
             flex: 3,
@@ -1138,12 +1137,12 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
               decoration: BoxDecoration(
                 color: _lastCaptureTime != null
                     ? AppColors.primaryGreen.withOpacity(0.1)
-                    : AppColors.backgroundDark,
+                    : context.colors.bg,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: _lastCaptureTime != null
                       ? AppColors.primaryGreen.withOpacity(0.3)
-                      : AppColors.dividerColor,
+                      : context.colors.divider,
                 ),
               ),
               child: Row(
@@ -1154,10 +1153,10 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                         : Icons.info_outline,
                     color: _lastCaptureTime != null
                         ? AppColors.primaryGreen
-                        : AppColors.textSecondary,
+                        : context.colors.textSecondary,
                     size: 18,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -1170,7 +1169,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                           style: TextStyle(
                             color: _lastCaptureTime != null
                                 ? AppColors.primaryGreen
-                                : AppColors.textSecondary,
+                                : context.colors.textSecondary,
                             fontWeight: FontWeight.bold,
                             fontSize: 11,
                           ),
@@ -1179,8 +1178,8 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                           _lastCaptureTime != null
                               ? 'À $_lastCaptureTime'
                               : 'Appuyez pour capturer',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: context.colors.textSecondary,
                             fontSize: 10,
                           ),
                         ),
@@ -1211,7 +1210,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
               width: 6,
               height: 6,
               margin: const EdgeInsets.only(right: 4),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
@@ -1219,7 +1218,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
           Text(
             text,
             style: TextStyle(
-              color: isActive ? AppColors.white : AppColors.textSecondary,
+              color: isActive ? AppColors.white : context.colors.textSecondary,
               fontSize: 10,
               fontWeight: FontWeight.bold,
             ),
@@ -1318,7 +1317,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
@@ -1327,17 +1326,17 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.sensors,
                     color: AppColors.primaryGreen,
                     size: 18,
                   ),
-                  const SizedBox(width: 8),
-                  const Expanded(
+                  SizedBox(width: 8),
+                  Expanded(
                     child: Text(
                       'TÉLÉMÉTRIE & CAPTEURS',
                       style: TextStyle(
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                       ),
@@ -1364,7 +1363,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                               : AppColors.error,
                           size: 6,
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4),
                         Text(
                           _isMissionActive ? 'ACTIF' : 'INACTIF',
                           style: TextStyle(
@@ -1380,15 +1379,15 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: 14),
               // DRONE STATUS Section
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundDark,
+                  color: context.colors.bg,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: AppColors.dividerColor.withOpacity(0.5),
+                    color: context.colors.divider.withOpacity(0.5),
                   ),
                 ),
                 child: Column(
@@ -1401,18 +1400,18 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                           color: AppColors.warning,
                           size: 14,
                         ),
-                        const SizedBox(width: 6),
-                        const Text(
+                        SizedBox(width: 6),
+                        Text(
                           'DRONE STATUS',
                           style: TextStyle(
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                             fontWeight: FontWeight.bold,
                             fontSize: 11,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10),
                     Row(
                       children: [
                         Expanded(
@@ -1424,7 +1423,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                             _battery / 100,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Expanded(
                           child: _buildDroneStatusTile(
                             'Altitude',
@@ -1437,7 +1436,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
@@ -1445,13 +1444,13 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                             'Vitesse',
                             '${_speed.toStringAsFixed(1)}',
                             'm/s',
-                            AppColors.textPrimary,
+                            context.colors.textPrimary,
                             null,
                             subtitle:
                                 '≈ ${(_speed * 3.6).toStringAsFixed(0)} km/h',
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Expanded(child: _buildGpsSignalTile()),
                       ],
                     ),
@@ -1461,12 +1460,12 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         // CONDITIONS ENVIRONNEMENTALES
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
@@ -1475,23 +1474,23 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.public,
                     color: AppColors.primaryGreen,
                     size: 18,
                   ),
-                  const SizedBox(width: 8),
-                  const Text(
+                  SizedBox(width: 8),
+                  Text(
                     'CONDITIONS ENVIRONNEMENTALES',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontWeight: FontWeight.bold,
                       fontSize: 11,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               _buildEnvironmentRow(
                 Icons.thermostat,
                 AppColors.warning,
@@ -1500,7 +1499,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                 'Idéal',
                 AppColors.primaryGreen,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               _buildEnvironmentRow(
                 Icons.water_drop,
                 AppColors.info,
@@ -1511,7 +1510,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                 showBar: true,
                 barValue: humidity / 100,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               _buildEnvironmentRow(
                 Icons.air,
                 AppColors.primaryGreen,
@@ -1523,12 +1522,12 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         // STATISTIQUES MISSION
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: context.colors.card,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
@@ -1537,56 +1536,56 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.bar_chart,
                     color: AppColors.primaryGreen,
                     size: 18,
                   ),
-                  const SizedBox(width: 8),
-                  const Text(
+                  SizedBox(width: 8),
+                  Text(
                     'STATISTIQUES MISSION',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontWeight: FontWeight.bold,
                       fontSize: 11,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               // Surface Scannée
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Surface Scannée',
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       fontSize: 12,
                     ),
                   ),
                   Text(
                     '${surfaceScanned.toStringAsFixed(1)}%',
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
+                    style: TextStyle(
+                      color: context.colors.textPrimary,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6),
               // Progress bar with gradient
               Container(
                 height: 6,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(3),
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [AppColors.primaryGreen, AppColors.warning],
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: 14),
               // Stats row
               Row(
                 children: [
@@ -1594,10 +1593,10 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                     child: _buildMissionStatTile(
                       '$_detectionCount',
                       'Détections',
-                      AppColors.textPrimary,
+                      context.colors.textPrimary,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Expanded(
                     child: _buildMissionStatTile(
                       '${(_detectionCount / haTotal).toStringAsFixed(1)}',
@@ -1605,7 +1604,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       AppColors.warning,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Expanded(
                     child: _buildMissionStatTile(
                       '$haTotal',
@@ -1633,7 +1632,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -1644,19 +1643,19 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: context.colors.textSecondary,
                   fontSize: 10,
                 ),
               ),
               Icon(
                 label == 'Batterie' ? Icons.bolt : Icons.arrow_upward,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 size: 12,
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -1668,13 +1667,13 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   fontSize: 22,
                 ),
               ),
-              const SizedBox(width: 2),
+              SizedBox(width: 2),
               Padding(
                 padding: const EdgeInsets.only(bottom: 3),
                 child: Text(
                   unit,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -1682,19 +1681,19 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             ],
           ),
           if (progress != null) ...[
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             ClipRRect(
               borderRadius: BorderRadius.circular(2),
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: AppColors.dividerColor,
+                backgroundColor: context.colors.divider,
                 valueColor: AlwaysStoppedAnimation<Color>(valueColor),
                 minHeight: 4,
               ),
             ),
           ],
           if (subtitle != null) ...[
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Row(
               children: [
                 Icon(
@@ -1704,7 +1703,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                 ),
                 Text(
                   subtitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.primaryGreen,
                     fontSize: 10,
                   ),
@@ -1721,7 +1720,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -1730,33 +1729,33 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Signal GPS',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
+                style: TextStyle(color: context.colors.textSecondary, fontSize: 10),
               ),
               Icon(
                 Icons.signal_cellular_alt,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 size: 12,
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Row(
             children: [
               _buildSignalBar(AppColors.error),
-              const SizedBox(width: 3),
+              SizedBox(width: 3),
               _buildSignalBar(AppColors.warning),
-              const SizedBox(width: 3),
+              SizedBox(width: 3),
               _buildSignalBar(AppColors.warning),
-              const SizedBox(width: 3),
+              SizedBox(width: 3),
               _buildSignalBar(AppColors.primaryGreen),
-              const SizedBox(width: 3),
-              _buildSignalBar(AppColors.dividerColor),
+              SizedBox(width: 3),
+              _buildSignalBar(context.colors.divider),
             ],
           ),
-          const SizedBox(height: 6),
-          const Text(
+          SizedBox(height: 6),
+          Text(
             'Excellent',
             style: TextStyle(
               color: AppColors.primaryGreen,
@@ -1793,7 +1792,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.backgroundDark,
+        color: context.colors.bg,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -1806,22 +1805,22 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             ),
             child: Icon(icon, color: iconColor, size: 18),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 11,
                   ),
                 ),
                 Text(
                   value,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: context.colors.textPrimary,
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
                   ),
@@ -1852,7 +1851,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                 borderRadius: BorderRadius.circular(3),
                 child: LinearProgressIndicator(
                   value: barValue,
-                  backgroundColor: AppColors.dividerColor,
+                  backgroundColor: context.colors.divider,
                   valueColor: const AlwaysStoppedAnimation<Color>(
                     AppColors.info,
                   ),
@@ -1869,7 +1868,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: AppColors.backgroundDark,
+        color: context.colors.bg,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -1882,11 +1881,11 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
               fontSize: 18,
             ),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontSize: 10,
             ),
           ),
@@ -1899,7 +1898,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -1908,17 +1907,17 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.history, color: AppColors.info, size: 16),
-              const SizedBox(width: 6),
-              const Text(
+              Icon(Icons.history, color: AppColors.info, size: 16),
+              SizedBox(width: 6),
+              Text(
                 'Historique Détections',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
                 ),
               ),
-              const Spacer(),
+              Spacer(),
               if (_recentDetections.isNotEmpty)
                 GestureDetector(
                   onTap: () =>
@@ -1934,7 +1933,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                     ),
                     child: Text(
                       '${_recentDetections.length} nouvelles',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.primaryGreen,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -1944,7 +1943,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                 ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           if (_recentDetections.isEmpty)
             _buildEmptyDetections()
           else
@@ -1960,7 +1959,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.backgroundDark,
+        color: context.colors.bg,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -1970,18 +1969,18 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             size: 36,
             color: AppColors.primaryGreen.withOpacity(0.5),
           ),
-          const SizedBox(height: 8),
-          const Text(
+          SizedBox(height: 8),
+          Text(
             'Aucune détection',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
               fontWeight: FontWeight.bold,
               fontSize: 13,
             ),
           ),
-          const Text(
+          Text(
             'Surveillance active',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+            style: TextStyle(color: context.colors.textSecondary, fontSize: 11),
           ),
         ],
       ),
@@ -2005,7 +2004,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.backgroundDark,
+        color: context.colors.bg,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -2018,7 +2017,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             ),
             child: Icon(icon, color: color, size: 16),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -2027,13 +2026,13 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   children: [
                     Text(
                       detection.label,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
                         fontWeight: FontWeight.w500,
                         fontSize: 12,
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 4,
@@ -2056,8 +2055,8 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                 ),
                 Text(
                   '${detection.zone} • ${_formatTime(detection.timestamp)}',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 10,
                   ),
                 ),
@@ -2073,7 +2072,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text(
+            child: Text(
               'Détails',
               style: TextStyle(color: AppColors.info, fontSize: 11),
             ),
@@ -2100,7 +2099,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: AppColors.cardDark,
+        backgroundColor: context.colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Container(
           padding: const EdgeInsets.all(20),
@@ -2112,36 +2111,36 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
               Row(
                 children: [
                   Icon(icon, color: color, size: 18),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       'Détails - ${detection.label}',
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(
+                    child: Icon(
                       Icons.close,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       size: 20,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // Disease info row
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundDark,
+                  color: context.colors.bg,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
@@ -2155,7 +2154,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       ),
                       child: Icon(icon, color: color, size: 28),
                     ),
-                    const SizedBox(width: 14),
+                    SizedBox(width: 14),
                     // Name and date
                     Expanded(
                       child: Column(
@@ -2163,17 +2162,17 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                         children: [
                           Text(
                             detection.label,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
+                            style: TextStyle(
+                              color: context.colors.textPrimary,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             'Détecté le ${detection.timestamp.day.toString().padLeft(2, '0')}/${detection.timestamp.month.toString().padLeft(2, '0')}/${detection.timestamp.year} à ${_formatTime(detection.timestamp)}',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: context.colors.textSecondary,
                               fontSize: 12,
                             ),
                           ),
@@ -2192,7 +2191,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       ),
                       child: Text(
                         '${(detection.confidence * 100).toStringAsFixed(0)}%',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -2202,7 +2201,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
 
               // Severity and Zone row
               Row(
@@ -2215,25 +2214,25 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                           children: [
                             Icon(
                               Icons.warning_amber,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                               size: 14,
                             ),
-                            const SizedBox(width: 4),
-                            const Text(
+                            SizedBox(width: 4),
+                            Text(
                               'SÉVÉRITÉ',
                               style: TextStyle(
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        const Text(
+                        SizedBox(height: 4),
+                        Text(
                           'À évaluer',
                           style: TextStyle(
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -2249,25 +2248,25 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                           children: [
                             Icon(
                               Icons.location_on_outlined,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                               size: 14,
                             ),
-                            const SizedBox(width: 4),
-                            const Text(
+                            SizedBox(width: 4),
+                            Text(
                               'ZONE',
                               style: TextStyle(
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text(
                           detection.zone,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: context.colors.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -2277,7 +2276,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
 
               // Recommended treatment
               Container(
@@ -2296,12 +2295,12 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       color: AppColors.primaryGreen,
                       size: 18,
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Traitement recommandé',
                             style: TextStyle(
                               color: AppColors.primaryGreen,
@@ -2309,11 +2308,11 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          const Text(
+                          SizedBox(height: 2),
+                          Text(
                             'Consulter un expert agricole',
                             style: TextStyle(
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                               fontSize: 12,
                             ),
                           ),
@@ -2323,7 +2322,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
 
               // Prevention
               Container(
@@ -2340,12 +2339,12 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       color: AppColors.info,
                       size: 18,
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Prévention',
                             style: TextStyle(
                               color: AppColors.info,
@@ -2353,11 +2352,11 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          const Text(
+                          SizedBox(height: 2),
+                          Text(
                             'Surveillance régulière des cultures',
                             style: TextStyle(
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                               fontSize: 12,
                             ),
                           ),
@@ -2367,7 +2366,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // Action buttons - using Flexible to prevent overflow
               Row(
@@ -2388,7 +2387,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      child: const FittedBox(
+                      child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
                           'Générer rapport',
@@ -2401,7 +2400,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Flexible(
                     child: OutlinedButton(
                       onPressed: () {
@@ -2409,8 +2408,8 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                         _showLocationDialog(detection);
                       },
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.textSecondary,
-                        side: const BorderSide(color: AppColors.dividerColor),
+                        foregroundColor: context.colors.textSecondary,
+                        side: BorderSide(color: context.colors.divider),
                         padding: const EdgeInsets.symmetric(
                           vertical: 12,
                           horizontal: 12,
@@ -2419,7 +2418,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      child: const FittedBox(
+                      child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
                           'Voir carte',
@@ -2449,7 +2448,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: AppColors.cardDark,
+        backgroundColor: context.colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Container(
           padding: const EdgeInsets.all(20),
@@ -2460,41 +2459,41 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
               // Header
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.location_on,
                     color: AppColors.error,
                     size: 18,
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       'Localisation - ${detection.label}',
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(
+                    child: Icon(
                       Icons.close,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       size: 20,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // Grid map
               Container(
                 height: 220,
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundDark,
+                  color: context.colors.bg,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 ),
@@ -2502,9 +2501,9 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   children: [
                     // Grid
                     GridView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
+                      physics: NeverScrollableScrollPhysics(),
                       gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
+                          SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 4,
                             childAspectRatio: 1,
                           ),
@@ -2530,11 +2529,11 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                               ? Center(
                                   child: Container(
                                     padding: const EdgeInsets.all(8),
-                                    decoration: const BoxDecoration(
+                                    decoration: BoxDecoration(
                                       color: AppColors.error,
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.priority_high,
                                       color: AppColors.white,
                                       size: 16,
@@ -2552,13 +2551,13 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: AppColors.cardDark,
+                          color: context.colors.card,
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
+                        child: Text(
                           'N',
                           style: TextStyle(
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
@@ -2574,13 +2573,13 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                           Container(
                             width: 40,
                             height: 3,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
-                          const SizedBox(width: 4),
-                          const Text(
+                          SizedBox(width: 4),
+                          Text(
                             '50m',
                             style: TextStyle(
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                               fontSize: 10,
                             ),
                           ),
@@ -2590,7 +2589,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
 
               // Zone and Coordinates
               Row(
@@ -2599,19 +2598,19 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'ZONE',
                           style: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text(
                           detection.zone,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: context.colors.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -2623,19 +2622,19 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'COORDONNÉES',
                           style: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text(
                           'X: $xCoord% | Y: $yCoord%',
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: context.colors.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -2645,7 +2644,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // Plan intervention button
               SizedBox(
@@ -2655,8 +2654,8 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                     Navigator.pop(context);
                     _showInterventionPlanningDialog(detection);
                   },
-                  icon: const Icon(Icons.schedule, size: 18),
-                  label: const Text('Planifier une intervention'),
+                  icon: Icon(Icons.schedule, size: 18),
+                  label: Text('Planifier une intervention'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryGreen,
                     foregroundColor: AppColors.white,
@@ -2694,7 +2693,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => Dialog(
-          backgroundColor: AppColors.cardDark,
+          backgroundColor: context.colors.card,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -2708,17 +2707,17 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   // Header
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.schedule,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                         size: 20,
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Flexible(
-                        child: const Text(
+                        child: Text(
                           'Planifier une intervention',
                           style: TextStyle(
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -2726,20 +2725,20 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
 
                   // Detection info
                   RichText(
                     text: TextSpan(
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
                         fontSize: 13,
                       ),
                       children: [
-                        const TextSpan(text: 'Détection: '),
+                        TextSpan(text: 'Détection: '),
                         TextSpan(
                           text: detection.label,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.primaryGreen,
                             fontWeight: FontWeight.w600,
                           ),
@@ -2751,33 +2750,33 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
                   // Date picker
-                  const Text(
+                  Text(
                     'Date',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   GestureDetector(
                     onTap: () async {
                       final date = await showDatePicker(
                         context: context,
                         initialDate: DateTime.now().add(
-                          const Duration(days: 1),
+                          Duration(days: 1),
                         ),
                         firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                        lastDate: DateTime.now().add(Duration(days: 365)),
                         builder: (context, child) {
                           return Theme(
                             data: ThemeData.dark().copyWith(
-                              colorScheme: const ColorScheme.dark(
+                              colorScheme: ColorScheme.dark(
                                 primary: AppColors.primaryGreen,
-                                surface: AppColors.cardDark,
+                                surface: context.colors.card,
                               ),
                             ),
                             child: child!,
@@ -2794,7 +2793,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                         vertical: 14,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.backgroundDark,
+                        color: context.colors.bg,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                       ),
@@ -2806,33 +2805,33 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                                 : 'mm/dd/yyyy',
                             style: TextStyle(
                               color: selectedDate != null
-                                  ? AppColors.textPrimary
-                                  : AppColors.textSecondary,
+                                  ? context.colors.textPrimary
+                                  : context.colors.textSecondary,
                               fontSize: 14,
                             ),
                           ),
-                          const Spacer(),
-                          const Icon(
+                          Spacer(),
+                          Icon(
                             Icons.calendar_today,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                             size: 18,
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
 
                   // Time picker
-                  const Text(
+                  Text(
                     'Heure',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   GestureDetector(
                     onTap: () async {
                       final time = await showTimePicker(
@@ -2841,9 +2840,9 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                         builder: (context, child) {
                           return Theme(
                             data: ThemeData.dark().copyWith(
-                              colorScheme: const ColorScheme.dark(
+                              colorScheme: ColorScheme.dark(
                                 primary: AppColors.primaryGreen,
-                                surface: AppColors.cardDark,
+                                surface: context.colors.card,
                               ),
                             ),
                             child: child!,
@@ -2860,7 +2859,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                         vertical: 14,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.backgroundDark,
+                        color: context.colors.bg,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                       ),
@@ -2872,37 +2871,37 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                                 : '--:--',
                             style: TextStyle(
                               color: selectedTime != null
-                                  ? AppColors.textPrimary
-                                  : AppColors.textSecondary,
+                                  ? context.colors.textPrimary
+                                  : context.colors.textSecondary,
                               fontSize: 14,
                             ),
                           ),
-                          const Spacer(),
-                          const Icon(
+                          Spacer(),
+                          Icon(
                             Icons.access_time,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                             size: 18,
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
 
                   // Intervention type dropdown
-                  const Text(
+                  Text(
                     'Type d\'intervention',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundDark,
+                      color: context.colors.bg,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                     ),
@@ -2910,21 +2909,21 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       child: DropdownButton<String>(
                         isExpanded: true,
                         value: selectedInterventionType,
-                        hint: const Text(
+                        hint: Text(
                           'Sélectionner...',
                           style: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                             fontSize: 14,
                           ),
                         ),
-                        dropdownColor: AppColors.cardDark,
+                        dropdownColor: context.colors.card,
                         items: interventionTypes.map((type) {
                           return DropdownMenuItem(
                             value: type,
                             child: Text(
                               type,
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
+                              style: TextStyle(
+                                color: context.colors.textPrimary,
                                 fontSize: 14,
                               ),
                             ),
@@ -2938,35 +2937,35 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
 
                   // Notes
-                  const Text(
+                  Text(
                     'Notes',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundDark,
+                      color: context.colors.bg,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                     ),
                     child: TextField(
                       controller: notesController,
                       maxLines: 3,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
                         fontSize: 14,
                       ),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: 'Ajoutez des notes ou instructions...',
                         hintStyle: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           fontSize: 14,
                         ),
                         border: InputBorder.none,
@@ -2974,7 +2973,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
 
                   // Action buttons
                   Row(
@@ -2983,9 +2982,9 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                         child: OutlinedButton(
                           onPressed: () => Navigator.pop(context),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.textSecondary,
-                            side: const BorderSide(
-                              color: AppColors.dividerColor,
+                            foregroundColor: context.colors.textSecondary,
+                            side: BorderSide(
+                              color: context.colors.divider,
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(

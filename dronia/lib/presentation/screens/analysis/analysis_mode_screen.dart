@@ -47,14 +47,14 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: Duration(milliseconds: 800),
       vsync: this,
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
     _slideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+        Tween<Offset>(begin: Offset(0, 0.1), end: Offset.zero).animate(
           CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
         );
     _animationController.forward();
@@ -69,7 +69,6 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: SlideTransition(
@@ -81,17 +80,17 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildHeader(),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   _buildInfoBanner(),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   _buildAIModelSelector(),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   _buildImageUpload(),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   _buildCultureSelector(),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   _buildAnalyzeButton(),
-                  const SizedBox(height: 100),
+                  SizedBox(height: 100),
                 ],
               ),
             ),
@@ -106,14 +105,14 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
-          text: const TextSpan(
+          text: TextSpan(
             children: [
               TextSpan(
                 text: 'Analyse ',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               TextSpan(
@@ -127,10 +126,10 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
             ],
           ),
         ),
-        const SizedBox(height: 4),
-        const Text(
+        SizedBox(height: 4),
+        Text(
           'Diagnostic instantané par IA',
-          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
         ),
       ],
     );
@@ -157,30 +156,30 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
               color: AppColors.info.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.info_outline,
               color: AppColors.info,
               size: 22,
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Surveillance en temps réel ?',
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 RichText(
-                  text: const TextSpan(
+                  text: TextSpan(
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       fontSize: 12,
                     ),
                     children: [
@@ -199,7 +198,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, color: AppColors.info),
+          Icon(Icons.chevron_right, color: AppColors.info),
         ],
       ),
     );
@@ -209,14 +208,14 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 15,
-            offset: const Offset(0, 5),
+            offset: Offset(0, 5),
           ),
         ],
       ),
@@ -236,14 +235,14 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.psychology,
                   color: AppColors.white,
                   size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
-              const Column(
+              SizedBox(width: 12),
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -251,13 +250,13 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   Text(
                     'Modèle de haute précision',
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       fontSize: 12,
                     ),
                   ),
@@ -265,7 +264,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           // Single EfficientNet model card - always selected
           Container(
             padding: const EdgeInsets.all(16),
@@ -282,7 +281,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                 BoxShadow(
                   color: AppColors.primaryGreen.withValues(alpha: 0.2),
                   blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  offset: Offset(0, 2),
                 ),
               ],
             ),
@@ -296,13 +295,13 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                     border: Border.all(color: AppColors.primaryGreen, width: 2),
                     color: AppColors.primaryGreen,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.check,
                     color: AppColors.white,
                     size: 14,
                   ),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: 14),
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
@@ -315,20 +314,20 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                     size: 20,
                   ),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         _efficientNetModel.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2),
                       Text(
                         _efficientNetModel.description,
                         style: TextStyle(
@@ -351,14 +350,14 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 15,
-            offset: const Offset(0, 5),
+            offset: Offset(0, 5),
           ),
         ],
       ),
@@ -378,14 +377,14 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.image,
                   color: AppColors.white,
                   size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
-              const Expanded(
+              SizedBox(width: 12),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -396,7 +395,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         SizedBox(width: 4),
@@ -412,7 +411,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                     Text(
                       'Photo claire et bien éclairée',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
@@ -421,11 +420,11 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           GestureDetector(
             onTap: _pickImage,
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: Duration(milliseconds: 200),
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
               decoration: BoxDecoration(
@@ -437,7 +436,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                         ],
                       )
                     : null,
-                color: _hasImage ? null : AppColors.backgroundDark,
+                color: _hasImage ? null : context.colors.bg,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: _hasImage
@@ -482,7 +481,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                                   color: AppColors.error,
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.close,
                                   color: Colors.white,
                                   size: 18,
@@ -502,7 +501,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                                 color: AppColors.success,
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Row(
+                              child: Row(
                                 children: [
                                   Icon(
                                     Icons.check_circle,
@@ -557,7 +556,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                                 : AppColors.primaryGreen,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         Text(
                           _hasImage
                               ? 'Image sélectionnée ✓'
@@ -565,16 +564,16 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                           style: TextStyle(
                             color: _hasImage
                                 ? AppColors.success
-                                : AppColors.textPrimary,
+                                : context.colors.textPrimary,
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        const Text(
+                        SizedBox(height: 6),
+                        Text(
                           'PNG, JPG, WEBP • Max 10MB',
                           style: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                             fontSize: 12,
                           ),
                         ),
@@ -582,7 +581,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                     ),
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           // Camera and Gallery buttons
           Row(
             children: [
@@ -592,7 +591,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundDark,
+                      color: context.colors.bg,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.1),
@@ -606,11 +605,11 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                           color: AppColors.primaryGreen,
                           size: 20,
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
+                        SizedBox(width: 8),
+                        Text(
                           'Caméra',
                           style: TextStyle(
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -619,14 +618,14 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: GestureDetector(
                   onTap: _pickImage,
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundDark,
+                      color: context.colors.bg,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.1),
@@ -640,11 +639,11 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                           color: AppColors.info,
                           size: 20,
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
+                        SizedBox(width: 8),
+                        Text(
                           'Galerie',
                           style: TextStyle(
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -655,7 +654,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -666,7 +665,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
                     Icon(Icons.lightbulb, color: AppColors.info, size: 18),
                     SizedBox(width: 8),
@@ -680,7 +679,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 _buildTip('Photo nette et bien éclairée'),
                 _buildTip('Feuilles visibles en gros plan'),
                 _buildTip('Évitez les reflets et ombres'),
@@ -703,13 +702,13 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
               color: AppColors.success.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: const Icon(Icons.check, color: AppColors.success, size: 12),
+            child: Icon(Icons.check, color: AppColors.success, size: 12),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Text(
             text,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontSize: 12,
             ),
           ),
@@ -722,14 +721,14 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 15,
-            offset: const Offset(0, 5),
+            offset: Offset(0, 5),
           ),
         ],
       ),
@@ -749,10 +748,10 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.eco, color: AppColors.white, size: 20),
+                child: Icon(Icons.eco, color: AppColors.white, size: 20),
               ),
-              const SizedBox(width: 12),
-              const Column(
+              SizedBox(width: 12),
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -760,13 +759,13 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   Text(
                     'Optionnel - améliore la précision',
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       fontSize: 12,
                     ),
                   ),
@@ -774,7 +773,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -785,7 +784,7 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                   _selectedCulture = isSelected ? '' : culture.name;
                 }),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
                     vertical: 10,
@@ -799,12 +798,12 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                             ],
                           )
                         : null,
-                    color: isSelected ? null : AppColors.backgroundDark,
+                    color: isSelected ? null : context.colors.bg,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: isSelected
                           ? culture.color
-                          : AppColors.dividerColor,
+                          : context.colors.divider,
                       width: isSelected ? 2 : 1,
                     ),
                     boxShadow: isSelected
@@ -819,14 +818,14 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(culture.emoji, style: const TextStyle(fontSize: 16)),
-                      const SizedBox(width: 8),
+                      Text(culture.emoji, style: TextStyle(fontSize: 16)),
+                      SizedBox(width: 8),
                       Text(
                         culture.name,
                         style: TextStyle(
                           color: isSelected
                               ? culture.color
-                              : AppColors.textPrimary,
+                              : context.colors.textPrimary,
                           fontWeight: isSelected
                               ? FontWeight.w600
                               : FontWeight.normal,
@@ -849,11 +848,11 @@ class _AnalysisModeScreenState extends State<AnalysisModeScreen>
     return Column(
       children: [
         if (!_hasImage)
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(bottom: 12),
             child: Text(
               '* Veuillez sélectionner une image',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
             ),
           ),
         Material(

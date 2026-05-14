@@ -3,235 +3,427 @@ import '../../../core/routes/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/services/storage_service.dart';
 
-/// App drawer with navigation menu
+/// Shared app drawer used across all pages.
+/// When used from home screen, pass [onItemTapped] and [selectedIndex]
+/// so items switch tabs. From other pages items navigate to home.
 class AppDrawer extends StatelessWidget {
-  const AppDrawer({super.key});
+  /// Callback when a tab-based item is tapped (home screen only).
+  final void Function(int index)? onItemTapped;
+
+  /// Currently selected tab index (for highlighting).
+  final int selectedIndex;
+
+  /// Currently active route name (for highlighting route-based items).
+  final String? currentRoute;
+
+  const AppDrawer({
+    super.key,
+    this.onItemTapped,
+    this.selectedIndex = -1,
+    this.currentRoute,
+  });
+
+  // All nav items matching the home screen's tab order
+  static const List<_DrawerNavItem> _navItems = [
+    _DrawerNavItem(
+      icon: Icons.dashboard_outlined,
+      activeIcon: Icons.dashboard,
+      label: 'Tableau de bord',
+    ),
+    _DrawerNavItem(
+      icon: Icons.precision_manufacturing_outlined,
+      activeIcon: Icons.precision_manufacturing,
+      label: 'Mode Drone',
+      badge: 'LIVE',
+      badgeColor: AppColors.error,
+    ),
+    _DrawerNavItem(
+      icon: Icons.cloud_upload_outlined,
+      activeIcon: Icons.cloud_upload,
+      label: 'Upload Photo',
+    ),
+    _DrawerNavItem(
+      icon: Icons.bug_report_outlined,
+      activeIcon: Icons.bug_report,
+      label: 'Analyse des Insectes',
+    ),
+    _DrawerNavItem(
+      icon: Icons.history_outlined,
+      activeIcon: Icons.history,
+      label: 'Historique',
+    ),
+    _DrawerNavItem(
+      icon: Icons.cloud_outlined,
+      activeIcon: Icons.cloud,
+      label: 'Météo Historique',
+    ),
+    _DrawerNavItem(
+      icon: Icons.wb_sunny_outlined,
+      activeIcon: Icons.wb_sunny,
+      label: 'Prédiction Météo',
+    ),
+    _DrawerNavItem(
+      icon: Icons.map_outlined,
+      activeIcon: Icons.map,
+      label: 'Heatmap',
+    ),
+    _DrawerNavItem(
+      icon: Icons.satellite_alt_outlined,
+      activeIcon: Icons.satellite_alt,
+      label: 'Surveillance Cultures',
+      badge: 'NEW',
+      badgeColor: AppColors.primaryGreen,
+    ),
+    _DrawerNavItem(
+      icon: Icons.grass_outlined,
+      activeIcon: Icons.grass,
+      label: 'Surveillance Sols',
+      badge: 'NEW',
+      badgeColor: AppColors.primaryGreen,
+    ),
+    _DrawerNavItem(
+      icon: Icons.psychology_outlined,
+      activeIcon: Icons.psychology,
+      label: 'Conseiller IA',
+      badge: 'AI',
+      badgeColor: AppColors.info,
+    ),
+    _DrawerNavItem(
+      icon: Icons.person_outlined,
+      activeIcon: Icons.person,
+      label: 'Mon Profil',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
+    final bool isDroneFleet = currentRoute == AppRoutes.droneFleet;
+    final bool isDiseaseKB = currentRoute == AppRoutes.diseaseKnowledge;
+    final bool isSettings = currentRoute == AppRoutes.settings;
+    final colors = context.colors;
+
     return Drawer(
+      backgroundColor: colors.bg,
       child: Column(
         children: [
-          // Drawer Header with logo
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
-            decoration: const BoxDecoration(
-              gradient: AppColors.primaryGradient,
-            ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: Image.asset(
-                    'assets/images/Icone.png',
-                    width: 48,
-                    height: 48,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    RichText(
-                      text: const TextSpan(
-                        children: [
-                          TextSpan(
-                            text: 'Dron',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          TextSpan(
-                            text: 'IA',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFFB9F6CA),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Text(
-                      'AGRONOMIE DE PRÉCISION',
-                      style: TextStyle(
-                        fontSize: 9,
-                        color: Colors.white70,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // Menu Items
+          _buildDrawerHeader(context),
           Expanded(
             child: ListView(
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
-                _buildMenuItem(
-                  context,
-                  icon: Icons.dashboard,
-                  title: 'Dashboard',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushReplacementNamed(context, AppRoutes.home);
-                  },
+                for (int index = 0; index < _navItems.length; index++) ...[
+                  _buildNavItem(context, index),
+                  // Insert Drone Fleet after Mode Drone (index 1)
+                  if (index == 1) ...[
+                    _buildRouteItem(
+                      context,
+                      icon: Icons.flight_outlined,
+                      activeIcon: Icons.flight,
+                      label: 'Flotte de Drones',
+                      badge: '3D',
+                      badgeColor: AppColors.accentBrown,
+                      route: AppRoutes.droneFleet,
+                      isSelected: isDroneFleet,
+                    ),
+                    _buildRouteItem(
+                      context,
+                      icon: Icons.biotech_outlined,
+                      activeIcon: Icons.biotech,
+                      label: 'Maladies des Cultures',
+                      badge: 'KB',
+                      badgeColor: AppColors.warning,
+                      route: AppRoutes.diseaseKnowledge,
+                      isSelected: isDiseaseKB,
+                    ),
+                  ],
+                ],
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+                  child: Row(
+                    children: [
+                      Expanded(child: Divider(color: colors.divider, height: 1)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Text(
+                          'RÉGLAGES',
+                          style: TextStyle(
+                            fontSize: 10,
+                            letterSpacing: 1.2,
+                            fontWeight: FontWeight.w600,
+                            color: colors.textHint,
+                          ),
+                        ),
+                      ),
+                      Expanded(child: Divider(color: colors.divider, height: 1)),
+                    ],
+                  ),
                 ),
-                _buildMenuItem(
+                _buildRouteItem(
                   context,
-                  icon: Icons.document_scanner,
-                  title: 'Image Analysis',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, AppRoutes.analysisMode);
-                  },
-                ),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.history,
-                  title: 'Analysis History',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, AppRoutes.analysisHistory);
-                  },
-                ),
-                const Divider(),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.precision_manufacturing,
-                  title: 'Drone Monitoring',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, AppRoutes.droneList);
-                  },
-                ),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.sensors,
-                  title: 'IoT Sensors',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, AppRoutes.sensorList);
-                  },
-                ),
-                const Divider(),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.cloud,
-                  title: 'Weather',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, AppRoutes.weather);
-                  },
-                ),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.warning_amber,
-                  title: 'Alerts',
-                  badge: '3',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, AppRoutes.alerts);
-                  },
-                ),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.description,
-                  title: 'Reports',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, AppRoutes.reports);
-                  },
-                ),
-                const Divider(),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.settings,
-                  title: 'Settings',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, AppRoutes.settings);
-                  },
+                  icon: Icons.settings_outlined,
+                  activeIcon: Icons.settings,
+                  label: 'Paramètres',
+                  route: AppRoutes.settings,
+                  isSelected: isSettings,
                 ),
               ],
             ),
           ),
-          // Logout button at bottom
-          const Divider(height: 1),
-          _buildMenuItem(
-            context,
-            icon: Icons.logout,
-            title: 'Logout',
-            iconColor: AppColors.error,
-            textColor: AppColors.error,
-            onTap: () => _handleLogout(context),
-          ),
-          const SizedBox(height: 16),
+          _buildLogoutButton(context),
         ],
       ),
     );
   }
 
-  Widget _buildMenuItem(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    String? badge,
-    Color? iconColor,
-    Color? textColor,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: iconColor ?? AppColors.textSecondary),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: textColor ?? AppColors.textPrimary,
-          fontWeight: FontWeight.w500,
-        ),
+  Widget _buildDrawerHeader(BuildContext context) {
+    final colors = context.colors;
+    return Container(
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 20,
+        left: 20,
+        right: 20,
+        bottom: 20,
       ),
-      trailing: badge != null
-          ? Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.error,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                badge,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+      decoration: BoxDecoration(
+        color: colors.bg,
+        border: Border(bottom: BorderSide(color: colors.divider, width: 1)),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.asset(
+              'assets/images/Logo_DronIA-11.png',
+              width: 40,
+              height: 40,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Dron',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                    const TextSpan(
+                      text: 'IA',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryGreen,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            )
-          : null,
-      onTap: onTap,
+              Text(
+                'AGRONOMIE DE PRÉCISION',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: colors.textSecondary,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem(BuildContext context, int index) {
+    final item = _navItems[index];
+    final isSelected = selectedIndex == index && currentRoute == null;
+    final colors = context.colors;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? AppColors.primaryGreen.withValues(alpha: 0.15)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: ListTile(
+        leading: Icon(
+          isSelected ? item.activeIcon : item.icon,
+          color: isSelected ? AppColors.primaryGreen : colors.textSecondary,
+          size: 22,
+        ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                item.label,
+                style: TextStyle(
+                  color: isSelected
+                      ? AppColors.primaryGreen
+                      : colors.textPrimary,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            if (item.badge != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color:
+                      item.badgeColor?.withValues(alpha: 0.2) ??
+                      AppColors.primaryGreen.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  item.badge!,
+                  style: TextStyle(
+                    color: item.badgeColor ?? AppColors.primaryGreen,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        onTap: () {
+          Navigator.pop(context); // close drawer
+          if (onItemTapped != null) {
+            // We're on the home screen — switch tab in place.
+            onItemTapped!(index);
+          } else {
+            // We're on another page — navigate to home and open directly
+            // on the requested tab (no double-tap detour through dashboard).
+            Navigator.pushReplacementNamed(
+              context,
+              AppRoutes.home,
+              arguments: index,
+            );
+          }
+        },
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  Widget _buildRouteItem(
+    BuildContext context, {
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required String route,
+    required bool isSelected,
+    String? badge,
+    Color? badgeColor,
+  }) {
+    final colors = context.colors;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? AppColors.primaryGreen.withValues(alpha: 0.15)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: ListTile(
+        leading: Icon(
+          isSelected ? activeIcon : icon,
+          color: isSelected ? AppColors.primaryGreen : colors.textSecondary,
+          size: 22,
+        ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: isSelected
+                      ? AppColors.primaryGreen
+                      : colors.textPrimary,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            if (badge != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color:
+                      badgeColor?.withValues(alpha: 0.2) ??
+                      AppColors.primaryGreen.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  badge,
+                  style: TextStyle(
+                    color: badgeColor ?? AppColors.primaryGreen,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        onTap: () {
+          Navigator.pop(context);
+          if (!isSelected) {
+            Navigator.pushReplacementNamed(context, route);
+          }
+        },
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    final colors = context.colors;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: colors.divider, width: 1)),
+      ),
+      child: ListTile(
+        leading: const Icon(Icons.logout, color: AppColors.error, size: 22),
+        title: const Text(
+          'Déconnexion',
+          style: TextStyle(
+            color: AppColors.error,
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
+        ),
+        onTap: () => _handleLogout(context),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
     );
   }
 
   Future<void> _handleLogout(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
+      builder: (ctx) => AlertDialog(
+        title: const Text('Déconnexion'),
+        content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Annuler'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text('Logout'),
+            child: const Text('Déconnexion'),
           ),
         ],
       ),
@@ -249,4 +441,20 @@ class AppDrawer extends StatelessWidget {
       }
     }
   }
+}
+
+class _DrawerNavItem {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final String? badge;
+  final Color? badgeColor;
+
+  const _DrawerNavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    this.badge,
+    this.badgeColor,
+  });
 }

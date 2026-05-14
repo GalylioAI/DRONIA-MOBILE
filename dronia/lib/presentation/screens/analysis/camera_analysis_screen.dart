@@ -7,7 +7,6 @@ class CameraAnalysisScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       appBar: AppBar(
         title: const Text('Camera Analysis'),
         backgroundColor: Colors.transparent,

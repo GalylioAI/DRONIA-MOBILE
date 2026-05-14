@@ -26,7 +26,7 @@ class AgriculturalProfile {
   final String? customCrop;
   final String? concerns;
 
-  AgriculturalProfile({
+  const AgriculturalProfile({
     required this.location,
     required this.cropType,
     this.customCrop,

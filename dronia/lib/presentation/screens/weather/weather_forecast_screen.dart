@@ -71,7 +71,6 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -79,16 +78,16 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeader(),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _buildLocationSelector(),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               if (_hasData) ...[
                 _buildCurrentWeather(),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 _buildAirQuality(),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 _build7DayForecast(),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 _buildRecommendations(),
               ] else if (_errorMessage != null)
                 _buildErrorState()
@@ -106,14 +105,14 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
-          text: const TextSpan(
+          text: TextSpan(
             children: [
               TextSpan(
                 text: 'Prévisions ',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               TextSpan(
@@ -127,10 +126,10 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 4),
-        const Text(
+        SizedBox(height: 4),
+        Text(
           'Prévisions 7 jours avec recommandations agricoles',
-          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
         ),
       ],
     );
@@ -140,7 +139,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
@@ -155,17 +154,17 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.location_on,
                 color: AppColors.primaryGreen,
                 size: 20,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: AppColors.backgroundDark,
+                    color: context.colors.bg,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                     boxShadow: [
@@ -180,14 +179,14 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                     child: DropdownButton<String>(
                       value: _selectedCountry,
                       isExpanded: true,
-                      dropdownColor: AppColors.cardDark,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      dropdownColor: context.colors.card,
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
                         fontSize: 13,
                       ),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.keyboard_arrow_down,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         size: 20,
                       ),
                       items: _countries
@@ -207,13 +206,13 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: _isLoading ? null : _fetchForecast,
               icon: _isLoading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
@@ -221,10 +220,10 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                         color: AppColors.white,
                       ),
                     )
-                  : const Icon(Icons.cloud_download, size: 18),
+                  : Icon(Icons.cloud_download, size: 18),
               label: Text(
                 _isLoading ? 'Chargement...' : 'Obtenir Prévisions',
-                style: const TextStyle(fontSize: 13),
+                style: TextStyle(fontSize: 13),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryGreen,
@@ -245,7 +244,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
@@ -264,26 +263,26 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
               color: AppColors.primaryGreen.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.wb_sunny_outlined,
               size: 40,
               color: AppColors.primaryGreen,
             ),
           ),
-          const SizedBox(height: 16),
-          const Text(
+          SizedBox(height: 16),
+          Text(
             'Prêt à obtenir vos prévisions?',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
-          const SizedBox(height: 6),
-          const Text(
+          SizedBox(height: 6),
+          Text(
             'Sélectionnez un pays et cliquez pour obtenir les prévisions avec des recommandations agricoles.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
           ),
         ],
       ),
@@ -294,27 +293,27 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.error, size: 40),
-          const SizedBox(height: 12),
+          Icon(Icons.error_outline, color: AppColors.error, size: 40),
+          SizedBox(height: 12),
           Text(
             _errorMessage ?? 'Une erreur est survenue',
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.colors.textSecondary,
               fontSize: 12,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           ElevatedButton.icon(
             onPressed: _fetchForecast,
-            icon: const Icon(Icons.refresh, size: 16),
-            label: const Text('Réessayer'),
+            icon: Icon(Icons.refresh, size: 16),
+            label: Text('Réessayer'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryGreen,
               foregroundColor: AppColors.white,
@@ -395,28 +394,28 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
               children: [
                 Text(
                   displayCity,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   '${displayTemp.round()}°C',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 38,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 Text(
                   displayDesc,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: context.colors.textPrimary,
                     fontSize: 13,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Row(
                   children: [
                     _buildWeatherDetail(
@@ -424,11 +423,11 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                       '$displayHumidity%',
                       AppColors.info,
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
                     _buildWeatherDetail(
                       Icons.air,
                       '${displayWind.round()} km/h',
-                      AppColors.textSecondary,
+                      context.colors.textSecondary,
                     ),
                   ],
                 ),
@@ -474,7 +473,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 14, color: color),
-        const SizedBox(width: 4),
+        SizedBox(width: 4),
         Text(value, style: TextStyle(color: color, fontSize: 11)),
       ],
     );
@@ -485,7 +484,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
@@ -502,16 +501,16 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
           Row(
             children: [
               Icon(Icons.air, color: _getAqiColor(_currentAqi), size: 18),
-              const SizedBox(width: 8),
-              const Text(
+              SizedBox(width: 8),
+              Text(
                 'Qualité de l\'air',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),
               ),
-              const Spacer(),
+              Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
@@ -532,7 +531,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -540,12 +539,12 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
               _buildAqiDetail(
                 'PM2.5',
                 '${_currentPm25.toStringAsFixed(1)} μg/m³',
-                AppColors.textSecondary,
+                context.colors.textSecondary,
               ),
               _buildAqiDetail(
                 'PM10',
                 '${_currentPm10.toStringAsFixed(1)} μg/m³',
-                AppColors.textSecondary,
+                context.colors.textSecondary,
               ),
             ],
           ),
@@ -559,9 +558,9 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 10),
+          style: TextStyle(color: context.colors.textSecondary, fontSize: 10),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(
           value,
           style: TextStyle(
@@ -580,7 +579,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
@@ -596,23 +595,23 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.calendar_today,
                 color: AppColors.primaryGreen,
                 size: 16,
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: 6),
               Text(
                 'Prévisions ${_forecastDays.length} Jours',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -631,12 +630,12 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.primaryGreen.withValues(alpha: 0.2)
-                          : AppColors.backgroundDark,
+                          : context.colors.bg,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: isSelected
                             ? AppColors.primaryGreen
-                            : AppColors.dividerColor,
+                            : context.colors.divider,
                       ),
                     ),
                     child: Column(
@@ -646,30 +645,30 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                           style: TextStyle(
                             color: isSelected
                                 ? AppColors.primaryGreen
-                                : AppColors.textSecondary,
+                                : context.colors.textSecondary,
                             fontWeight: FontWeight.w500,
                             fontSize: 11,
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6),
                         Icon(
                           _getWeatherIconData(day.icon),
                           size: 28,
                           color: _getWeatherIconColor(day.icon),
                         ),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6),
                         Text(
                           '${day.tempMax.round()}°',
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: context.colors.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
                           '${day.tempMin.round()}°',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: context.colors.textSecondary,
                             fontSize: 11,
                           ),
                         ),
@@ -692,7 +691,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
@@ -706,7 +705,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(Icons.lightbulb, color: AppColors.warning, size: 16),
               SizedBox(width: 6),
@@ -715,12 +714,12 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           ...recommendations.map(
             (rec) => _buildRecommendationItem(
               rec.icon,
@@ -869,7 +868,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
             ),
             child: Icon(icon, color: color, size: 16),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -884,8 +883,8 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                 ),
                 Text(
                   description,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
                     fontSize: 11,
                   ),
                 ),
