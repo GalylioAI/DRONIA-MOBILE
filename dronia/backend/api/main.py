@@ -226,6 +226,11 @@ classification_model_path: str = None
 classification_class_mapping = None
 classification_transform = None
 
+# ViT PlantDoc model variables
+vit_model = None
+vit_classes = None
+vit_transform = None
+
 # Pest detection model (YOLO11s)
 pest_detection_model: YOLO = None
 pest_detection_model_path: str = None
@@ -1843,6 +1848,110 @@ async def analyze_insects(image: UploadFile = File(...)):
     except Exception as e:
         logger.error(f"❌ Pest detection error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Pest detection failed: {str(e)}")
+
+
+def load_vit_model():
+    """Load ViT PlantDoc model (from local .pth or HuggingFace Hub)"""
+    global vit_model, vit_classes, vit_transform
+    import json
+    from transformers import ViTForImageClassification
+
+    models_dir = Path(__file__).parent.parent / "models"
+    pth_path   = models_dir / "vit_plantdoc_best.pth"
+    json_path  = models_dir / "vit_plantdoc_classes.json"
+
+    # ── Classes metadata (embedded fallback so Render works without the JSON) ──
+    FALLBACK_CLASSES = [
+        "Apple_Scab_Leaf","Apple_leaf","Apple_rust_leaf","Bell_pepper_leaf",
+        "Bell_pepper_leaf_spot","Blueberry_leaf","Cherry_leaf","Corn_Gray_leaf_spot",
+        "Corn_leaf_blight","Corn_rust_leaf","Peach_leaf","Potato_leaf_early_blight",
+        "Potato_leaf_late_blight","Raspberry_leaf","Soyabean_leaf",
+        "Squash_Powdery_mildew_leaf","Strawberry_leaf","Tomato_Early_blight_leaf",
+        "Tomato_Septoria_leaf_spot","Tomato_leaf","Tomato_leaf_bacterial_spot",
+        "Tomato_leaf_late_blight","Tomato_leaf_mosaic_virus","Tomato_leaf_yellow_virus",
+        "Tomato_mold_leaf","Tomato_two_spotted_spider_mites_leaf","grape_leaf",
+        "grape_leaf_black_rot",
+    ]
+
+    if json_path.exists():
+        with open(json_path, "r") as f:
+            meta = json.load(f)
+        classes = meta["classes"]
+        num_classes = meta["num_classes"]
+        id2label = {int(k): v for k, v in meta["id2label"].items()}
+    else:
+        logger.warning("vit_plantdoc_classes.json not found — using fallback class list")
+        classes = FALLBACK_CLASSES
+        num_classes = len(classes)
+        id2label = {i: c for i, c in enumerate(classes)}
+        meta = {"classes": classes, "num_classes": num_classes,
+                "id2label": {str(k): v for k, v in id2label.items()}}
+
+    label2id = {v: k for k, v in id2label.items()}
+
+    vit_model = ViTForImageClassification.from_pretrained(
+        "google/vit-base-patch16-224-in21k",
+        num_labels=num_classes,
+        id2label=id2label,
+        label2id=label2id,
+        ignore_mismatched_sizes=True,
+    )
+
+    if pth_path.exists():
+        vit_model.load_state_dict(torch.load(str(pth_path), map_location="cpu"))
+        logger.info(f"✅ ViT weights loaded from {pth_path.name}")
+    else:
+        logger.warning("vit_plantdoc_best.pth not found — using base ViT weights (not fine-tuned)")
+
+    vit_model.eval()
+    for p in vit_model.parameters():
+        p.requires_grad = False
+
+    vit_classes = meta
+    vit_transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
+    ])
+    logger.info(f"✅ ViT PlantDoc ready — {num_classes} classes")
+
+
+@app.post("/classify/vit")
+async def classify_vit(image: str = Form(...)):
+    """Classify plant disease using ViT trained on PlantDoc (28 classes)"""
+    global vit_model
+    if vit_model is None:
+        load_vit_model()
+    if vit_model is None:
+        raise HTTPException(status_code=503, detail="ViT model not available")
+
+    if image.startswith("data:image"):
+        image = image.split(",")[1]
+    pil_image = Image.open(io.BytesIO(base64.b64decode(image))).convert("RGB")
+
+    tensor = vit_transform(pil_image).unsqueeze(0)
+    with torch.no_grad():
+        logits = vit_model(pixel_values=tensor).logits
+        probs  = torch.nn.functional.softmax(logits[0], dim=0)
+        top3_probs, top3_idx = torch.topk(probs, 3)
+
+    id2label = vit_classes["id2label"]
+    top3 = [
+        {"class": id2label[str(int(idx))], "confidence": round(float(p), 4)}
+        for idx, p in zip(top3_idx, top3_probs)
+    ]
+    primary = top3[0]
+    is_healthy = is_healthy_class(primary["class"])
+
+    return JSONResponse({
+        "success":     True,
+        "disease":     primary["class"],
+        "confidence":  int(primary["confidence"] * 100),
+        "isHealthy":   is_healthy,
+        "generalStatus": "Saine" if is_healthy else "Malade",
+        "top3":        top3,
+        "source":      "vit-plantdoc",
+    })
 
 
 if __name__ == "__main__":

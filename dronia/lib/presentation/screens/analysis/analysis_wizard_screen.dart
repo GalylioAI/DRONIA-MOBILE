@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/services/analysis_history_service.dart';
 import '../../../data/services/storage_service.dart';
@@ -31,9 +32,70 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
   // Step 1: Model & Image
   String _selectedModel = 'efficientnet';
   String _selectedCulture = '';
+  String _selectedClass = '';   // 'cereals' | 'legumes' | 'fruits'
+  String _selectedPlant = '';   // plant name chosen from dropdown
   File? _selectedImage;
   String? _notes;
   final ImagePicker _picker = ImagePicker();
+
+  // ── Plant class catalogue ──────────────────────────────────────────────────
+  static const _plantClasses = <String, Map<String, dynamic>>{
+    'cereals': {
+      'label': 'Classe 1 : Céréales',
+      'arabic': 'الحبوب',
+      'emoji': '🌾',
+      'color': Color(0xFFD4A64A),
+      'plants': [
+        {'name': 'Blé',     'arabic': 'قمح',       'emoji': '🌾'},
+        {'name': 'Orge',    'arabic': 'شعير',      'emoji': '🌿'},
+        {'name': 'Avoine',  'arabic': 'شوفان',     'emoji': '🌿'},
+        {'name': 'Sorgho',  'arabic': 'ذرة رفيعة', 'emoji': '🌿'},
+      ],
+    },
+    'legumes': {
+      'label': 'Classe 2 : Légumineuses & Légumes',
+      'arabic': 'بقوليات وخضروات',
+      'emoji': '🥬',
+      'color': Color(0xFF4CAF50),
+      'plants': [
+        {'name': 'Fenugrec',   'arabic': 'حلبة',   'emoji': '🌿'},
+        {'name': 'Lentilles',  'arabic': 'عدس',    'emoji': '🫘'},
+        {'name': 'Pois chiche','arabic': 'حمص',    'emoji': '🫘'},
+        {'name': 'Haricot',    'arabic': 'لوبيا',  'emoji': '🫘'},
+        {'name': 'Pois',       'arabic': 'جلبانة', 'emoji': '🫘'},
+        {'name': 'Tomate',     'arabic': 'طماطم',  'emoji': '🍅'},
+        {'name': 'Poivron',    'arabic': 'فلفل',   'emoji': '🫑'},
+        {'name': 'Pomme de terre','arabic': 'بطاطا','emoji': '🥔'},
+        {'name': 'Oignon',     'arabic': 'بصل',    'emoji': '🧅'},
+        {'name': 'Ail',        'arabic': 'ثوم',    'emoji': '🧄'},
+        {'name': 'Carotte',    'arabic': 'جزر',    'emoji': '🥕'},
+        {'name': 'Laitue',     'arabic': 'خس',     'emoji': '🥬'},
+        {'name': 'Courgette',  'arabic': 'قرع أخضر','emoji': '🥒'},
+        {'name': 'Aubergine',  'arabic': 'باذنجان','emoji': '🍆'},
+      ],
+    },
+    'fruits': {
+      'label': 'Classe 3 : Arbres fruitiers',
+      'arabic': 'الأشجار المثمرة',
+      'emoji': '🍎',
+      'color': Color(0xFFE53935),
+      'plants': [
+        {'name': 'Olivier',     'arabic': 'زيتون',         'emoji': '🫒'},
+        {'name': 'Palmier dattier','arabic': 'نخيل',       'emoji': '🌴'},
+        {'name': 'Orange',      'arabic': 'برتقال',        'emoji': '🍊'},
+        {'name': 'Citron',      'arabic': 'ليمون',         'emoji': '🍋'},
+        {'name': 'Raisin',      'arabic': 'عنب',           'emoji': '🍇'},
+        {'name': 'Grenadier',   'arabic': 'رمان',          'emoji': '🍎'},
+        {'name': 'Figuier',     'arabic': 'تين',           'emoji': '🍃'},
+        {'name': 'Amandier',    'arabic': 'لوز',           'emoji': '🌰'},
+        {'name': 'Pêcher',      'arabic': 'خوخ',           'emoji': '🍑'},
+        {'name': 'Abricotier',  'arabic': 'مشمش',          'emoji': '🍊'},
+        {'name': 'Pommier',     'arabic': 'تفاح',          'emoji': '🍎'},
+        {'name': 'Poirier',     'arabic': 'إجاص',          'emoji': '🍐'},
+        {'name': 'Pastèque',    'arabic': 'بطيخ',          'emoji': '🍉'},
+      ],
+    },
+  };
 
   // Step 2: Parcel details
   final TextEditingController _regionController = TextEditingController();
@@ -49,31 +111,11 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
   // Step 3: Results
   bool _isAnalyzing = false;
   Map<String, dynamic>? _analysisResult;
+  String? _errorMessage;
   bool _hasSaved = false;
 
   // Services
   final AnalysisHistoryService _historyService = AnalysisHistoryService();
-
-  // Culture options - Only include crops supported by the EfficientNet model (PlantVillage dataset)
-  final List<_CultureOption> _cultures = [
-    _CultureOption(emoji: '🍅', name: 'Tomate', color: Color(0xFFE53935)),
-    _CultureOption(emoji: '🍇', name: 'Vigne', color: Color(0xFF7B1FA2)),
-    _CultureOption(emoji: '🌽', name: 'Maïs', color: Color(0xFFFFB300)),
-    _CultureOption(
-      emoji: '🥔',
-      name: 'P. de terre',
-      color: Color(0xFF8D6E63),
-    ),
-    _CultureOption(
-      emoji: '🫑',
-      name: 'Poivron',
-      color: Color(0xFF4CAF50),
-    ),
-    _CultureOption(emoji: '🍎', name: 'Pomme', color: Color(0xFFE53935)),
-    _CultureOption(emoji: '🍊', name: 'Orange', color: Color(0xFFFF9800)),
-    _CultureOption(emoji: '🍓', name: 'Fraise', color: Color(0xFFE91E63)),
-    _CultureOption(emoji: '🌾', name: 'Blé', color: Color(0xFFD4A64A)),
-  ];
 
   // Regional diseases and pests
   final List<String> _regionalDiseasesList = [
@@ -217,7 +259,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
   }
 
   bool _canProceedStep1() {
-    return _selectedImage != null && _selectedCulture.isNotEmpty;
+    return _selectedImage != null && _selectedPlant.isNotEmpty;
   }
 
   Future<void> _pickImage() async {
@@ -254,10 +296,35 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
     }
   }
 
+  /// Réinitialise le wizard et ramène l'utilisateur à l'étape 1.
+  /// Appelé par le bouton "Terminer" sur l'écran de résultats.
+  void _resetWizard() {
+    setState(() {
+      _currentStep = 0;
+      _selectedImage = null;
+      _selectedCulture = '';
+      _selectedClass = '';
+      _selectedPlant = '';
+      _notes = null;
+      _selectedDisease = null;
+      _analysisResult = null;
+      _errorMessage = null;
+      _isAnalyzing = false;
+      _hasSaved = false;
+      _regionController.clear();
+      _symptomsController.clear();
+    });
+    _pageController.jumpToPage(0);
+  }
+
   Future<void> _startAnalysis() async {
     if (_selectedImage == null) return;
 
-    setState(() => _isAnalyzing = true);
+    setState(() {
+      _isAnalyzing = true;
+      _analysisResult = null;
+      _errorMessage = null;
+    });
     _nextStep(); // Move to results page
 
     try {
@@ -265,48 +332,97 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       final bytes = await _selectedImage!.readAsBytes();
       final base64Image = base64Encode(bytes);
 
-      // Call the API using postForm for form data
       final storage = StorageService();
       final apiClient = ApiClient(storage: storage);
 
-      final response = await apiClient.postForm(
-        '/classify/base64',
-        fields: {'image': base64Image},
-        requiresAuth: false,
-      );
+      Map<String, dynamic> response;
+
+      if (_selectedModel == 'vit') {
+        // ViT PlantDoc — Render
+        final raw = await apiClient.postForm(
+          '/classify/vit',
+          fields: {'image': base64Image},
+          requiresAuth: false,
+          baseUrl: AppConstants.legacyBaseUrl,
+        );
+        if (raw is! Map<String, dynamic>) {
+          throw Exception('Réponse Render invalide (format inattendu).');
+        }
+        response = raw;
+        // Attach selected plant for result filtering
+        response['selectedPlant'] = _selectedPlant;
+      } else if (_selectedModel == 'demo') {
+        // Mock demo result
+        response = {
+          'success': true,
+          'disease': 'Mildiou (Démo)',
+          'diseaseClass': 'Demo',
+          'isHealthy': false,
+          'confidence': 72,
+          'severity': 'Modérée',
+          'status': 'Attention',
+          'generalStatus': 'Malade',
+          'affectedSurface': 35,
+          'source': 'demo',
+          'selectedPlant': _selectedPlant,
+        };
+      } else {
+        // EfficientNet — VPS
+        final raw = await apiClient.postForm(
+          '/classify/base64',
+          fields: {'image': base64Image},
+          requiresAuth: true,
+          baseUrl: AppConstants.mlBaseUrl,
+        );
+        if (raw is! Map<String, dynamic>) {
+          throw Exception('Réponse VPS invalide (format inattendu).');
+        }
+        response = raw;
+        response['selectedPlant'] = _selectedPlant;
+      }
+
+      final hasHealth = response.containsKey('isHealthy') ||
+          response.containsKey('is_healthy');
+      final hasDisease = response.containsKey('disease') ||
+          response.containsKey('disease_name') ||
+          response.containsKey('disease_name_fr');
+      if (!hasHealth && !hasDisease && _selectedModel != 'demo') {
+        throw Exception('Réponse incomplète — aucune classification reçue.');
+      }
 
       setState(() {
         _analysisResult = response;
         _isAnalyzing = false;
       });
-    } catch (e) {
-      debugPrint('Analysis error: $e');
-      // Use mock data for demo
+    } catch (e, stack) {
+      debugPrint('❌ Analysis error: $e');
+      debugPrint('$stack');
       setState(() {
-        _analysisResult = _getMockAnalysisResult();
+        _analysisResult = null;
+        _errorMessage = _humanizeError(e);
         _isAnalyzing = false;
       });
     }
   }
 
-  Map<String, dynamic> _getMockAnalysisResult() {
-    // Demo mode - return healthy result matching API format
-    return {
-      'success': true,
-      'source': 'efficientnet',
-      'disease': 'Sain',
-      'diseaseClass': 'Healthy',
-      'isHealthy': true,
-      'confidence': 95, // API returns percentage (0-100)
-      'severity': 'Nulle',
-      'status': 'Sain',
-      'generalStatus': 'Saine',
-      'affectedSurface': 0,
-      'diseasePercentage': 0,
-      'classifications': [
-        {'class_name': 'Healthy', 'confidence': 0.95},
-      ],
-    };
+  /// Convertit une exception réseau/serveur en message lisible en français.
+  String _humanizeError(Object e) {
+    final msg = e.toString();
+    if (msg.contains('SocketException') ||
+        msg.contains('Failed host lookup') ||
+        msg.contains('Network is unreachable')) {
+      return 'Impossible de joindre le serveur VPS. Vérifiez votre connexion internet.';
+    }
+    if (msg.contains('TimeoutException') || msg.contains('timed out')) {
+      return 'Le serveur VPS met trop de temps à répondre. Réessayez dans un instant.';
+    }
+    if (msg.contains('401') || msg.contains('Unauthorized')) {
+      return 'Session expirée. Reconnectez-vous puis relancez l\'analyse.';
+    }
+    if (msg.contains('500') || msg.contains('502') || msg.contains('503')) {
+      return 'Le serveur d\'analyse est temporairement indisponible. Réessayez plus tard.';
+    }
+    return 'Échec de l\'analyse : $msg';
   }
 
   Future<void> _saveAnalysis() async {
@@ -630,160 +746,93 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
           ),
         ),
         SizedBox(height: 12),
-        // EfficientNet option
-        GestureDetector(
-          onTap: () => setState(() => _selectedModel = 'efficientnet'),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: _selectedModel == 'efficientnet'
-                  ? LinearGradient(
-                      colors: [
-                        AppColors.primaryGreen.withOpacity(0.2),
-                        AppColors.primaryGreen.withOpacity(0.1),
-                      ],
-                    )
-                  : null,
-              color: _selectedModel != 'efficientnet'
-                  ? context.colors.card
-                  : null,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: _selectedModel == 'efficientnet'
-                    ? AppColors.primaryGreen
-                    : context.colors.divider,
-                width: _selectedModel == 'efficientnet' ? 2 : 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryGreen.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(
-                    Icons.auto_awesome,
-                    color: AppColors.primaryGreen,
-                    size: 24,
-                  ),
-                ),
-                SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'EfficientNet (Classification Avancée)',
-                        style: TextStyle(
-                          color: context.colors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        '✓ Prédictions réelles • Modèle entraîné • Haute précision',
-                        style: TextStyle(
-                          color: AppColors.primaryGreen.withOpacity(0.8),
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (_selectedModel == 'efficientnet')
-                  Icon(Icons.check_circle, color: AppColors.primaryGreen),
-              ],
-            ),
-          ),
+        _buildModelTile(
+          id: 'efficientnet',
+          icon: Icons.auto_awesome,
+          color: AppColors.primaryGreen,
+          title: 'EfficientNet — VPS',
+          subtitle: 'PlantVillage 38 classes • Haute précision',
         ),
         SizedBox(height: 10),
-        // Demo mode option
-        GestureDetector(
-          onTap: () => setState(() => _selectedModel = 'demo'),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: _selectedModel == 'demo'
-                  ? context.colors.card.withOpacity(0.8)
-                  : context.colors.card,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: _selectedModel == 'demo'
-                    ? context.colors.textSecondary
-                    : context.colors.divider,
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: context.colors.bg,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(
-                    Icons.science_outlined,
-                    color: context.colors.textSecondary,
-                    size: 24,
-                  ),
-                ),
-                SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Mode Démo (Mock Data)',
-                        style: TextStyle(
-                          color: context.colors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        '🎭 Données de démonstration',
-                        style: TextStyle(
-                          color: context.colors.textSecondary,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (_selectedModel == 'demo')
-                  Icon(
-                    Icons.check_circle,
-                    color: context.colors.textSecondary,
-                  ),
-              ],
-            ),
-          ),
+        _buildModelTile(
+          id: 'vit',
+          icon: Icons.hub_outlined,
+          color: Color(0xFF1976D2),
+          title: 'ViT (Vision Transformer) — Render',
+          subtitle: 'PlantDoc 28 classes • Modèle Transformer Google',
         ),
         SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.primaryGreen.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.info_outline, color: AppColors.primaryGreen, size: 16),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Utilise EfficientNet pour la classification des maladies avec haute précision',
-                  style: TextStyle(color: AppColors.primaryGreen, fontSize: 11),
-                ),
-              ),
-            ],
-          ),
+        _buildModelTile(
+          id: 'demo',
+          icon: Icons.science_outlined,
+          color: context.colors.textSecondary,
+          title: 'Mode Démo',
+          subtitle: 'Données de démonstration',
         ),
       ],
+    );
+  }
+
+  Widget _buildModelTile({
+    required String id,
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String subtitle,
+  }) {
+    final isSelected = _selectedModel == id;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedModel = id),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(colors: [
+                  color.withValues(alpha: 0.15),
+                  color.withValues(alpha: 0.05),
+                ])
+              : null,
+          color: isSelected ? null : context.colors.card,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? color : context.colors.divider,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      )),
+                  SizedBox(height: 3),
+                  Text(subtitle,
+                      style: TextStyle(
+                        color: isSelected ? color : context.colors.textSecondary,
+                        fontSize: 11,
+                      )),
+                ],
+              ),
+            ),
+            if (isSelected) Icon(Icons.check_circle, color: color, size: 20),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1095,51 +1144,139 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
           ],
         ),
         SizedBox(height: 12),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: _cultures.map((culture) {
-            final isSelected = _selectedCulture == culture.name;
-            return GestureDetector(
-              onTap: () => setState(() => _selectedCulture = culture.name),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? culture.color.withOpacity(0.2)
-                      : context.colors.card,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: isSelected ? culture.color : context.colors.divider,
-                    width: isSelected ? 2 : 1,
+        // Class selector (3 buttons)
+        Row(
+          children: _plantClasses.entries.map((entry) {
+            final id = entry.key;
+            final cls = entry.value;
+            final isSelected = _selectedClass == id;
+            final color = cls['color'] as Color;
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() {
+                  _selectedClass = id;
+                  _selectedPlant = '';
+                  _selectedCulture = '';
+                }),
+                child: Container(
+                  margin: EdgeInsets.only(
+                    right: id != 'fruits' ? 8 : 0,
                   ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(culture.emoji, style: TextStyle(fontSize: 18)),
-                    SizedBox(width: 8),
-                    Text(
-                      culture.name,
-                      style: TextStyle(
-                        color: isSelected
-                            ? culture.color
-                            : context.colors.textPrimary,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                        fontSize: 13,
-                      ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? color.withValues(alpha: 0.15)
+                        : context.colors.card,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isSelected ? color : context.colors.divider,
+                      width: isSelected ? 2 : 1,
                     ),
-                  ],
+                  ),
+                  child: Column(
+                    children: [
+                      Text(cls['emoji'] as String,
+                          style: TextStyle(fontSize: 22)),
+                      SizedBox(height: 4),
+                      Text(
+                        cls['arabic'] as String,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isSelected ? color : context.colors.textSecondary,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
           }).toList(),
         ),
+        // Plant dropdown — shown once a class is selected
+        if (_selectedClass.isNotEmpty) ...[
+          SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            decoration: BoxDecoration(
+              color: context.colors.card,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: _selectedPlant.isNotEmpty
+                    ? AppColors.primaryGreen
+                    : context.colors.divider,
+                width: _selectedPlant.isNotEmpty ? 2 : 1,
+              ),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                isExpanded: true,
+                value: _selectedPlant.isNotEmpty ? _selectedPlant : null,
+                hint: Text(
+                  'Sélectionner la plante',
+                  style: TextStyle(
+                    color: context.colors.textHint,
+                    fontSize: 13,
+                  ),
+                ),
+                dropdownColor: context.colors.card,
+                items: (_plantClasses[_selectedClass]!['plants']
+                        as List<Map<String, String>>)
+                    .map((p) => DropdownMenuItem<String>(
+                          value: p['name'],
+                          child: Row(
+                            children: [
+                              Text(p['emoji']!,
+                                  style: TextStyle(fontSize: 18)),
+                              SizedBox(width: 10),
+                              Text(p['name']!,
+                                  style: TextStyle(
+                                    color: context.colors.textPrimary,
+                                    fontSize: 13,
+                                  )),
+                              SizedBox(width: 6),
+                              Text('(${p['arabic']!})',
+                                  style: TextStyle(
+                                    color: context.colors.textSecondary,
+                                    fontSize: 11,
+                                  )),
+                            ],
+                          ),
+                        ))
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() {
+                      _selectedPlant = val;
+                      _selectedCulture = val;
+                    });
+                  }
+                },
+              ),
+            ),
+          ),
+          if (_selectedPlant.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle,
+                      color: AppColors.primaryGreen, size: 16),
+                  SizedBox(width: 6),
+                  Text(
+                    'Culture : $_selectedPlant',
+                    style: TextStyle(
+                      color: AppColors.primaryGreen,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ],
     );
   }
@@ -1909,7 +2046,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       return _buildLoadingState();
     }
 
-    if (_analysisResult == null) {
+    if (_errorMessage != null || _analysisResult == null) {
       return _buildErrorState();
     }
 
@@ -1952,34 +2089,69 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
   }
 
   Widget _buildErrorState() {
+    final message = _errorMessage ?? 'Erreur lors de l\'analyse';
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline, color: AppColors.error, size: 64),
-          SizedBox(height: 16),
-          Text(
-            'Erreur lors de l\'analyse',
-            style: TextStyle(
-              color: context.colors.textPrimary,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, color: AppColors.error, size: 64),
+            SizedBox(height: 16),
+            Text(
+              'Analyse impossible',
+              style: TextStyle(
+                color: context.colors.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () {
-              setState(() => _currentStep = 0);
-              _pageController.jumpToPage(0);
-            },
-            icon: Icon(Icons.refresh),
-            label: Text('Réessayer'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryGreen,
-              foregroundColor: AppColors.white,
+            SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: context.colors.textSecondary,
+                fontSize: 14,
+                height: 1.4,
+              ),
             ),
-          ),
-        ],
+            SizedBox(height: 24),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 12,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _errorMessage = null;
+                      _currentStep = 0;
+                    });
+                    _pageController.jumpToPage(0);
+                  },
+                  icon: Icon(Icons.image_outlined),
+                  label: Text('Changer la photo'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: context.colors.textPrimary,
+                    side: BorderSide(
+                      color: context.colors.textSecondary.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: _startAnalysis,
+                  icon: Icon(Icons.refresh),
+                  label: Text('Réessayer'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryGreen,
+                    foregroundColor: AppColors.white,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -2284,6 +2456,14 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
   }
 
   Widget _buildResultImageAndMetrics(bool isHealthy, double affectedSurface) {
+    // Cadre rouge arrondi épais quand une maladie est détectée (équivalent
+    // visuel de la bbox insectes — EfficientNet étant un classificateur,
+    // on encadre l'image entière au lieu d'une zone précise).
+    final Color frameColor = isHealthy
+        ? Colors.white.withValues(alpha: 0.1)
+        : AppColors.error;
+    final double frameWidth = isHealthy ? 1.0 : 4.0;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2294,8 +2474,17 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             height: 180,
             decoration: BoxDecoration(
               color: context.colors.card,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: frameColor, width: frameWidth),
+              boxShadow: isHealthy
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: AppColors.error.withValues(alpha: 0.35),
+                        blurRadius: 12,
+                        spreadRadius: 1,
+                      ),
+                    ],
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
@@ -2845,7 +3034,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: _resetWizard,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryGreen,
                   foregroundColor: AppColors.white,
@@ -2865,16 +3054,4 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       ],
     );
   }
-}
-
-class _CultureOption {
-  final String emoji;
-  final String name;
-  final Color color;
-
-  _CultureOption({
-    required this.emoji,
-    required this.name,
-    required this.color,
-  });
 }

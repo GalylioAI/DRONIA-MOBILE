@@ -30,4 +30,6 @@ tqdm>=4.66.0
 # torch>=2.0.0  # Installed separately as CPU-only
 # torchvision>=0.15.0  # Installed separately as CPU-only
 efficientnet-pytorch>=0.7.1
+transformers>=4.40.0
+huggingface_hub>=1.0.0
 
