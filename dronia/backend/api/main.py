@@ -1946,9 +1946,12 @@ async def classify_vit(image: str = Form(...)):
         if resp.status_code == 503:
             raise HTTPException(status_code=503,
                 detail="ViT model is loading on HuggingFace, réessayez dans 20 secondes.")
+        if resp.status_code == 401:
+            raise HTTPException(status_code=503,
+                detail="HF_TOKEN invalide ou expiré — vérifiez la variable d'environnement sur Render.")
         if resp.status_code != 200:
             raise HTTPException(status_code=resp.status_code,
-                detail=f"HuggingFace error: {resp.text}")
+                detail=f"HuggingFace error {resp.status_code}: {resp.text[:200]}")
 
         results = resp.json()
         if not results:
@@ -1971,8 +1974,12 @@ async def classify_vit(image: str = Form(...)):
             "source":        "vit-plantdoc-hf",
         })
 
-    except httpx.TimeoutException:
-        raise HTTPException(status_code=504, detail="HuggingFace API timeout")
+    except (httpx.TimeoutException, httpx.ConnectError, httpx.NetworkError) as e:
+        logger.error(f"❌ HuggingFace API network error: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="Impossible de joindre HuggingFace API. Vérifiez la connexion réseau de Render."
+        )
 
 
 if __name__ == "__main__":
