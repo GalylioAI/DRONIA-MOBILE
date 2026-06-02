@@ -1897,9 +1897,23 @@ def load_vit_model():
         ignore_mismatched_sizes=True,
     )
 
+    if not pth_path.exists():
+        logger.info("📥 Downloading vit_plantdoc_best.pth from HuggingFace Hub...")
+        try:
+            from huggingface_hub import hf_hub_download
+            downloaded = hf_hub_download(
+                repo_id="aladinhabibi/vit-plantdoc",
+                filename="vit_plantdoc_best.pth",
+                local_dir=str(models_dir),
+            )
+            pth_path = Path(downloaded)
+            logger.info(f"✅ Downloaded to {pth_path}")
+        except Exception as e:
+            logger.warning(f"⚠️  Could not download .pth: {e} — using base ViT weights")
+
     if pth_path.exists():
         vit_model.load_state_dict(torch.load(str(pth_path), map_location="cpu"))
-        logger.info(f"✅ ViT weights loaded from {pth_path.name}")
+        logger.info(f"✅ ViT fine-tuned weights loaded from {pth_path.name}")
     else:
         logger.warning("vit_plantdoc_best.pth not found — using base ViT weights (not fine-tuned)")
 
