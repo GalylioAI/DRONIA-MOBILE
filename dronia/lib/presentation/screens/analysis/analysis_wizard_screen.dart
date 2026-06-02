@@ -751,15 +751,15 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
           icon: Icons.auto_awesome,
           color: AppColors.primaryGreen,
           title: 'EfficientNet — VPS',
-          subtitle: 'PlantVillage 38 classes • Haute précision',
+          subtitle: 'PlantVillage 38 classes • 96% précision',
         ),
         SizedBox(height: 10),
         _buildModelTile(
           id: 'vit',
           icon: Icons.hub_outlined,
           color: Color(0xFF1976D2),
-          title: 'ViT (Vision Transformer) — Render',
-          subtitle: 'PlantDoc 28 classes • Modèle Transformer Google',
+          title: 'ViT PlantDoc — HuggingFace',
+          subtitle: 'PlantDoc 28 classes • Vision Transformer Google',
         ),
         SizedBox(height: 10),
         _buildModelTile(

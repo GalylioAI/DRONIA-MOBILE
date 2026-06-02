@@ -797,16 +797,19 @@ def ensure_classification_model_loaded():
 
 @app.on_event("startup")
 async def startup_event():
-    """Startup: ViT only on Render (EfficientNet runs on VPS)"""
-    logger.info("🚀 Starting Dronia API — ViT PlantDoc mode (Render)")
-    logger.info("ℹ️  EfficientNet is hosted on VPS — not loaded here")
-    logger.info("📦 Pre-loading ViT model...")
+    """Load EfficientNet model on startup (YOLO disabled)"""
+    logger.info("🚀 Starting Plant Disease Detection API (EfficientNet only)...")
+    logger.info("📦 Loading EfficientNet model...")
     try:
-        load_vit_model()
-        logger.info("✅ ViT model ready — endpoint: POST /classify/vit")
+        load_classification_model()
+        if classification_model is not None:
+            logger.info("✅ EfficientNet model loaded and ready")
+            logger.info("   API endpoint: POST /classify/base64")
+        else:
+            logger.error("❌ EfficientNet model failed to load")
     except Exception as e:
-        logger.error(f"❌ Failed to load ViT: {str(e)}")
-    logger.info("⚠️  YOLO disabled | EfficientNet disabled (VPS only)")
+        logger.error(f"❌ Failed to load EfficientNet: {str(e)}")
+    logger.info("⚠️  YOLO model disabled | ViT disabled (too large for free tier)")
 
 
 # Also update the root endpoint to reflect EfficientNet-only mode:
@@ -814,12 +817,11 @@ async def startup_event():
 async def root():
     return {
         "status": "online",
-        "service": "Dronia API — ViT PlantDoc (Render)",
-        "vit_model": "loaded" if vit_model is not None else "not loaded",
-        "efficientnet": "hosted on VPS",
+        "service": "Plant Disease Detection API (EfficientNet)",
+        "classification_model": classification_model_path if classification_model else "not loaded",
+        "yolo_model": "disabled",
         "endpoints": {
-            "vit_classification": "/classify/vit",
-            "insect_detection": "/analyze/insects",
+            "classification": "/classify/base64",
             "health": "/health",
         },
     }
@@ -829,10 +831,10 @@ async def root():
 async def health():
     return {
         "status": "healthy",
-        "vit_model_loaded": vit_model is not None,
-        "vit_classes": vit_classes["num_classes"] if vit_classes else 0,
-        "efficientnet": "on VPS — not loaded here",
-        "mode": "ViT only",
+        "classification_model_loaded": classification_model is not None,
+        "classification_model_path": classification_model_path,
+        "yolo_model_loaded": False,
+        "mode": "EfficientNet only",
     }
 
 
@@ -1920,40 +1922,57 @@ def load_vit_model():
 
 @app.post("/classify/vit")
 async def classify_vit(image: str = Form(...)):
-    """Classify plant disease using ViT trained on PlantDoc (28 classes)"""
-    global vit_model
-    if vit_model is None:
-        load_vit_model()
-    if vit_model is None:
-        raise HTTPException(status_code=503, detail="ViT model not available")
+    """
+    Classify plant disease via HuggingFace Inference API (ViT PlantDoc).
+    The model runs on HF servers — zero extra RAM on Render.
+    """
+    import httpx
+
+    hf_token = os.getenv("HF_TOKEN", "")
+    if not hf_token:
+        raise HTTPException(status_code=503, detail="HF_TOKEN not configured on server")
 
     if image.startswith("data:image"):
         image = image.split(",")[1]
-    pil_image = Image.open(io.BytesIO(base64.b64decode(image))).convert("RGB")
+    image_bytes = base64.b64decode(image)
 
-    tensor = vit_transform(pil_image).unsqueeze(0)
-    with torch.no_grad():
-        logits = vit_model(pixel_values=tensor).logits
-        probs  = torch.nn.functional.softmax(logits[0], dim=0)
-        top3_probs, top3_idx = torch.topk(probs, 3)
+    hf_url = "https://api-inference.huggingface.co/models/aladinhabibi/vit-plantdoc"
+    headers = {"Authorization": f"Bearer {hf_token}"}
 
-    id2label = vit_classes["id2label"]
-    top3 = [
-        {"class": id2label[str(int(idx))], "confidence": round(float(p), 4)}
-        for idx, p in zip(top3_idx, top3_probs)
-    ]
-    primary = top3[0]
-    is_healthy = is_healthy_class(primary["class"])
+    try:
+        async with httpx.AsyncClient(timeout=60) as client:
+            resp = await client.post(hf_url, headers=headers, content=image_bytes)
 
-    return JSONResponse({
-        "success":     True,
-        "disease":     primary["class"],
-        "confidence":  int(primary["confidence"] * 100),
-        "isHealthy":   is_healthy,
-        "generalStatus": "Saine" if is_healthy else "Malade",
-        "top3":        top3,
-        "source":      "vit-plantdoc",
-    })
+        if resp.status_code == 503:
+            raise HTTPException(status_code=503,
+                detail="ViT model is loading on HuggingFace, réessayez dans 20 secondes.")
+        if resp.status_code != 200:
+            raise HTTPException(status_code=resp.status_code,
+                detail=f"HuggingFace error: {resp.text}")
+
+        results = resp.json()
+        if not results:
+            raise HTTPException(status_code=500, detail="Empty response from HF")
+
+        top3 = [
+            {"class": r["label"], "confidence": round(r["score"], 4)}
+            for r in results[:3]
+        ]
+        primary = top3[0]
+        is_healthy = is_healthy_class(primary["class"])
+
+        return JSONResponse({
+            "success":       True,
+            "disease":       primary["class"],
+            "confidence":    int(primary["confidence"] * 100),
+            "isHealthy":     is_healthy,
+            "generalStatus": "Saine" if is_healthy else "Malade",
+            "top3":          top3,
+            "source":        "vit-plantdoc-hf",
+        })
+
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=504, detail="HuggingFace API timeout")
 
 
 if __name__ == "__main__":
