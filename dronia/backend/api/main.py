@@ -797,54 +797,42 @@ def ensure_classification_model_loaded():
 
 @app.on_event("startup")
 async def startup_event():
-    """Load EfficientNet model on startup (YOLO disabled)"""
-    logger.info("🚀 Starting Plant Disease Detection API (EfficientNet only)...")
-    
-    # Load EfficientNet model on startup for classification
-    logger.info("📦 Loading EfficientNet model...")
+    """Startup: ViT only on Render (EfficientNet runs on VPS)"""
+    logger.info("🚀 Starting Dronia API — ViT PlantDoc mode (Render)")
+    logger.info("ℹ️  EfficientNet is hosted on VPS — not loaded here")
+    logger.info("📦 Pre-loading ViT model...")
     try:
-        load_classification_model()
-        if classification_model is not None:
-            logger.info("✅ EfficientNet model loaded and ready")
-            logger.info("   API endpoint: POST /classify/base64")
-        else:
-            logger.error("❌ EfficientNet model failed to load")
-            logger.error("   Classification endpoint will not work!")
+        load_vit_model()
+        logger.info("✅ ViT model ready — endpoint: POST /classify/vit")
     except Exception as e:
-        logger.error(f"❌ Failed to load EfficientNet: {str(e)}")
-        import traceback
-        logger.error(traceback.format_exc())
-    
-    # YOLO is disabled
-    logger.info("⚠️  YOLO model disabled (using EfficientNet only)")
-    logger.info("   YOLO endpoints (/predict, /predict/base64) are disabled")
+        logger.error(f"❌ Failed to load ViT: {str(e)}")
+    logger.info("⚠️  YOLO disabled | EfficientNet disabled (VPS only)")
 
 
 # Also update the root endpoint to reflect EfficientNet-only mode:
 @app.get("/")
 async def root():
-    """Health check endpoint"""
     return {
         "status": "online",
-        "service": "Plant Disease Detection API (EfficientNet)",
-        "classification_model": classification_model_path if classification_model else "not loaded",
-        "yolo_model": "disabled",
+        "service": "Dronia API — ViT PlantDoc (Render)",
+        "vit_model": "loaded" if vit_model is not None else "not loaded",
+        "efficientnet": "hosted on VPS",
         "endpoints": {
-            "classification": "/classify/base64",
-            "health": "/health"
-        }
+            "vit_classification": "/classify/vit",
+            "insect_detection": "/analyze/insects",
+            "health": "/health",
+        },
     }
 
 
 @app.get("/health")
 async def health():
-    """Health check endpoint"""
     return {
         "status": "healthy",
-        "classification_model_loaded": classification_model is not None,
-        "classification_model_path": classification_model_path,
-        "yolo_model_loaded": False,
-        "mode": "EfficientNet only"
+        "vit_model_loaded": vit_model is not None,
+        "vit_classes": vit_classes["num_classes"] if vit_classes else 0,
+        "efficientnet": "on VPS — not loaded here",
+        "mode": "ViT only",
     }
 
 
