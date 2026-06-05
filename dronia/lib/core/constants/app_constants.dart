@@ -16,6 +16,7 @@ class AppConstants {
   static String get baseUrl => Environment.appApiBaseUrl;
   static String get mlBaseUrl => Environment.mlApiBaseUrl;
   static String get legacyBaseUrl => Environment.legacyApiBaseUrl;
+  static const String renderBaseUrl = 'https://dronia-backend-e2kw.onrender.com';
   static const int apiTimeout = 120000;
 
   // Storage Keys

@@ -345,7 +345,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
         try {
           final request = http.MultipartRequest(
             'POST',
-            Uri.parse('${AppConstants.legacyBaseUrl}/classify/vit'),
+            Uri.parse('${AppConstants.renderBaseUrl}/classify/vit'),
           )..fields['image'] = base64Image;
           final streamed = await vitClient.send(request)
               .timeout(const Duration(seconds: 300));
