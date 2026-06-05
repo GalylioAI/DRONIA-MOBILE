@@ -340,18 +340,27 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       Map<String, dynamic> response;
 
       if (_selectedModel == 'vit') {
-        // ViT PlantDoc — Render
-        final raw = await apiClient.postForm(
-          '/classify/vit',
-          fields: {'image': base64Image},
-          requiresAuth: false,
-          baseUrl: AppConstants.legacyBaseUrl,
-        );
-        if (raw is! Map<String, dynamic>) {
-          throw Exception('Réponse Render invalide (format inattendu).');
+        // ViT — timeout 5 min pour HuggingFace cold start
+        final vitClient = http.Client();
+        try {
+          final request = http.MultipartRequest(
+            'POST',
+            Uri.parse('${AppConstants.legacyBaseUrl}/classify/vit'),
+          )..fields['image'] = base64Image;
+          final streamed = await vitClient.send(request)
+              .timeout(const Duration(seconds: 300));
+          final body = await streamed.stream.bytesToString();
+          if (streamed.statusCode != 200) {
+            throw Exception('Erreur serveur: ${streamed.statusCode}');
+          }
+          final raw = jsonDecode(body);
+          if (raw is! Map<String, dynamic>) {
+            throw Exception('Réponse Render invalide.');
+          }
+          response = raw;
+        } finally {
+          vitClient.close();
         }
-        response = raw;
-        // Attach selected plant for result filtering
         response['selectedPlant'] = _selectedPlant;
       } else if (_selectedModel == 'demo') {
         // Mock demo result
