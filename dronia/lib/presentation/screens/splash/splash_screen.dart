@@ -3,6 +3,8 @@ import '../../../core/routes/app_routes.dart';
 import '../../../core/services/location_service.dart';
 import '../../../core/services/permission_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../data/models/models.dart';
+import '../../../data/services/service_locator.dart';
 import '../../../data/services/storage_service.dart';
 
 /// Elegant splash screen with light/dark support, animated logo and brand
@@ -72,9 +74,23 @@ class _SplashScreenState extends State<SplashScreen>
     final isLoggedIn = await StorageService().isLoggedIn();
     if (!mounted) return;
 
+    if (!isLoggedIn) {
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
+      return;
+    }
+
+    // Try to restore the cached session and route admins to their own area.
+    User? user;
+    try {
+      user = await services.auth.autoLogin();
+    } catch (_) {
+      user = services.auth.currentUser;
+    }
+    if (!mounted) return;
+    final isAdmin = user?.isAdmin ?? false;
     Navigator.pushReplacementNamed(
       context,
-      isLoggedIn ? AppRoutes.home : AppRoutes.login,
+      isAdmin ? AppRoutes.adminDashboard : AppRoutes.home,
     );
   }
 
@@ -321,7 +337,7 @@ class _SplashScreenState extends State<SplashScreen>
     return Column(
       children: [
         Text(
-          'Powered by AI',
+          'Powered by Galylio',
           style: TextStyle(color: colors.textHint, fontSize: 11),
         ),
         const SizedBox(height: 2),
