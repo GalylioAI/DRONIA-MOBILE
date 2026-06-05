@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/config/environment.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/services/analysis_history_service.dart';
 import '../../../data/services/storage_service.dart';
@@ -340,27 +341,50 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       Map<String, dynamic> response;
 
       if (_selectedModel == 'vit') {
-        // ViT — timeout 5 min pour HuggingFace cold start
+        // ViT — appel direct HuggingFace depuis le téléphone
+        final hfToken = Environment.hfToken;
+        final hfUrl = Uri.parse(
+          'https://api-inference.huggingface.co/models/aladinhabibi/vit-plantdoc',
+        );
+        final imageBytes = base64Decode(base64Image);
         final vitClient = http.Client();
+        http.Response? hfResp;
         try {
-          final request = http.MultipartRequest(
-            'POST',
-            Uri.parse('${AppConstants.renderBaseUrl}/classify/vit'),
-          )..fields['image'] = base64Image;
-          final streamed = await vitClient.send(request)
-              .timeout(const Duration(seconds: 300));
-          final body = await streamed.stream.bytesToString();
-          if (streamed.statusCode != 200) {
-            throw Exception('Erreur serveur: ${streamed.statusCode}');
+          // Retry jusqu'à 5 fois si model loading (503)
+          for (int i = 0; i < 5; i++) {
+            hfResp = await vitClient.post(
+              Uri.parse('$hfUrl?wait_for_model=true'),
+              headers: {
+                'Authorization': 'Bearer $hfToken',
+                'Content-Type': 'application/octet-stream',
+              },
+              body: imageBytes,
+            ).timeout(const Duration(seconds: 60));
+            if (hfResp.statusCode != 503) break;
+            await Future.delayed(const Duration(seconds: 15));
           }
-          final raw = jsonDecode(body);
-          if (raw is! Map<String, dynamic>) {
-            throw Exception('Réponse Render invalide.');
-          }
-          response = raw;
         } finally {
           vitClient.close();
         }
+        if (hfResp == null || hfResp.statusCode != 200) {
+          throw Exception('HuggingFace erreur: ${hfResp?.statusCode} — ${hfResp?.body.substring(0, 200)}');
+        }
+        final hfResults = jsonDecode(hfResp.body) as List;
+        final top3 = hfResults.take(3).map((r) => {
+          'class': r['label'] as String,
+          'confidence': (r['score'] as double),
+        }).toList();
+        final primary = top3.first;
+        final isHealthy = (primary['class'] as String).toLowerCase().contains('healthy');
+        response = {
+          'success': true,
+          'disease': primary['class'],
+          'confidence': ((primary['confidence'] as double) * 100).round(),
+          'isHealthy': isHealthy,
+          'generalStatus': isHealthy ? 'Saine' : 'Malade',
+          'top3': top3,
+          'source': 'vit-combined-hf',
+        };
         response['selectedPlant'] = _selectedPlant;
       } else if (_selectedModel == 'demo') {
         // Mock demo result
@@ -2384,8 +2408,8 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
   Widget _buildErrorState() {
     final message = _errorMessage ?? 'Erreur lors de l\'analyse';
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

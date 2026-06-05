@@ -24,33 +24,52 @@ class Environment {
   static bool get isDevelopment => environment == 'development';
   static bool get isProduction => environment == 'production';
 
-  // API Base URLs - Auto-detects platform for localhost URLs
-  static String get apiBaseUrl {
-    final envUrl = dotenv.env['API_BASE_URL'];
-    if (envUrl != null && envUrl.isNotEmpty) {
-      // Auto-replace localhost with 10.0.2.2 for Android emulator
-      if (Platform.isAndroid &&
-          (envUrl.contains('localhost') || envUrl.contains('127.0.0.1'))) {
-        return envUrl
-            .replaceAll('localhost', '10.0.2.2')
-            .replaceAll('127.0.0.1', '10.0.2.2');
-      }
-      return envUrl;
+  static String _normalizeForAndroid(String url) {
+    if (Platform.isAndroid &&
+        (url.contains('localhost') || url.contains('127.0.0.1'))) {
+      return url
+          .replaceAll('localhost', '10.0.2.2')
+          .replaceAll('127.0.0.1', '10.0.2.2');
     }
-    // Fallback to NEXT_PUBLIC_BASE_URL + /api
+    return url;
+  }
+
+  /// App backend base URL (Next.js on the VPS): auth, weather, advisor,
+  /// field-monitoring, predictions/insects history. Default base for [ApiClient].
+  static String get appApiBaseUrl {
+    final url = dotenv.env['APP_API_BASE_URL'];
+    if (url != null && url.isNotEmpty) return _normalizeForAndroid(url);
     final nextUrl = dotenv.env['NEXT_PUBLIC_BASE_URL'];
     if (nextUrl != null && nextUrl.isNotEmpty) {
-      return '$nextUrl/api';
+      return _normalizeForAndroid('$nextUrl/api');
     }
-    if (isProduction) {
-      return 'https://your-dronia-app.vercel.app/api';
+    return 'https://dronia-tunisie.tn/api';
+  }
+
+  /// ML backend base URL (FastAPI on the VPS): /classify/base64,
+  /// /predict/insects/base64.
+  static String get mlApiBaseUrl {
+    final url = dotenv.env['ML_API_BASE_URL'];
+    if (url != null && url.isNotEmpty) return _normalizeForAndroid(url);
+    final nextUrl = dotenv.env['NEXT_PUBLIC_BASE_URL'];
+    if (nextUrl != null && nextUrl.isNotEmpty) {
+      return _normalizeForAndroid('$nextUrl/ml-api');
     }
-    // Default based on platform
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:8000';
-    }
+    return 'https://dronia-tunisie.tn/ml-api';
+  }
+
+  /// Legacy backend (Render). Kept ONLY for endpoints not yet on the VPS:
+  /// /analyses, /regions, /interventions, /dataset. New code must not use this.
+  static String get legacyApiBaseUrl {
+    final url = dotenv.env['API_BASE_URL'];
+    if (url != null && url.isNotEmpty) return _normalizeForAndroid(url);
+    if (Platform.isAndroid) return 'http://10.0.2.2:8000';
     return 'http://localhost:8000';
   }
+
+  /// Default base URL for [ApiClient] — the App API (Next.js on the VPS).
+  /// Kept as `apiBaseUrl` for backward compatibility with existing call sites.
+  static String get apiBaseUrl => appApiBaseUrl;
 
   // Alternative URLs for different platforms during development
   static const String androidEmulatorUrl = 'http://10.0.2.2:3000/api';
@@ -58,9 +77,12 @@ class Environment {
   static String get physicalDeviceUrl =>
       dotenv.env['API_BASE_URL'] ?? 'http://YOUR_LOCAL_IP:3000/api';
 
-  // YOLOv8 ML Backend URL
+  // YOLOv8 ML Backend URL — alias of [mlApiBaseUrl] for legacy services.
   static String get yolov8ApiUrl =>
-      dotenv.env['YOLOV8_API_URL'] ?? 'http://localhost:8000';
+      dotenv.env['YOLOV8_API_URL'] ?? mlApiBaseUrl;
+
+  // HuggingFace token for direct ViT inference
+  static String get hfToken => dotenv.env['HF_TOKEN'] ?? '';
 
   // MongoDB (for reference - primarily used by backend)
   static String get mongoDbUri => dotenv.env['MONGODB_URI'] ?? '';
