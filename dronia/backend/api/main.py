@@ -2119,8 +2119,9 @@ async def classify_vit(image: str = Form(...)):
     headers = {"Authorization": f"Bearer {hf_token}"}
 
     try:
-        async with httpx.AsyncClient(timeout=60) as client:
-            resp = await client.post(hf_url, headers=headers, content=image_bytes)
+        async with httpx.AsyncClient(timeout=120) as client:
+            resp = await client.post(hf_url, headers=headers, content=image_bytes,
+                                     params={"wait_for_model": "true"})
 
         if resp.status_code == 503:
             raise HTTPException(status_code=503,

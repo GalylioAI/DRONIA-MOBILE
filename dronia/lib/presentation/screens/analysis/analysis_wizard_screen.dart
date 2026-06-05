@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
@@ -10,6 +11,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../data/services/analysis_history_service.dart';
 import '../../../data/services/storage_service.dart';
 import '../../../data/network/api_client.dart';
+import '../../widgets/disease_knowledge_card.dart';
 
 /// Multi-step Analysis Wizard Screen (3 steps like web version)
 class AnalysisWizardScreen extends StatefulWidget {
@@ -414,7 +416,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       return 'Impossible de joindre le serveur VPS. Vérifiez votre connexion internet.';
     }
     if (msg.contains('TimeoutException') || msg.contains('timed out')) {
-      return 'Le serveur VPS met trop de temps à répondre. Réessayez dans un instant.';
+      return 'Le modèle IA met du temps à répondre (chargement initial). Réessayez dans 30 secondes.';
     }
     if (msg.contains('401') || msg.contains('Unauthorized')) {
       return 'Session expirée. Reconnectez-vous puis relancez l\'analyse.';
@@ -635,7 +637,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
 
   Widget _buildStepIndicator() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
         children: [
           _buildStepDot(0, 'Modèle & Image'),
@@ -651,45 +653,86 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
   Widget _buildStepDot(int step, String label) {
     final isActive = _currentStep >= step;
     final isCurrent = _currentStep == step;
+    final isDone = _currentStep > step;
 
     return Expanded(
       child: Column(
         children: [
+          // Glow container
           Container(
-            width: 32,
-            height: 32,
             decoration: BoxDecoration(
-              color: isActive ? AppColors.primaryGreen : context.colors.card,
               shape: BoxShape.circle,
-              border: Border.all(
-                color: isCurrent ? AppColors.primaryGreen : Colors.transparent,
-                width: 2,
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primaryGreen.withValues(alpha: 0.45),
+                        blurRadius: 14,
+                        spreadRadius: 2,
+                      ),
+                    ]
+                  : [],
+            ),
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                gradient: isActive
+                    ? const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          AppColors.primaryGreenLight,
+                          AppColors.primaryGreenDark,
+                        ],
+                      )
+                    : null,
+                color: isActive ? null : context.colors.card,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isCurrent
+                      ? AppColors.primaryGreen
+                      : isActive
+                          ? Colors.transparent
+                          : context.colors.divider,
+                  width: 2,
+                ),
+                boxShadow: isActive
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.18),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ]
+                    : [],
+              ),
+              child: Center(
+                child: isDone
+                    ? const Icon(Icons.check_rounded,
+                        color: AppColors.white, size: 18)
+                    : Text(
+                        '${step + 1}',
+                        style: TextStyle(
+                          color: isActive
+                              ? AppColors.white
+                              : context.colors.textSecondary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                        ),
+                      ),
               ),
             ),
-            child: Center(
-              child: isActive && !isCurrent
-                  ? Icon(Icons.check, color: AppColors.white, size: 16)
-                  : Text(
-                      '${step + 1}',
-                      style: TextStyle(
-                        color: isActive
-                            ? AppColors.white
-                            : context.colors.textSecondary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-            ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             label,
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 9,
               color: isActive
                   ? AppColors.primaryGreen
                   : context.colors.textSecondary,
-              fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+              fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
+              letterSpacing: 0.3,
             ),
             textAlign: TextAlign.center,
           ),
@@ -701,12 +744,25 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
   Widget _buildStepLine(int afterStep) {
     final isActive = _currentStep > afterStep;
     return Container(
-      height: 2,
-      width: 24,
-      margin: const EdgeInsets.only(bottom: 16),
+      height: 3,
+      width: 28,
+      margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: isActive ? AppColors.primaryGreen : context.colors.card,
-        borderRadius: BorderRadius.circular(1),
+        gradient: isActive
+            ? const LinearGradient(
+                colors: [AppColors.primaryGreenLight, AppColors.primaryGreenDark],
+              )
+            : null,
+        color: isActive ? null : context.colors.divider,
+        borderRadius: BorderRadius.circular(2),
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: AppColors.primaryGreen.withValues(alpha: 0.4),
+                  blurRadius: 6,
+                ),
+              ]
+            : [],
       ),
     );
   }
@@ -758,8 +814,8 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
           id: 'vit',
           icon: Icons.hub_outlined,
           color: Color(0xFF1976D2),
-          title: 'ViT PlantDoc — HuggingFace',
-          subtitle: 'PlantDoc 28 classes • Vision Transformer Google',
+          title: 'ViT Combined — HuggingFace',
+          subtitle: 'PlantDoc + PlantSeg 142 classes • Vision Transformer',
         ),
         SizedBox(height: 10),
         _buildModelTile(
@@ -783,54 +839,127 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
     final isSelected = _selectedModel == id;
     return GestureDetector(
       onTap: () => setState(() => _selectedModel = id),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(colors: [
-                  color.withValues(alpha: 0.15),
-                  color.withValues(alpha: 0.05),
-                ])
-              : null,
-          color: isSelected ? null : context.colors.card,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? color : context.colors.divider,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(14),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isSelected
+                      ? [
+                          color.withValues(alpha: 0.20),
+                          color.withValues(alpha: 0.06),
+                        ]
+                      : [
+                          context.colors.card.withValues(alpha: 0.90),
+                          context.colors.card.withValues(alpha: 0.70),
+                        ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected
+                      ? color.withValues(alpha: 0.70)
+                      : context.colors.divider,
+                  width: isSelected ? 1.5 : 1,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.25),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
               ),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text(title,
-                      style: TextStyle(
-                        color: context.colors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      )),
-                  SizedBox(height: 3),
-                  Text(subtitle,
-                      style: TextStyle(
-                        color: isSelected ? color : context.colors.textSecondary,
-                        fontSize: 11,
-                      )),
+                  // 3D icon badge
+                  Container(
+                    padding: const EdgeInsets.all(11),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          color.withValues(alpha: 0.25),
+                          color.withValues(alpha: 0.10),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: color.withValues(alpha: 0.30),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.30),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Icon(icon, color: color, size: 22),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(title,
+                            style: TextStyle(
+                              color: context.colors.textPrimary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            )),
+                        const SizedBox(height: 3),
+                        Text(subtitle,
+                            style: TextStyle(
+                              color: isSelected
+                                  ? color.withValues(alpha: 0.85)
+                                  : context.colors.textSecondary,
+                              fontSize: 11,
+                            )),
+                      ],
+                    ),
+                  ),
+                  if (isSelected)
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: color.withValues(alpha: 0.35),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Icon(Icons.check_circle_rounded,
+                          color: color, size: 20),
+                    ),
                 ],
               ),
             ),
-            if (isSelected) Icon(Icons.check_circle, color: color, size: 20),
-          ],
+          ),
         ),
       ),
     );
@@ -875,211 +1004,366 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
         SizedBox(height: 12),
         GestureDetector(
           onTap: _pickImage,
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
             width: double.infinity,
-            height: 180,
-            decoration: BoxDecoration(
-              color: context.colors.card,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: _selectedImage != null
-                    ? AppColors.primaryGreen
-                    : context.colors.divider,
-                style: _selectedImage == null
-                    ? BorderStyle.solid
-                    : BorderStyle.solid,
-              ),
-            ),
-            child: _selectedImage != null
-                ? Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
-                        child: Image.file(_selectedImage!, fit: BoxFit.cover),
-                      ),
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: GestureDetector(
-                          onTap: () => setState(() => _selectedImage = null),
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: AppColors.error.withOpacity(0.9),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.close,
-                              color: AppColors.white,
-                              size: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 8,
-                        left: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.success.withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.check,
-                                color: AppColors.white,
-                                size: 14,
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                'Image sélectionnée',
-                                style: TextStyle(
-                                  color: AppColors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+            height: 200,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: _selectedImage != null
+                        ? LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppColors.primaryGreen.withValues(alpha: 0.15),
+                              AppColors.primaryGreenDark.withValues(alpha: 0.05),
+                            ],
+                          )
+                        : LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              context.colors.card.withValues(alpha: 0.90),
+                              AppColors.primaryGreen.withValues(alpha: 0.04),
                             ],
                           ),
-                        ),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: _selectedImage != null
+                          ? AppColors.primaryGreen.withValues(alpha: 0.60)
+                          : AppColors.primaryGreen.withValues(alpha: 0.20),
+                      width: _selectedImage != null ? 1.5 : 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primaryGreen.withValues(
+                            alpha: _selectedImage != null ? 0.20 : 0.08),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
                     ],
-                  )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryGreen.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.cloud_upload_outlined,
-                          size: 36,
-                          color: AppColors.primaryGreen,
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      Text(
-                        'Glissez-déposez votre image',
-                        style: TextStyle(
-                          color: context.colors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'ou cliquez pour parcourir',
-                        style: TextStyle(
-                          color: AppColors.primaryGreen,
-                          fontSize: 12,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildFormatChip('PNG'),
-                          SizedBox(width: 6),
-                          _buildFormatChip('JPG'),
-                          SizedBox(width: 6),
-                          _buildFormatChip('WEBP'),
-                          SizedBox(width: 6),
-                          Text(
-                            'Max 10MB',
-                            style: TextStyle(
-                              color: context.colors.textHint,
-                              fontSize: 10,
+                  ),
+                  child: _selectedImage != null
+                      ? Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(23),
+                              child:
+                                  Image.file(_selectedImage!, fit: BoxFit.cover),
                             ),
+                            // Dark overlay at top & bottom
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(23),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.black.withValues(alpha: 0.30),
+                                      Colors.transparent,
+                                      Colors.black.withValues(alpha: 0.40),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 10,
+                              right: 10,
+                              child: GestureDetector(
+                                onTap: () =>
+                                    setState(() => _selectedImage = null),
+                                child: Container(
+                                  padding: const EdgeInsets.all(7),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.error.withValues(alpha: 0.88),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.error
+                                            .withValues(alpha: 0.40),
+                                        blurRadius: 8,
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(Icons.close_rounded,
+                                      color: AppColors.white, size: 16),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 10,
+                              left: 10,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: BackdropFilter(
+                                  filter:
+                                      ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryGreen
+                                          .withValues(alpha: 0.85),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.check_rounded,
+                                            color: AppColors.white, size: 14),
+                                        SizedBox(width: 5),
+                                        Text('Image sélectionnée',
+                                            style: TextStyle(
+                                              color: AppColors.white,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                            )),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // 3D icon
+                            Container(
+                              width: 70,
+                              height: 70,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    AppColors.primaryGreenLight,
+                                    AppColors.primaryGreenDark,
+                                  ],
+                                ),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primaryGreen
+                                        .withValues(alpha: 0.45),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.12),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(Icons.add_photo_alternate_rounded,
+                                  size: 32, color: AppColors.white),
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              'Appuyez pour ajouter une image',
+                              style: TextStyle(
+                                color: context.colors.textPrimary,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Galerie ou caméra',
+                              style: TextStyle(
+                                color: AppColors.primaryGreen,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildFormatChip('PNG'),
+                                const SizedBox(width: 6),
+                                _buildFormatChip('JPG'),
+                                const SizedBox(width: 6),
+                                _buildFormatChip('WEBP'),
+                                const SizedBox(width: 8),
+                                Text('Max 10 MB',
+                                    style: TextStyle(
+                                      color: context.colors.textHint,
+                                      fontSize: 10,
+                                    )),
+                              ],
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            // Galerie — glass outline button
+            Expanded(
+              child: GestureDetector(
+                onTap: _pickImage,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: context.colors.card.withValues(alpha: 0.80),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: AppColors.primaryGreen.withValues(alpha: 0.40),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.06),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-          ),
-        ),
-        SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: _pickImage,
-                icon: Icon(Icons.photo_library, size: 18),
-                label: Text('Galerie'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primaryGreen,
-                  side: BorderSide(
-                    color: AppColors.primaryGreen.withOpacity(0.5),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.photo_library_rounded,
+                              color: AppColors.primaryGreen, size: 18),
+                          const SizedBox(width: 8),
+                          Text('Galerie',
+                              style: TextStyle(
+                                color: AppColors.primaryGreen,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              )),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
+            // Caméra — 3D gradient button
             Expanded(
-              child: ElevatedButton.icon(
-                onPressed: _takePhoto,
-                icon: Icon(Icons.camera_alt, size: 18),
-                label: Text('Caméra'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryGreen,
-                  foregroundColor: AppColors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+              child: GestureDetector(
+                onTap: _takePhoto,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.primaryGreenLight,
+                        AppColors.primaryGreenDark,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primaryGreen.withValues(alpha: 0.45),
+                        blurRadius: 14,
+                        offset: const Offset(0, 6),
+                      ),
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.camera_alt_rounded,
+                          color: AppColors.white, size: 18),
+                      SizedBox(width: 8),
+                      Text('Caméra',
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          )),
+                    ],
                   ),
                 ),
               ),
             ),
           ],
         ),
-        SizedBox(height: 12),
-        // Tips
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: context.colors.card,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.lightbulb_outline,
-                    color: AppColors.success,
-                    size: 16,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Conseils pour une bonne photo',
-                    style: TextStyle(
-                      color: AppColors.success,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
+        const SizedBox(height: 14),
+        // Tips glass card
+        ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: AppColors.success.withValues(alpha: 0.25),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.success.withValues(alpha: 0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              SizedBox(height: 8),
-              _buildTipRow('Photo nette et bien éclairée'),
-              _buildTipRow('Feuilles visibles en gros plan'),
-              _buildTipRow('Inclure les zones suspectes'),
-            ],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.lightbulb_rounded,
+                            color: AppColors.success, size: 14),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Conseils pour une bonne photo',
+                        style: TextStyle(
+                          color: AppColors.success,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  _buildTipRow('Photo nette et bien éclairée'),
+                  _buildTipRow('Feuilles visibles en gros plan'),
+                  _buildTipRow('Inclure les zones suspectes'),
+                ],
+              ),
+            ),
           ),
         ),
       ],
@@ -2198,6 +2482,14 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
           // Image and metrics
           _buildResultImageAndMetrics(isHealthy, affectedSurface),
           SizedBox(height: 16),
+
+          // Fiche maladie (base de données locale)
+          if (!isHealthy && _analysisResult != null)
+            DiseaseKnowledgeCard(
+              analysisResult: _analysisResult!,
+              selectedPlant: _selectedPlant,
+            ),
+          if (!isHealthy && _analysisResult != null) SizedBox(height: 16),
 
           // Recommendations
           _buildResultRecommendations(isHealthy, diseaseName),
