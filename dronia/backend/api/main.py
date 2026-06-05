@@ -236,8 +236,9 @@ pest_detection_model: YOLO = None
 pest_detection_model_path: str = None
 
 
-# At the top of your main.py, add this flag
-DISABLE_YOLO = True  # Set to True for Render deployment
+# LOCAL_MODE=true active le ViT local + YOLO pest detection
+LOCAL_MODE = os.getenv("LOCAL_MODE", "false").lower() == "true"
+DISABLE_YOLO = not LOCAL_MODE  # activé en mode local, désactivé sur Render
 
 # In your predict functions, modify the ensure_model_loaded function:
 def ensure_model_loaded():
@@ -797,19 +798,39 @@ def ensure_classification_model_loaded():
 
 @app.on_event("startup")
 async def startup_event():
-    """Load EfficientNet model on startup (YOLO disabled)"""
-    logger.info("🚀 Starting Plant Disease Detection API (EfficientNet only)...")
-    logger.info("📦 Loading EfficientNet model...")
+    """Load models on startup. En LOCAL_MODE charge aussi ViT + YOLO pest detection."""
+    mode_label = "LOCAL (EfficientNet + ViT + YOLO)" if LOCAL_MODE else "PRODUCTION (EfficientNet uniquement)"
+    logger.info(f"🚀 Starting DronIA API — mode: {mode_label}")
+
+    # EfficientNet (toujours)
+    logger.info("📦 Chargement EfficientNet...")
     try:
         load_classification_model()
         if classification_model is not None:
-            logger.info("✅ EfficientNet model loaded and ready")
-            logger.info("   API endpoint: POST /classify/base64")
+            logger.info("✅ EfficientNet prêt — POST /classify/base64")
         else:
-            logger.error("❌ EfficientNet model failed to load")
+            logger.error("❌ EfficientNet échoué")
     except Exception as e:
-        logger.error(f"❌ Failed to load EfficientNet: {str(e)}")
-    logger.info("⚠️  YOLO model disabled | ViT disabled (too large for free tier)")
+        logger.error(f"❌ EfficientNet : {e}")
+
+    if LOCAL_MODE:
+        # ViT PlantDoc
+        logger.info("📦 Chargement ViT PlantDoc (mode local)...")
+        try:
+            load_vit_model()
+            logger.info("✅ ViT prêt — POST /classify/vit")
+        except Exception as e:
+            logger.error(f"❌ ViT : {e}")
+
+        # YOLO11s pest detection
+        logger.info("📦 Chargement YOLO11s pest detection (mode local)...")
+        try:
+            load_pest_detection_model()
+            logger.info("✅ YOLO11s prêt — POST /analyze/insects")
+        except Exception as e:
+            logger.error(f"❌ YOLO11s : {e}")
+    else:
+        logger.info("⚠️  ViT désactivé | YOLO désactivé (free tier)")
 
 
 # Also update the root endpoint to reflect EfficientNet-only mode:
@@ -1847,8 +1868,12 @@ def load_vit_model():
     from transformers import ViTForImageClassification
 
     models_dir = Path(__file__).parent.parent / "models"
-    pth_path   = models_dir / "vit_plantdoc_best.pth"
-    json_path  = models_dir / "vit_plantdoc_classes.json"
+    # Prefer combined model if available
+    pth_path   = models_dir / "combined" / "vit_combined_best.pth"
+    json_path  = models_dir / "combined" / "vit_combined_classes.json"
+    if not pth_path.exists():
+        pth_path  = models_dir / "vit_plantdoc_best.pth"
+        json_path = models_dir / "vit_plantdoc_classes.json"
 
     # ── Classes metadata (embedded fallback so Render works without the JSON) ──
     FALLBACK_CLASSES = [
@@ -1888,18 +1913,38 @@ def load_vit_model():
     )
 
     if not pth_path.exists():
-        logger.info("📥 Downloading vit_plantdoc_best.pth from HuggingFace Hub...")
+        logger.info("📥 Downloading vit_combined_best.pth from HuggingFace Hub...")
         try:
             from huggingface_hub import hf_hub_download
+            combined_dir = models_dir / "combined"
+            combined_dir.mkdir(exist_ok=True)
             downloaded = hf_hub_download(
                 repo_id="aladinhabibi/vit-plantdoc",
-                filename="vit_plantdoc_best.pth",
-                local_dir=str(models_dir),
+                filename="vit_combined_best.pth",
+                local_dir=str(combined_dir),
             )
             pth_path = Path(downloaded)
+            # Also download classes json
+            hf_hub_download(
+                repo_id="aladinhabibi/vit-plantdoc",
+                filename="vit_combined_classes.json",
+                local_dir=str(combined_dir),
+            )
+            json_path = combined_dir / "vit_combined_classes.json"
             logger.info(f"✅ Downloaded to {pth_path}")
         except Exception as e:
-            logger.warning(f"⚠️  Could not download .pth: {e} — using base ViT weights")
+            logger.warning(f"⚠️  Could not download combined model: {e} — trying PlantDoc fallback")
+            try:
+                from huggingface_hub import hf_hub_download
+                downloaded = hf_hub_download(
+                    repo_id="aladinhabibi/vit-plantdoc",
+                    filename="vit_plantdoc_best.pth",
+                    local_dir=str(models_dir),
+                )
+                pth_path  = Path(downloaded)
+                json_path = models_dir / "vit_plantdoc_classes.json"
+            except Exception as e2:
+                logger.warning(f"⚠️  Fallback also failed: {e2}")
 
     if pth_path.exists():
         vit_model.load_state_dict(torch.load(str(pth_path), map_location="cpu"))
@@ -1920,12 +1965,146 @@ def load_vit_model():
     logger.info(f"✅ ViT PlantDoc ready — {num_classes} classes")
 
 
+# Mapping PlantDoc class names → French disease type (sans préfixe plante, sans underscores)
+VIT_PLANTDOC_FR = {
+    "Apple_Scab_Leaf":                        "Tavelure",
+    "Apple_leaf":                             "Saine",
+    "Apple_rust_leaf":                        "Rouille",
+    "Bell_pepper_leaf":                       "Saine",
+    "Bell_pepper_leaf_spot":                  "Tache foliaire",
+    "Blueberry_leaf":                         "Saine",
+    "Cherry_leaf":                            "Saine",
+    "Corn_Gray_leaf_spot":                    "Tache grise des feuilles",
+    "Corn_leaf_blight":                       "Brûlure foliaire",
+    "Corn_rust_leaf":                         "Rouille",
+    "Peach_leaf":                             "Saine",
+    "Potato_leaf_early_blight":               "Alternariose",
+    "Potato_leaf_late_blight":               "Mildiou",
+    "Raspberry_leaf":                         "Saine",
+    "Soyabean_leaf":                          "Saine",
+    "Squash_Powdery_mildew_leaf":             "Oïdium",
+    "Strawberry_leaf":                        "Saine",
+    "Tomato_Early_blight_leaf":               "Alternariose",
+    "Tomato_Septoria_leaf_spot":              "Septoriose",
+    "Tomato_leaf":                            "Saine",
+    "Tomato_leaf_bacterial_spot":             "Tache bactérienne",
+    "Tomato_leaf_late_blight":               "Mildiou",
+    "Tomato_leaf_mosaic_virus":              "Mosaïque virale",
+    "Tomato_leaf_yellow_virus":              "Virus de l'enroulement jaune",
+    "Tomato_mold_leaf":                       "Moisissure foliaire",
+    "Tomato_two_spotted_spider_mites_leaf":   "Acariens (tétranyques)",
+    "grape_leaf":                             "Saine",
+    "grape_leaf_black_rot":                   "Pourriture noire",
+}
+
+def _vit_is_healthy(class_name: str) -> bool:
+    fr = VIT_PLANTDOC_FR.get(class_name, "")
+    return fr == "Saine" or is_healthy_class(class_name)
+
+def _vit_disease_fr(class_name: str) -> str:
+    """Retourne le nom français de la maladie, sans underscores ni préfixe plante."""
+    return VIT_PLANTDOC_FR.get(class_name, class_name.replace("_", " ").title())
+
+
 @app.post("/classify/vit")
 async def classify_vit(image: str = Form(...)):
     """
-    Classify plant disease via HuggingFace Inference API (ViT PlantDoc).
-    The model runs on HF servers — zero extra RAM on Render.
+    Classify plant disease via ViT PlantDoc.
+    LOCAL_MODE=true  → inférence locale (modèle en mémoire).
+    Production       → HuggingFace Inference API.
     """
+    if LOCAL_MODE:
+        # ── Inférence locale ──────────────────────────────────────────────
+        global vit_model, vit_classes, vit_transform
+        if vit_model is None:
+            try:
+                load_vit_model()
+            except Exception as e:
+                raise HTTPException(status_code=503, detail=f"ViT non chargé : {e}")
+        if vit_model is None:
+            raise HTTPException(status_code=503, detail="ViT model introuvable")
+
+        if image.startswith("data:image"):
+            image = image.split(",")[1]
+        img_bytes = base64.b64decode(image)
+        pil_img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+
+        with torch.no_grad():
+            x      = vit_transform(pil_img).unsqueeze(0)
+            logits = vit_model(x).logits[0]
+            probs  = torch.softmax(logits, dim=0)
+            top3_p, top3_i = torch.topk(probs, 3)
+
+        id2label = {int(k): v for k, v in vit_classes["id2label"].items()}
+        top3 = [
+            {"class": id2label.get(int(i), f"class_{int(i)}"), "confidence": round(float(p), 4)}
+            for p, i in zip(top3_p, top3_i)
+        ]
+        primary    = top3[0]
+        is_healthy = _vit_is_healthy(primary["class"])
+        disease_fr = _vit_disease_fr(primary["class"])
+
+        # ── Analyse visuelle : zones de symptômes + surface affectée ─────
+        visual     = analyze_leaf_health(pil_img)
+        img_w, img_h = pil_img.size
+
+        affected_surface = 0
+        severity         = "Nulle"
+        affected_zones   = []
+
+        if not is_healthy:
+            affected_surface = int(visual["affected_surface"]) if visual["affected_surface"] > 0 else min(30, int(primary["confidence"] * 100))
+            severity         = visual["severity"] if visual["affected_surface"] > 0 else "Légère"
+
+            # Convertir les zones pixel → pourcentages pour le frontend
+            for area in visual.get("symptom_areas", []):
+                x1_pct = round((area["x"] / max(1, img_w)) * 100, 2)
+                y1_pct = round((area["y"] / max(1, img_h)) * 100, 2)
+                x2_pct = round(((area["x"] + area["width"]) / max(1, img_w)) * 100, 2)
+                y2_pct = round(((area["y"] + area["height"]) / max(1, img_h)) * 100, 2)
+                cx_pct = round((x1_pct + x2_pct) / 2, 2)
+                cy_pct = round((y1_pct + y2_pct) / 2, 2)
+                affected_zones.append({
+                    "x":             cx_pct,
+                    "y":             cy_pct,
+                    "width":         round(x2_pct - x1_pct, 2),
+                    "height":        round(y2_pct - y1_pct, 2),
+                    "x1Pct":         x1_pct,
+                    "y1Pct":         y1_pct,
+                    "x2Pct":         x2_pct,
+                    "y2Pct":         y2_pct,
+                    "confidence":    round(area["area_percentage"], 2),
+                    # Contour organique simplifié (points en % 0-100)
+                    "contourPoints": area.get("contourPoints", []),
+                })
+
+        status = "Sain"
+        if not is_healthy:
+            status = "Critique" if severity in ("Élevée", "Modérée") else "Attention"
+
+        return JSONResponse({
+            "success":         True,
+            "disease":         disease_fr,
+            "diseaseClass":    primary["class"],
+            "diseaseType":     disease_fr,
+            "confidence":      int(primary["confidence"] * 100),
+            "isHealthy":       is_healthy,
+            "generalStatus":   "Saine" if is_healthy else "Malade",
+            "severity":        severity,
+            "status":          status,
+            "affectedSurface": affected_surface,
+            "affectedZones":   affected_zones,
+            "symptomCount":    visual["symptom_count"],
+            "visualAnalysis":  {
+                "affectedSurface": visual["affected_surface"],
+                "severity":        visual["severity"],
+                "symptomCount":    visual["symptom_count"],
+            },
+            "top3":   top3,
+            "source": "vit-plantdoc-local",
+        })
+
+    # ── HuggingFace Inference API (production) ────────────────────────────
     import httpx
 
     hf_token = os.getenv("HF_TOKEN", "")
@@ -1961,12 +2140,15 @@ async def classify_vit(image: str = Form(...)):
             {"class": r["label"], "confidence": round(r["score"], 4)}
             for r in results[:3]
         ]
-        primary = top3[0]
-        is_healthy = is_healthy_class(primary["class"])
+        primary    = top3[0]
+        is_healthy = _vit_is_healthy(primary["class"])
+        disease_fr = _vit_disease_fr(primary["class"])
 
         return JSONResponse({
             "success":       True,
-            "disease":       primary["class"],
+            "disease":       disease_fr,
+            "diseaseClass":  primary["class"],
+            "diseaseType":   disease_fr,
             "confidence":    int(primary["confidence"] * 100),
             "isHealthy":     is_healthy,
             "generalStatus": "Saine" if is_healthy else "Malade",
