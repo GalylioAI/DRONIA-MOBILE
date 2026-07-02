@@ -92,8 +92,9 @@ class WeatherService {
       queryParams['country'] = country;
     }
 
-    if (startDate != null) queryParams['startDate'] = startDate;
-    if (endDate != null) queryParams['endDate'] = endDate;
+    // VPS doc uses snake_case for the historical endpoint
+    if (startDate != null) queryParams['start_date'] = startDate;
+    if (endDate != null) queryParams['end_date'] = endDate;
 
     final response = await _apiClient.get(
       ApiEndpoints.weatherHistorical,

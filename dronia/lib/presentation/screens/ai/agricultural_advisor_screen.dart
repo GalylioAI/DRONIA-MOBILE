@@ -9,6 +9,7 @@ import '../../../core/services/location_service.dart';
 import '../../../data/services/chat_history_service.dart';
 import '../../../data/services/gemini_ai_service.dart';
 import '../../../data/services/openweathermap_service.dart';
+import '../../../data/services/service_locator.dart';
 
 /// Agricultural Advisor Screen - Modern elegant AI chat design
 class AgriculturalAdvisorScreen extends StatefulWidget {
@@ -472,12 +473,19 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
         SizedBox(width: 12),
         Icon(icon, color: AppColors.primaryGreen, size: 20),
         SizedBox(width: 8),
-        Text(
-          title,
-          style: TextStyle(
-            color: context.colors.textPrimary,
-            fontWeight: FontWeight.w600,
-            fontSize: 15,
+        // Wrap the title in Expanded + Text overflow so very long labels
+        // (e.g. "Sélectionnez votre culture") never push the row past the
+        // parent's width and trigger the yellow/black overflow stripes.
+        Expanded(
+          child: Text(
+            title,
+            style: TextStyle(
+              color: context.colors.textPrimary,
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
@@ -1399,22 +1407,33 @@ class _AgriculturalAdvisorScreenState extends State<AgriculturalAdvisorScreen>
     // Clear selected image after sending
     setState(() => _selectedImage = null);
 
-    final response = await _gemini.chat(
-      message: messageToSend,
-      systemPrompt: _getAgriculturalPrompt(),
-      history: history,
-      imageFile: imageToSend,
-    );
+    // VPS advisor chat (DeepSeek + French rule-based fallback).
+    // Switched from the previous direct Groq call (the hardcoded API key
+    // was invalid). The VPS handles the model + key server-side.
+    String? aiReply;
+    String? aiError;
+    try {
+      final reply = await services.advisor.sendMessage(
+        message: messageToSend,
+        lat: _selectedLat,
+        lng: _selectedLng,
+        cropType: _selectedCulture.isNotEmpty ? _selectedCulture : null,
+      );
+      aiReply = reply.content;
+    } catch (e) {
+      aiError = e.toString().replaceAll('Exception: ', '');
+    }
 
     if (mounted) {
       setState(() {
         _isTyping = false;
-        if (response.success) {
-          _messages.add(_ChatMessage(text: response.content!, isUser: false));
+        if (aiReply != null && aiReply.isNotEmpty) {
+          _messages.add(_ChatMessage(text: aiReply, isUser: false));
         } else {
           _messages.add(
             _ChatMessage(
-              text: '❌ Erreur: ${response.error}\n\nVeuillez réessayer.',
+              text:
+                  '❌ Erreur: ${aiError ?? 'réponse vide'}\n\nVeuillez réessayer.',
               isUser: false,
             ),
           );

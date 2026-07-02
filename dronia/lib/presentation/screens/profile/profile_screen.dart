@@ -5,10 +5,12 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
+import '../../../core/routes/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/services/location_service.dart';
 import '../../../data/models/models.dart';
+import '../../../data/network/api_client.dart';
 import '../../../data/services/service_locator.dart';
 
 /// Profile screen - mobile responsive design with API integration
@@ -66,14 +68,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _isLoading = false;
         });
       }
+    } on UnauthorizedException {
+      // Token JWT expiré ou invalide → on déconnecte proprement et on
+      // renvoie l'utilisateur sur l'écran de login.
+      await _handleSessionExpired();
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = e.toString().replaceAll('Exception: ', '');
+          _errorMessage = _humanizeProfileError(e);
           _isLoading = false;
         });
       }
     }
+  }
+
+  /// Force la déconnexion (efface le token local) et redirige vers /login.
+  Future<void> _handleSessionExpired() async {
+    try {
+      await services.auth.logout();
+    } catch (_) {
+      // Logout côté serveur peut échouer si le token est déjà invalide —
+      // peu importe, le service efface aussi les données locales.
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Session expirée. Veuillez vous reconnecter.'),
+        duration: Duration(seconds: 3),
+      ),
+    );
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      AppRoutes.login,
+      (route) => false,
+    );
+  }
+
+  /// Convertit une exception en message lisible (français).
+  String _humanizeProfileError(Object e) {
+    final msg = e.toString();
+    if (msg.contains('SocketException') ||
+        msg.contains('Failed host lookup') ||
+        msg.contains('Network is unreachable')) {
+      return 'Impossible de joindre le serveur. Vérifiez votre connexion internet.';
+    }
+    if (msg.contains('TimeoutException') || msg.contains('timed out')) {
+      return 'Le serveur met trop de temps à répondre. Réessayez.';
+    }
+    if (msg.contains('500') || msg.contains('502') || msg.contains('503')) {
+      return 'Le serveur est temporairement indisponible. Réessayez plus tard.';
+    }
+    return msg.replaceAll('Exception: ', '');
   }
 
   @override

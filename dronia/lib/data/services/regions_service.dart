@@ -3,19 +3,20 @@ import 'package:flutter/material.dart';
 import '../models/region_model.dart';
 import '../network/api_client.dart';
 
-/// Service for managing agricultural regions
+/// Regions service — talks to the VPS Next.js backend (`/api/regions`).
+/// The VPS routes are expected to be implemented server-side; this client
+/// just wires them up. Errors are caught at the call site so the UI degrades
+/// gracefully until the routes are deployed.
 class RegionsService {
   final ApiClient _apiClient;
 
   RegionsService(this._apiClient);
 
-  /// Get all regions for the current user
   Future<RegionsResponse> getRegions() async {
     final response = await _apiClient.get('/regions');
     return RegionsResponse.fromJson(response);
   }
 
-  /// Create a new region
   Future<Region> createRegion({
     required String name,
     required List<LatLng> points,
@@ -37,10 +38,15 @@ class RegionsService {
         'temperature': temperature,
       },
     );
-    return Region.fromJson(response);
+    return Region.fromJson(
+      (response is Map<String, dynamic> && response['region'] is Map)
+          ? response['region'] as Map<String, dynamic>
+          : (response is Map<String, dynamic> && response['data'] is Map)
+              ? response['data'] as Map<String, dynamic>
+              : response as Map<String, dynamic>,
+    );
   }
 
-  /// Update an existing region
   Future<Region> updateRegion({
     required String regionId,
     String? name,
@@ -63,18 +69,25 @@ class RegionsService {
     if (temperature != null) body['temperature'] = temperature;
 
     final response = await _apiClient.put('/regions/$regionId', body: body);
-    return Region.fromJson(response);
+    return Region.fromJson(
+      (response is Map<String, dynamic> && response['region'] is Map)
+          ? response['region'] as Map<String, dynamic>
+          : (response is Map<String, dynamic> && response['data'] is Map)
+              ? response['data'] as Map<String, dynamic>
+              : response as Map<String, dynamic>,
+    );
   }
 
-  /// Delete a region
   Future<void> deleteRegion(String regionId) async {
     await _apiClient.delete('/regions/$regionId');
   }
 
-  /// Delete all regions for the current user
   Future<int> deleteAllRegions() async {
     final response = await _apiClient.delete('/regions');
-    return response['deletedCount'] as int? ?? 0;
+    if (response is Map<String, dynamic>) {
+      return (response['deletedCount'] as int?) ?? 0;
+    }
+    return 0;
   }
 }
 

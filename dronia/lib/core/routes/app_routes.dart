@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../presentation/screens/splash/splash_screen.dart';
 import '../../presentation/screens/auth/login_screen.dart';
 import '../../presentation/screens/auth/register_screen.dart';
+import '../../presentation/screens/auth/forgot_password_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
 import '../../presentation/screens/dashboard/dashboard_screen.dart';
 import '../../presentation/screens/analysis/analysis_mode_screen.dart';
@@ -27,6 +28,10 @@ import '../../presentation/screens/clawdbot_chat_screen.dart';
 import '../../presentation/screens/map/field_monitoring_screen.dart';
 import '../../presentation/screens/drone/drone_fleet_screen.dart';
 import '../../presentation/screens/diseases/disease_knowledge_screen.dart';
+import '../../presentation/screens/admin/admin_dashboard_screen.dart';
+import '../../presentation/screens/admin/admin_users_screen.dart';
+import '../../presentation/screens/admin/admin_plans_screen.dart';
+import '../../presentation/screens/plans/plans_screen.dart';
 
 /// Application route names
 class AppRoutes {
@@ -36,6 +41,7 @@ class AppRoutes {
   static const String splash = '/';
   static const String login = '/login';
   static const String register = '/register';
+  static const String forgotPassword = '/forgot-password';
 
   // Main routes
   static const String home = '/home';
@@ -78,6 +84,14 @@ class AppRoutes {
 
   // Disease Knowledge Base
   static const String diseaseKnowledge = '/disease-knowledge';
+
+  // Subscription plans (user)
+  static const String plans = '/plans';
+
+  // Admin
+  static const String adminDashboard = '/admin';
+  static const String adminUsers = '/admin/users';
+  static const String adminPlans = '/admin/plans';
 }
 
 /// Route generator
@@ -93,6 +107,9 @@ class AppRouter {
 
       case AppRoutes.register:
         return _buildRoute(const RegisterScreen(), settings);
+
+      case AppRoutes.forgotPassword:
+        return _buildRoute(const ForgotPasswordScreen(), settings);
 
       // Main routes
       case AppRoutes.home:
@@ -206,6 +223,20 @@ class AppRouter {
       // Disease Knowledge Base
       case AppRoutes.diseaseKnowledge:
         return _buildRoute(const DiseaseKnowledgeScreen(), settings);
+
+      // Subscription plans (user)
+      case AppRoutes.plans:
+        return _buildRoute(const PlansScreen(), settings);
+
+      // Admin area
+      case AppRoutes.adminDashboard:
+        return _buildRoute(const AdminDashboardScreen(), settings);
+
+      case AppRoutes.adminUsers:
+        return _buildRoute(const AdminUsersScreen(), settings);
+
+      case AppRoutes.adminPlans:
+        return _buildRoute(const AdminPlansScreen(), settings);
 
       // Default - 404 page
       default:

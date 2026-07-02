@@ -75,7 +75,12 @@ class _LoginScreenState extends State<LoginScreen>
         _passwordController.text,
       );
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      final isAdmin = services.auth.currentUser?.isAdmin ?? false;
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        isAdmin ? AppRoutes.adminDashboard : AppRoutes.home,
+        (_) => false,
+      );
     } catch (e) {
       if (!mounted) return;
       _showErrorSnackbar(_friendlyErrorMessage(e));
@@ -262,7 +267,8 @@ class _LoginScreenState extends State<LoginScreen>
     return Align(
       alignment: Alignment.centerRight,
       child: TextButton(
-        onPressed: () {},
+        onPressed: () =>
+            Navigator.pushNamed(context, AppRoutes.forgotPassword),
         child: Text(
           'Mot de passe oublié ?',
           style: TextStyle(color: color, fontSize: 13),

@@ -170,4 +170,20 @@ class AuthService {
     await _storageService.clearAuth();
     _currentUser = null;
   }
+
+  /// Switch the current user's subscription plan.
+  Future<User> updateMyPlan(UserPlan plan) async {
+    final response = await _apiClient.put(
+      ApiEndpoints.mePlan,
+      body: {'plan': plan.name},
+    );
+
+    final payload = response is Map<String, dynamic>
+        ? (response['data'] as Map<String, dynamic>? ?? response)
+        : <String, dynamic>{};
+    final user = User.fromJson(payload);
+    await _storageService.saveUserJson(user.toJson());
+    _currentUser = user;
+    return user;
+  }
 }

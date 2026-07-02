@@ -1,7 +1,12 @@
+import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../data/network/api_client.dart';
 import '../../../data/services/openweathermap_service.dart';
+import '../../../data/services/storage_service.dart';
 
 /// Dashboard screen - mobile responsive design
 class DashboardScreen extends StatefulWidget {
@@ -29,11 +34,115 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   int? _selectedDayIndex;
 
+  // Aggregated user stats shown in the four cards.
+  int _totalAnalyses = 0;
+  int _healthyCount = 0;
+  int _alertsCount = 0;
+  double _totalSurface = 0;
+
   @override
   void initState() {
     super.initState();
     _generateHealthData();
     _loadWeather();
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    int total = 0;
+    int healthy = 0;
+    int alerts = 0;
+    double surface = 0;
+
+    // 1. Plant disease analyses (local cache populated by Upload Photo).
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('saved_analyses');
+      if (raw != null && raw.isNotEmpty) {
+        final list = (json.decode(raw) as List).cast<Map<String, dynamic>>();
+        total += list.length;
+        for (final a in list) {
+          final status = (a['healthStatus'] ?? a['status'] ?? '').toString();
+          if (status.toLowerCase().contains('sain')) {
+            healthy++;
+          } else {
+            alerts++;
+          }
+        }
+      }
+    } catch (_) {/* ignore */}
+
+    // 2. Insect analyses (local cache populated by Insect screen).
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('insect_analyses_history');
+      if (raw != null && raw.isNotEmpty) {
+        final list = (json.decode(raw) as List).cast<Map<String, dynamic>>();
+        total += list.length;
+        for (final a in list) {
+          final has = a['hasInsects'] == true ||
+              ((a['totalCount'] ?? 0) is num &&
+                  (a['totalCount'] as num) > 0) ||
+              ((a['detections'] as List?)?.isNotEmpty ?? false);
+          if (has) {
+            alerts++;
+          } else {
+            healthy++;
+          }
+        }
+      }
+    } catch (_) {/* ignore */}
+
+    // 3. Predictions history (server-side, VPS /api/predictions).
+    try {
+      final api = ApiClient(storage: StorageService());
+      final res = await api.get('/predictions', queryParams: {'limit': 200});
+      final dynamic listRaw = res['predictions'] ?? res['data'] ?? res['analyses'];
+      if (listRaw is List) {
+        total += listRaw.length;
+        for (final raw in listRaw) {
+          final a = Map<String, dynamic>.from(raw as Map);
+          final status = (a['healthStatus'] ?? a['status'] ?? a['disease'] ?? '')
+              .toString()
+              .toLowerCase();
+          if (status.contains('sain') || status.contains('healthy')) {
+            healthy++;
+          } else {
+            alerts++;
+          }
+        }
+      }
+    } catch (_) {/* ignore — endpoint may be unavailable */}
+
+    // 4. Total surface — prefer the user profile's totalSurface, otherwise
+    //    sum every saved region's hectares.
+    try {
+      final api = ApiClient(storage: StorageService());
+      final me = await api.get('/auth/me');
+      final Map<String, dynamic> user = me is Map<String, dynamic> && me['data'] is Map
+          ? me['data'] as Map<String, dynamic>
+          : me as Map<String, dynamic>;
+      surface = (user['totalSurface'] as num?)?.toDouble() ?? 0;
+    } catch (_) {/* ignore */}
+
+    if (surface == 0) {
+      try {
+        final api = ApiClient(storage: StorageService());
+        final res = await api.get('/regions');
+        final dynamic ha = (res is Map<String, dynamic>)
+            ? (res['totalHectares'] ?? res['total'] ?? 0)
+            : 0;
+        if (ha is num) surface = ha.toDouble();
+      } catch (_) {/* ignore */}
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _totalAnalyses = total;
+      _healthyCount = healthy;
+      _alertsCount = alerts;
+      _totalSurface = surface;
+    });
   }
 
   void _generateHealthData() {
@@ -143,6 +252,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildStatCards(BuildContext context) {
+    final surfaceStr = _totalSurface > 0
+        ? '${_totalSurface.toStringAsFixed(_totalSurface < 10 ? 2 : 1)} ha'
+        : '0 ha';
     return Column(
       children: [
         Row(
@@ -150,39 +262,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Expanded(
               child: _StatCard(
                 title: 'ANALYSES',
-                value: '0',
-                icon: Icons.analytics,
+                value: '$_totalAnalyses',
+                icon: Icons.analytics_rounded,
                 iconColor: AppColors.info,
               ),
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
               child: _StatCard(
                 title: 'SAINES',
-                value: '0',
-                icon: Icons.check_circle,
+                value: '$_healthyCount',
+                icon: Icons.eco_rounded,
                 iconColor: AppColors.success,
               ),
             ),
           ],
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 14),
         Row(
           children: [
             Expanded(
               child: _StatCard(
                 title: 'ALERTES',
-                value: '0',
-                icon: Icons.warning_amber,
+                value: '$_alertsCount',
+                icon: Icons.warning_amber_rounded,
                 iconColor: AppColors.error,
               ),
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
               child: _StatCard(
                 title: 'SURFACE',
-                value: '0 ha',
-                icon: Icons.map,
+                value: surfaceStr,
+                icon: Icons.landscape_rounded,
                 iconColor: AppColors.warning,
               ),
             ),
@@ -216,15 +328,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ? data[math.min(DateTime.now().weekday - 1, data.length - 1)]
         : null;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: context.colors.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.colors.divider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.primaryGreen.withValues(alpha: 0.10),
+                context.colors.card.withValues(alpha: 0.85),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: AppColors.primaryGreen.withValues(alpha: 0.22),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryGreen.withValues(alpha: 0.12),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -330,6 +463,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           // Day labels - show subset for 30 days
           _buildDayLabels(),
         ],
+          ),
+        ),
       ),
     );
   }
@@ -817,49 +952,105 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: context.colors.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.colors.divider),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: context.colors.textSecondary,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                SizedBox(height: 6),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: context.colors.textPrimary,
-                  ),
-                ),
-              ],
+    final isDark = context.colors.isDark;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isDark
+                  ? [
+                      iconColor.withValues(alpha: 0.12),
+                      context.colors.card.withValues(alpha: 0.80),
+                    ]
+                  : [
+                      Colors.white.withValues(alpha: 0.85),
+                      iconColor.withValues(alpha: 0.06),
+                    ],
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: iconColor.withValues(alpha: 0.25),
+              width: 1.2,
             ),
-            child: Icon(icon, color: iconColor, size: 20),
+            boxShadow: [
+              BoxShadow(
+                color: iconColor.withValues(alpha: 0.18),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(9),
+                    decoration: BoxDecoration(
+                      color: iconColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: iconColor.withValues(alpha: 0.30),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Icon(icon, color: iconColor, size: 18),
+                  ),
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: iconColor,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: iconColor.withValues(alpha: 0.6),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: context.colors.textPrimary,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: context.colors.textSecondary,
+                  letterSpacing: 1.0,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

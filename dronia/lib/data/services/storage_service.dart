@@ -79,6 +79,10 @@ class StorageService {
 
   /// Clear all auth data (logout)
   Future<void> clearAuth() async {
+    // Migration debugging: surface every caller so we can detect implicit
+    // logouts (e.g. a 401-handler clearing the token without UI confirmation).
+    // ignore: avoid_print
+    print('🚪 StorageService.clearAuth() called\n${StackTrace.current}');
     final prefs = await _preferences;
     await prefs.remove(AppConstants.tokenKey);
     await prefs.remove(AppConstants.refreshTokenKey);

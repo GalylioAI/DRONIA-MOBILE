@@ -62,7 +62,10 @@ Future<void> handleRegister({
   setLoading(true);
 
   try {
-    final success = await services.auth.register(
+    // VPS register no longer returns a token — only a French success message
+    // ("Compte créé. Vérifiez votre e-mail..."). Treat any non-throwing call
+    // as success and let the caller route the user to the email-verification step.
+    await services.auth.register(
       email: email,
       password: password,
       firstName: firstName,
@@ -74,11 +77,7 @@ Future<void> handleRegister({
       totalSurface: totalSurface,
       soilType: soilType,
     );
-
-    if (success) {
-      // Registration successful - navigate to login or home
-      onSuccess();
-    }
+    onSuccess();
   } catch (e) {
     String message = 'Erreur lors de l\'inscription';
     if (e.toString().contains('already')) {

@@ -78,7 +78,17 @@ class UserResponse(BaseModel):
     profileImage: Optional[str] = None
     totalSurface: Optional[float] = None
     soilType: Optional[str] = None
+    role: str = "user"
+    plan: str = "free"
     createdAt: Optional[datetime] = None
+
+
+class UpdatePlanRequest(BaseModel):
+    plan: str = Field(..., description="Plan key: free, premium, enterprise")
+
+
+class AdminUpdatePlanRequest(BaseModel):
+    plan: str = Field(..., description="Plan key: free, premium, enterprise")
 
 
 # ============ Database Functions ============
@@ -187,36 +197,53 @@ def user_to_response(user: dict) -> dict:
         "profileImage": user.get("profileImage"),
         "totalSurface": user.get("totalSurface"),
         "soilType": user.get("soilType"),
+        "role": user.get("role", "user"),
+        "plan": user.get("plan", "free"),
         "createdAt": user.get("createdAt"),
     }
+
+
+async def require_admin(current_user: dict = Depends(get_current_user)):
+    """Dependency that ensures the current user has admin role."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Accès réservé aux administrateurs"
+        )
+    return current_user
 
 
 # ============ Routes ============
 
 @router.post("/login")
 async def login(request: LoginRequest):
-    """Login with email and password, returns JWT token"""
+    """Login with email and password, returns JWT token + user (with role and plan)."""
     database = await get_database()
-    
-    # Find user by email
+
     user = await database.users.find_one({"email": request.email.lower()})
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email ou mot de passe incorrect"
         )
-    
-    # Verify password
+
     if not verify_password(request.password, user.get("password", "")):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email ou mot de passe incorrect"
         )
-    
-    # Create access token
+
     access_token = create_access_token(data={"sub": str(user["_id"])})
-    
-    return {"token": access_token}
+
+    return {
+        "token": access_token,
+        "tokens": {
+            "accessToken": access_token,
+            "refreshToken": access_token,
+        },
+        "user": user_to_response(user),
+        "success": True,
+    }
 
 
 @router.post("/register")
@@ -251,6 +278,8 @@ async def register(request: RegisterRequest):
         "profileImage": request.profileImage,
         "totalSurface": request.totalSurface,
         "soilType": request.soilType,
+        "role": "user",
+        "plan": "free",
         "createdAt": datetime.utcnow(),
     }
     
@@ -368,3 +397,129 @@ async def delete_account(
         "success": True,
         "message": "Votre compte a été supprimé définitivement"
     }
+
+
+# ============ Plan Routes (User) ============
+
+ALLOWED_PLANS = {"free", "premium", "enterprise"}
+
+
+@router.put("/me/plan")
+async def update_my_plan(
+    request: UpdatePlanRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """Allow the logged-in user to choose his subscription plan."""
+    plan = request.plan.lower().strip()
+    if plan not in ALLOWED_PLANS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Plan invalide. Plans disponibles : {', '.join(sorted(ALLOWED_PLANS))}"
+        )
+
+    database = await get_database()
+    await database.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": {"plan": plan, "planUpdatedAt": datetime.utcnow()}}
+    )
+
+    updated = await database.users.find_one({"_id": current_user["_id"]})
+    return {"success": True, "data": user_to_response(updated)}
+
+
+# ============ Admin Routes ============
+
+@router.get("/admin/stats")
+async def admin_stats(_: dict = Depends(require_admin)):
+    """Aggregate stats for the admin dashboard."""
+    database = await get_database()
+    total_users = await database.users.count_documents({})
+    admins = await database.users.count_documents({"role": "admin"})
+    free_users = await database.users.count_documents({"plan": {"$in": ["free", None]}})
+    premium_users = await database.users.count_documents({"plan": "premium"})
+    enterprise_users = await database.users.count_documents({"plan": "enterprise"})
+    try:
+        analyses_count = await database.analyses.count_documents({})
+    except Exception:
+        analyses_count = 0
+    try:
+        regions_count = await database.regions.count_documents({})
+    except Exception:
+        regions_count = 0
+
+    return {
+        "success": True,
+        "data": {
+            "totalUsers": total_users,
+            "admins": admins,
+            "plans": {
+                "free": free_users,
+                "premium": premium_users,
+                "enterprise": enterprise_users,
+            },
+            "analyses": analyses_count,
+            "regions": regions_count,
+        }
+    }
+
+
+@router.get("/admin/users")
+async def admin_list_users(_: dict = Depends(require_admin)):
+    """List every registered user with role + plan."""
+    database = await get_database()
+    cursor = database.users.find().sort("createdAt", -1)
+    users = [user_to_response(u) async for u in cursor]
+    return {"success": True, "data": users}
+
+
+@router.put("/admin/users/{user_id}/plan")
+async def admin_update_user_plan(
+    user_id: str,
+    request: AdminUpdatePlanRequest,
+    _: dict = Depends(require_admin),
+):
+    """Admin changes a user's subscription plan."""
+    plan = request.plan.lower().strip()
+    if plan not in ALLOWED_PLANS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Plan invalide. Plans disponibles : {', '.join(sorted(ALLOWED_PLANS))}"
+        )
+
+    database = await get_database()
+    try:
+        oid = ObjectId(user_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Identifiant utilisateur invalide")
+
+    result = await database.users.update_one(
+        {"_id": oid},
+        {"$set": {"plan": plan, "planUpdatedAt": datetime.utcnow()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+
+    updated = await database.users.find_one({"_id": oid})
+    return {"success": True, "data": user_to_response(updated)}
+
+
+@router.delete("/admin/users/{user_id}")
+async def admin_delete_user(
+    user_id: str,
+    current_admin: dict = Depends(require_admin),
+):
+    """Admin removes a user account."""
+    database = await get_database()
+    try:
+        oid = ObjectId(user_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Identifiant utilisateur invalide")
+
+    if oid == current_admin["_id"]:
+        raise HTTPException(status_code=400, detail="Vous ne pouvez pas supprimer votre propre compte admin")
+
+    result = await database.users.delete_one({"_id": oid})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+
+    return {"success": True, "message": "Utilisateur supprimé"}

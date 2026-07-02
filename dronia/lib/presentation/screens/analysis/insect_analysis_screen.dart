@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../data/network/api_client.dart';
@@ -55,80 +56,109 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
         .trim();
   }
 
+  // Local persistence — the VPS ML endpoint does not (yet) auto-save
+  // analyses to the user's history, so we mirror them in SharedPreferences
+  // and rehydrate on every app launch.
+  static const String _localHistoryKey = 'insect_analyses_history';
+
   @override
   void initState() {
     super.initState();
-    _loadStatsFromBackend();
+    _loadLocalHistory().then((_) => _loadStatsFromBackend());
+  }
+
+  Future<void> _loadLocalHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_localHistoryKey);
+    if (raw == null || raw.isEmpty) return;
+    try {
+      final list = (json.decode(raw) as List)
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+      setState(() {
+        _allAnalyses = list;
+        _analysesWithInsectsList = list
+            .where(
+              (a) =>
+                  a['hasInsects'] == true ||
+                  (a['totalCount'] ?? 0) > 0 ||
+                  ((a['detections'] as List?)?.isNotEmpty ?? false),
+            )
+            .toList();
+        _totalAnalyses = _allAnalyses.length;
+        _analysesWithInsects = _analysesWithInsectsList.length;
+      });
+    } catch (_) {
+      // ignore corrupted cache
+    }
+  }
+
+  Future<void> _persistLocalHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_localHistoryKey, json.encode(_allAnalyses));
   }
 
   Future<void> _loadStatsFromBackend() async {
     setState(() => _isLoadingHistory = true);
     try {
-      // Load stats
-      final statsResponse = await _api.get('/analyses/insects/stats');
-      if (statsResponse['success'] == true && statsResponse['stats'] != null) {
-        final stats = statsResponse['stats'];
-        setState(() {
-          _totalAnalyses = stats['totalAnalyses'] ?? 0;
-          _analysesWithInsects = stats['analysesWithInsects'] ?? 0;
-          _totalInsectsDetected = stats['totalInsectsDetected'] ?? 0;
-          _topInsects = List<Map<String, dynamic>>.from(
-            stats['topInsects'] ?? [],
-          );
-        });
-        debugPrint(
-          '📊 Stats loaded: $_totalAnalyses analyses, top insects: $_topInsects',
-        );
-      }
-
-      // Load all analyses history
+      // VPS only exposes the list (GET /api/insects) — no /stats route.
+      // We aggregate counts client-side from the returned analyses.
+      // VPS returns `{success, data: [...]}`; older Render returned
+      // `{success, analyses: [...]}`. Accept both, and also merge the
+      // locally-persisted analyses so the counters stay in sync with the
+      // history bottom sheet (which uses the same merge logic).
       final historyResponse = await _api.get(
-        '/analyses/insects',
+        '/insects',
         queryParams: {'limit': 50},
       );
+      final dynamic remoteRaw = historyResponse['data'] ??
+          historyResponse['analyses'] ??
+          historyResponse['insects'] ??
+          historyResponse['items'];
+      final remoteList = remoteRaw is List
+          ? remoteRaw.map((e) => Map<String, dynamic>.from(e as Map)).toList()
+          : <Map<String, dynamic>>[];
+
+      // Merge with the local cache we already loaded in _loadLocalHistory.
+      final seen = <String>{};
+      final merged = <Map<String, dynamic>>[];
+      for (final a in [..._allAnalyses, ...remoteList]) {
+        final id = (a['id'] ?? a['_id'] ?? '').toString();
+        if (id.isEmpty || seen.add(id)) merged.add(a);
+      }
       debugPrint(
-        '📋 History response: ${historyResponse['success']}, count: ${(historyResponse['analyses'] as List?)?.length ?? 0}',
+        '📋 Stats: local=${_allAnalyses.length} remote=${remoteList.length} '
+        'merged=${merged.length}',
       );
 
-      if (historyResponse['success'] == true &&
-          historyResponse['analyses'] != null) {
-        final analysesList = List<Map<String, dynamic>>.from(
-          historyResponse['analyses'],
-        );
-        debugPrint('📋 Parsed ${analysesList.length} analyses');
-
-        // Debug: print each analysis hasInsects status
-        for (var a in analysesList) {
-          debugPrint(
-            '   Analysis hasInsects: ${a['hasInsects']} (${a['hasInsects'].runtimeType}), totalCount: ${a['totalCount']}',
-          );
-        }
-
-        setState(() {
-          _allAnalyses = analysesList;
-          _analysesWithInsectsList = analysesList
-              .where(
-                (a) =>
-                    a['hasInsects'] == true ||
-                    a['hasInsects'] == 'true' ||
-                    (a['totalCount'] ?? 0) > 0 ||
-                    ((a['detections'] as List?)?.isNotEmpty ?? false),
-              )
-              .toList();
-        });
-        debugPrint(
-          '📋 Analyses with insects: ${_analysesWithInsectsList.length}',
-        );
-        if (_allAnalyses.isNotEmpty) {
-          debugPrint(
-            '   First analysis detections: ${_allAnalyses.first['detections']}',
-          );
-        }
+      bool hasInsects(Map<String, dynamic> a) {
+        if (a['hasInsects'] == true || a['hasInsects'] == 'true') return true;
+        final tc =
+            a['totalCount'] ?? a['total_insects'] ?? a['total_detections'];
+        if (tc is num && tc > 0) return true;
+        final det = a['detections'];
+        if (det is List && det.isNotEmpty) return true;
+        return false;
       }
+
+      final withInsects = merged.where(hasInsects).toList();
+      int totalDetected = 0;
+      for (final a in withInsects) {
+        final det = a['detections'];
+        if (det is List) totalDetected += det.length;
+      }
+
+      setState(() {
+        _allAnalyses = merged;
+        _analysesWithInsectsList = withInsects;
+        _totalAnalyses = merged.length;
+        _analysesWithInsects = withInsects.length;
+        _totalInsectsDetected = totalDetected;
+      });
     } catch (e) {
       debugPrint('Error loading stats: $e');
     } finally {
-      setState(() => _isLoadingHistory = false);
+      if (mounted) setState(() => _isLoadingHistory = false);
     }
   }
 
@@ -144,39 +174,36 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
         imageBase64 = base64Encode(bytes);
       }
 
-      // Build detections list for storage
+      // Preserve EVERY field returned by the VPS so the detail view can
+      // mirror what the web shows (class index, normalized coords, etc.).
       final formattedDetections = detections
-          .map(
-            (d) => {
-              'className': d['class'] ?? '',
-              'confidence': d['confidence'] ?? 0.0,
-              'bbox': d['bbox'],
-              'dangerLevel': d['danger_level'],
-              'impact': d['impact'],
-              'treatment': d['treatment'],
-              'prevention': d['prevention'],
-            },
-          )
+          .map((d) => {
+                ...Map<String, dynamic>.from(d as Map),
+                // Mobile-friendly aliases for legacy widgets.
+                'className': d['class_name'] ??
+                    d['class_french'] ??
+                    d['class']?.toString() ??
+                    '',
+                'dangerLevel': d['danger_level'],
+                'impact': d['impact'],
+                'treatment': d['treatment'],
+                'prevention': d['prevention'],
+              })
           .toList();
 
-      final body = {
-        'imageBase64': imageBase64,
-        'detections': formattedDetections,
-        'totalCount': result['total_count'] ?? detections.length,
-        'dangerLevel': result['danger_level'] ?? 'Aucun',
-        'hasInsects': hasInsects,
-      };
-
-      await _api.post('/analyses/insects', body: body);
-
-      // Add to local lists immediately for instant UI update
+      // Add to local lists immediately for instant UI update.
       final localAnalysis = {
         'id': DateTime.now().millisecondsSinceEpoch.toString(),
         'imageBase64': imageBase64,
         'detections': formattedDetections,
-        'totalCount': result['total_count'] ?? detections.length,
+        'totalCount': result['total_insects'] ??
+            result['total_detections'] ??
+            result['total_count'] ??
+            detections.length,
         'dangerLevel': result['danger_level'] ?? 'Aucun',
         'hasInsects': hasInsects,
+        'imageWidth': result['image_width'],
+        'imageHeight': result['image_height'],
         'createdAt': DateTime.now().toIso8601String(),
       };
 
@@ -205,6 +232,10 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
           }
         }
       });
+
+      // Persist locally so the analysis survives an app restart (the VPS
+      // does not yet auto-save through the ML endpoint).
+      await _persistLocalHistory();
 
       // Also reload from backend to ensure sync
       _loadStatsFromBackend();
@@ -240,18 +271,33 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
     setState(() => _isAnalyzing = true);
 
     try {
-      final uri = Uri.parse('${AppConstants.baseUrl}/analyze/insects');
+      // VPS ML API: POST /ml-api/predict/insects (multipart upload, field name "file").
+      // ⚠ First call is slow (~30s) — YOLO11s insect model lazy-loads on first request.
+      final uri = Uri.parse('${AppConstants.mlBaseUrl}/predict/insects');
       final request = http.MultipartRequest('POST', uri);
 
+      // Attach the JWT so the VPS can persist the analysis under the current
+      // user (the GET /api/insects history endpoint relies on this).
+      final token = await StorageService().getToken();
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+
       request.files.add(
-        await http.MultipartFile.fromPath('image', _selectedImage!.path),
+        await http.MultipartFile.fromPath('file', _selectedImage!.path),
       );
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
-        final result = json.decode(response.body);
+        final result = json.decode(response.body) as Map<String, dynamic>;
+        // ignore: avoid_print
+        print('🪲 /predict/insects response keys: ${result.keys.toList()}');
+        if (result['detections'] is List && (result['detections'] as List).isNotEmpty) {
+          // ignore: avoid_print
+          print('🪲 first detection keys: ${(result['detections'] as List).first}');
+        }
         setState(() {
           _analysisResult = result;
         });
@@ -1157,9 +1203,9 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
     Map<String, dynamic> analysis,
   ) async {
     try {
-      if (analysisId != null) {
-        await _api.delete('/analyses/insects/$analysisId');
-      }
+      // VPS does not expose DELETE for insect analyses — keep the local
+      // removal only. The server-side history will not reflect this until
+      // the backend adds DELETE /api/insects/:id.
 
       // Remove from local lists
       setState(() {
@@ -2259,8 +2305,13 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
   Widget _buildResultsCard() {
     final detections = _analysisResult?['detections'] as List? ?? [];
     final hasInsects = detections.isNotEmpty;
-    final dangerLevel = _analysisResult?['danger_level'] ?? 'Aucun';
-    final totalCount = _analysisResult?['total_count'] ?? 0;
+    final dangerLevel = (_analysisResult?['danger_level'] ?? 'Aucun').toString();
+    // VPS returns `total_detections`; older Render returned `total_count`.
+    // Fall back to the detected list length so the count is never out of sync.
+    final totalCount = _analysisResult?['total_insects'] ??
+        _analysisResult?['total_detections'] ??
+        _analysisResult?['total_count'] ??
+        detections.length;
 
     Color dangerColor;
     IconData dangerIcon;
@@ -2368,7 +2419,11 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
             ),
           ),
 
-          // Image with bounding boxes preview
+          // Image with bounding boxes preview.
+          // The VPS returns `image_with_boxes` — a base64 PNG with the
+          // detections already drawn — so we render that directly. Falls
+          // back to the raw user image + client-side painter when the field
+          // is missing (legacy backend).
           if (_selectedImage != null && hasInsects) ...[
             Container(
               margin: const EdgeInsets.all(12),
@@ -2385,32 +2440,69 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Stack(
-                  children: [
-                    Image.file(
-                      _selectedImage!,
-                      height: 180,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                    // Overlay bounding boxes
-                    Positioned.fill(
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          return CustomPaint(
-                            painter: _BoundingBoxPainter(
-                              detections: detections
-                                  .map((d) => d as Map<String, dynamic>)
-                                  .toList(),
-                              imageWidth: constraints.maxWidth,
-                              imageHeight: constraints.maxHeight,
-                            ),
-                          );
-                        },
+                child: Builder(builder: (_) {
+                  final annotated = _analysisResult?['image_with_boxes']
+                          ?.toString() ??
+                      _analysisResult?['annotated_image']?.toString() ??
+                      _analysisResult?['image_annotated']?.toString();
+                  if (annotated != null && annotated.isNotEmpty) {
+                    // Strip optional `data:image/...;base64,` prefix.
+                    final raw = annotated.contains(',')
+                        ? annotated.split(',').last
+                        : annotated;
+                    try {
+                      final bytes = base64Decode(raw);
+                      return Image.memory(
+                        bytes,
+                        height: 180,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      );
+                    } catch (_) {
+                      // Fall through to the raw image + painter overlay.
+                    }
+                  }
+                  return Stack(
+                    children: [
+                      // contain (not cover) so the source image isn't cropped
+                      // — bbox coordinates from the VPS are relative to the
+                      // FULL image, so cropping would misalign the rectangles.
+                      Image.file(
+                        _selectedImage!,
+                        height: 180,
+                        width: double.infinity,
+                        fit: BoxFit.contain,
                       ),
-                    ),
-                  ],
-                ),
+                      Positioned.fill(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            // Pass the SOURCE image dimensions (from the VPS
+                            // response) so the painter can scale pixel-bbox
+                            // detections to the canvas. Falls back to 0 when
+                            // absent — the painter then assumes normalized.
+                            final srcW = (_analysisResult?['image_width']
+                                        as num?)
+                                    ?.toDouble() ??
+                                0;
+                            final srcH = (_analysisResult?['image_height']
+                                        as num?)
+                                    ?.toDouble() ??
+                                0;
+                            return CustomPaint(
+                              painter: _BoundingBoxPainter(
+                                detections: detections
+                                    .map((d) => d as Map<String, dynamic>)
+                                    .toList(),
+                                imageWidth: srcW,
+                                imageHeight: srcH,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                }),
               ),
             ),
           ],
@@ -2492,12 +2584,24 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
   }
 
   Widget _buildDetectionTile(Map<String, dynamic> detection) {
-    final className = detection['class'] ?? 'Inconnu';
-    final confidence = ((detection['confidence'] ?? 0.0) * 100).toInt();
-    final dangerLevel = detection['danger_level'] ?? 'Modéré';
-    final impact = detection['impact'] ?? '';
-    final treatment = detection['treatment'] ?? '';
-    final prevention = detection['prevention'] ?? '';
+    // VPS YOLO returns the species in `class_name` (e.g. "Icerya Purchasi Maskell")
+    // and the numeric IP102 index in `class` (e.g. 76). Show the human name
+    // when available, otherwise fall back to the index. Everything goes
+    // through toString() so the widget tree never sees an int where a
+    // String is expected.
+    final className = (detection['class_name'] ??
+            detection['class_french'] ??
+            detection['species'] ??
+            detection['name'] ??
+            detection['label'] ??
+            detection['class'] ??
+            'Inconnu')
+        .toString();
+    final confidence = (((detection['confidence'] ?? 0.0) as num) * 100).toInt();
+    final dangerLevel = (detection['danger_level'] ?? 'Modéré').toString();
+    final impact = (detection['impact'] ?? '').toString();
+    final treatment = (detection['treatment'] ?? '').toString();
+    final prevention = (detection['prevention'] ?? '').toString();
 
     Color dangerColor;
     switch (dangerLevel) {
@@ -2577,6 +2681,9 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
         iconColor: context.colors.textSecondary,
         collapsedIconColor: context.colors.textSecondary,
         children: [
+          // Detection geometry — mirrors what the web shows: class index,
+          // pixel position/dimensions, coverage and normalized coordinates.
+          _buildDetectionGeometry(detection),
           // Impact
           if (impact.isNotEmpty)
             _buildInfoSection(
@@ -2601,6 +2708,104 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
               value: prevention,
               color: AppColors.info,
             ),
+        ],
+      ),
+    );
+  }
+
+  /// Web-parity detection geometry block:
+  /// `Classe`, `Position`, `Dimensions`, `Couverture`, `Coordonnées normalisées`.
+  Widget _buildDetectionGeometry(Map<String, dynamic> detection) {
+    final classIndex = detection['class'];
+    final bbox = detection['bbox'];
+    final norm = detection['bbox_normalized'];
+
+    double? x1, y1, x2, y2;
+    if (bbox is Map) {
+      x1 = (bbox['x1'] as num?)?.toDouble();
+      y1 = (bbox['y1'] as num?)?.toDouble();
+      x2 = (bbox['x2'] as num?)?.toDouble();
+      y2 = (bbox['y2'] as num?)?.toDouble();
+    } else if (bbox is List && bbox.length >= 4) {
+      x1 = (bbox[0] as num).toDouble();
+      y1 = (bbox[1] as num).toDouble();
+      x2 = (bbox[2] as num).toDouble();
+      y2 = (bbox[3] as num).toDouble();
+    }
+
+    double? cx, cy, w, h;
+    if (norm is Map) {
+      cx = (norm['cx'] as num?)?.toDouble();
+      cy = (norm['cy'] as num?)?.toDouble();
+      w = (norm['w'] as num?)?.toDouble();
+      h = (norm['h'] as num?)?.toDouble();
+    }
+
+    final px = x1?.round();
+    final py = y1?.round();
+    final width = (x1 != null && x2 != null) ? (x2 - x1).round() : null;
+    final height = (y1 != null && y2 != null) ? (y2 - y1).round() : null;
+    final coverage = (w != null && h != null)
+        ? (w * h * 100).toStringAsFixed(2)
+        : null;
+
+    final rows = <Widget>[];
+    if (classIndex != null) {
+      rows.add(_geomRow('Classe', classIndex.toString()));
+    }
+    if (px != null && py != null) {
+      rows.add(_geomRow('Position', '($px, $py)'));
+    }
+    if (width != null && height != null) {
+      rows.add(_geomRow('Dimensions', '$width × $height px'));
+    }
+    if (coverage != null) {
+      rows.add(_geomRow('Couverture', '$coverage%'));
+    }
+    if (cx != null && cy != null && w != null && h != null) {
+      rows.add(_geomRow(
+        'Coordonnées normalisées',
+        'Centre: (${cx.toStringAsFixed(3)}, ${cy.toStringAsFixed(3)})  |  '
+            'Taille: ${w.toStringAsFixed(3)} × ${h.toStringAsFixed(3)}',
+      ));
+    }
+    if (rows.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: rows,
+      ),
+    );
+  }
+
+  Widget _geomRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 110,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: context.colors.textSecondary,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                color: context.colors.textPrimary,
+                fontSize: 12,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -3052,29 +3257,89 @@ class _BoundingBoxPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Compute the displayed image rect when BoxFit.contain is in use:
+    // the image is letterboxed inside `size` and we must align the bbox
+    // overlay to the visible area, not to the full canvas.
+    double dispW = size.width;
+    double dispH = size.height;
+    double offX = 0;
+    double offY = 0;
+    if (imageWidth > 0 && imageHeight > 0) {
+      final canvasAspect = size.width / size.height;
+      final srcAspect = imageWidth / imageHeight;
+      if (srcAspect > canvasAspect) {
+        dispW = size.width;
+        dispH = size.width / srcAspect;
+        offY = (size.height - dispH) / 2;
+      } else {
+        dispH = size.height;
+        dispW = size.height * srcAspect;
+        offX = (size.width - dispW) / 2;
+      }
+    }
+
     for (int i = 0; i < detections.length; i++) {
       final detection = detections[i];
-      final bbox = detection['bbox'] as Map<String, dynamic>?;
-      if (bbox == null) continue;
 
-      final dangerLevel = detection['danger_level'] ?? 'Modéré';
-      Color boxColor;
-      switch (dangerLevel) {
-        case 'Élevé':
-          boxColor = Color(0xFFE53935); // Red
-          break;
-        case 'Modéré':
-          boxColor = Color(0xFFFF9800); // Orange
-          break;
-        default:
-          boxColor = Color(0xFF2196F3); // Blue
+      // VPS shape: bbox_normalized = {cx, cy, w, h} (all 0..1)
+      // and bbox = {x1, y1, x2, y2} in source-image pixels.
+      // Prefer the normalized version — it's resolution-independent.
+      double? x1, y1, x2, y2;
+
+      final normalized = detection['bbox_normalized'];
+      if (normalized is Map<String, dynamic>) {
+        final cx = (normalized['cx'] as num?)?.toDouble();
+        final cy = (normalized['cy'] as num?)?.toDouble();
+        final w = (normalized['w'] as num?)?.toDouble();
+        final h = (normalized['h'] as num?)?.toDouble();
+        if (cx != null && cy != null && w != null && h != null) {
+          x1 = offX + (cx - w / 2) * dispW;
+          y1 = offY + (cy - h / 2) * dispH;
+          x2 = offX + (cx + w / 2) * dispW;
+          y2 = offY + (cy + h / 2) * dispH;
+        }
       }
 
-      // Convert percentage to pixels
-      final x1 = (bbox['x1'] as num).toDouble() / 100 * size.width;
-      final y1 = (bbox['y1'] as num).toDouble() / 100 * size.height;
-      final x2 = (bbox['x2'] as num).toDouble() / 100 * size.width;
-      final y2 = (bbox['y2'] as num).toDouble() / 100 * size.height;
+      if (x1 == null) {
+        final bbox = detection['bbox'];
+        if (bbox is Map<String, dynamic>) {
+          final px1 = (bbox['x1'] as num?)?.toDouble();
+          final py1 = (bbox['y1'] as num?)?.toDouble();
+          final px2 = (bbox['x2'] as num?)?.toDouble();
+          final py2 = (bbox['y2'] as num?)?.toDouble();
+          if (px1 != null && py1 != null && px2 != null && py2 != null) {
+            if (imageWidth > 0 && imageHeight > 0 &&
+                (px2 > 1.0 || py2 > 1.0)) {
+              x1 = offX + px1 / imageWidth * dispW;
+              y1 = offY + py1 / imageHeight * dispH;
+              x2 = offX + px2 / imageWidth * dispW;
+              y2 = offY + py2 / imageHeight * dispH;
+            } else {
+              x1 = px1 / 100 * size.width;
+              y1 = py1 / 100 * size.height;
+              x2 = px2 / 100 * size.width;
+              y2 = py2 / 100 * size.height;
+            }
+          }
+        } else if (bbox is List && bbox.length >= 4) {
+          final px1 = (bbox[0] as num).toDouble();
+          final py1 = (bbox[1] as num).toDouble();
+          final px2 = (bbox[2] as num).toDouble();
+          final py2 = (bbox[3] as num).toDouble();
+          if (imageWidth > 0 && imageHeight > 0 && (px2 > 1.0 || py2 > 1.0)) {
+            x1 = offX + px1 / imageWidth * dispW;
+            y1 = offY + py1 / imageHeight * dispH;
+            x2 = offX + px2 / imageWidth * dispW;
+            y2 = offY + py2 / imageHeight * dispH;
+          }
+        }
+      }
+
+      if (x1 == null || y1 == null || x2 == null || y2 == null) continue;
+
+      // All insect detections from the VPS get a red box (the web mirrors
+      // this — every detected pest is flagged in red regardless of danger).
+      final boxColor = const Color(0xFFE53935);
 
       final rect = Rect.fromLTRB(x1, y1, x2, y2);
 
@@ -3092,8 +3357,15 @@ class _BoundingBoxPainter extends CustomPainter {
       canvas.drawRect(rect, fillPaint);
 
       // Draw label background
-      final className = detection['class'] ?? 'Insecte';
-      final confidence = ((detection['confidence'] ?? 0.0) * 100).toInt();
+      final className = (detection['class_name'] ??
+              detection['class_french'] ??
+              detection['species'] ??
+              detection['name'] ??
+              detection['class'] ??
+              'Insecte')
+          .toString();
+      final confidence =
+          (((detection['confidence'] ?? 0.0) as num) * 100).toInt();
       final labelText = '$className ($confidence%)';
 
       final textStyle = TextStyle(
@@ -3178,57 +3450,77 @@ class _StatefulHistoryBottomSheetState
       _error = null;
     });
 
+    // 1. Local cache — survives app restarts even when the VPS doesn't auto-save.
+    List<Map<String, dynamic>> local = [];
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('insect_analyses_history');
+      if (raw != null && raw.isNotEmpty) {
+        local = (json.decode(raw) as List)
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      }
+    } catch (_) {/* ignore */}
+
+    // 2. Server-side history — accept several response shapes.
+    List<Map<String, dynamic>> remote = [];
     try {
       final response = await widget.api.get(
-        '/analyses/insects',
+        '/insects',
         queryParams: {'limit': 100},
       );
-
-      debugPrint(
-        '📋 History API response: success=${response['success']}, analyses count=${(response['analyses'] as List?)?.length ?? 0}',
-      );
-
-      if (response['success'] == true && response['analyses'] != null) {
-        final List<Map<String, dynamic>> analysesList =
-            List<Map<String, dynamic>>.from(response['analyses']);
-
-        // Debug each analysis
-        for (var a in analysesList) {
-          debugPrint(
-            '   Analysis: id=${a['id']}, hasInsects=${a['hasInsects']}, totalCount=${a['totalCount']}, detections=${(a['detections'] as List?)?.length ?? 0}',
-          );
-        }
-
-        setState(() {
-          if (widget.filterWithInsects) {
-            _analyses = analysesList
-                .where(
-                  (a) =>
-                      a['hasInsects'] == true ||
-                      (a['totalCount'] ?? 0) > 0 ||
-                      ((a['detections'] as List?)?.isNotEmpty ?? false),
-                )
-                .toList();
-          } else {
-            _analyses = analysesList;
-          }
-          _isLoading = false;
-        });
-
-        debugPrint('📋 Filtered analyses: ${_analyses.length}');
-      } else {
-        setState(() {
-          _isLoading = false;
-          _error = 'Impossible de charger l\'historique';
-        });
+      final dynamic listRaw = response['analyses'] ??
+          response['data'] ??
+          response['insects'] ??
+          response['items'] ??
+          response['results'];
+      if (listRaw is List) {
+        remote = listRaw
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
       }
+      debugPrint(
+        '📋 History API: success=${response['success']}, '
+        'keys=${response is Map ? response.keys.toList() : 'n/a'}, '
+        'parsed=${remote.length}',
+      );
     } catch (e) {
-      debugPrint('❌ Error loading history: $e');
-      setState(() {
-        _isLoading = false;
-        _error = 'Erreur: $e';
-      });
+      debugPrint('❌ Error loading remote history: $e');
     }
+
+    // 3. Merge: prefer the local cache (it has the freshest analyses since
+    // the VPS ML endpoint doesn't auto-persist yet). Remote entries are
+    // appended after, de-duplicated by id when both sources agree.
+    final seen = <String>{};
+    final merged = <Map<String, dynamic>>[];
+    for (final a in [...local, ...remote]) {
+      final id = (a['id'] ?? a['_id'] ?? '').toString();
+      if (id.isEmpty || seen.add(id)) merged.add(a);
+    }
+
+    bool hasInsects(Map<String, dynamic> a) {
+      if (a['hasInsects'] == true) return true;
+      final tc = a['totalCount'] ?? a['total_insects'] ?? a['total_detections'];
+      if (tc is num && tc > 0) return true;
+      final det = a['detections'];
+      if (det is List && det.isNotEmpty) return true;
+      return false;
+    }
+
+    final filtered = widget.filterWithInsects
+        ? merged.where(hasInsects).toList()
+        : merged;
+
+    if (!mounted) return;
+    setState(() {
+      _analyses = filtered;
+      _isLoading = false;
+      _error = null;
+    });
+    debugPrint(
+      '📋 History merged: local=${local.length} remote=${remote.length} '
+      'filtered=${filtered.length}',
+    );
   }
 
   @override

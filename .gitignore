@@ -21,6 +21,11 @@ __pycache__/
 .env
 *.egg-info/
 
+# Large model weights (auto-downloaded from HF Hub, >100MB — GitHub rejects)
+dronia/backend/models/combined/vit_combined_best.pth
+dronia/backend/models/vit_plantdoc_best.pth
+dronia/backend/models/vit-base-patch16-224-in21k/
+
 # OS
 .DS_Store
 Thumbs.db

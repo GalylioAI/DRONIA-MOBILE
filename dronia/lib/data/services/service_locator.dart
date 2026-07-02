@@ -1,6 +1,7 @@
 import '../network/api_client.dart';
 import 'storage_service.dart';
 import 'auth_service_new.dart';
+import 'admin_service.dart';
 import 'crop_service.dart';
 import 'prediction_service.dart';
 import 'soil_data_service.dart';
@@ -23,6 +24,7 @@ class ServiceLocator {
   StorageService? _storageService;
   ApiClient? _apiClient;
   AuthService? _authService;
+  AdminService? _adminService;
   CropService? _cropService;
   PredictionService? _predictionService;
   SoilDataService? _soilDataService;
@@ -47,6 +49,7 @@ class ServiceLocator {
       apiClient: _apiClient!,
       storageService: _storageService!,
     );
+    _adminService = AdminService(apiClient: _apiClient!);
     _cropService = CropService(apiClient: _apiClient!);
     _predictionService = PredictionService(apiClient: _apiClient!);
     _soilDataService = SoilDataService(apiClient: _apiClient!);
@@ -84,6 +87,11 @@ class ServiceLocator {
   AuthService get auth {
     _ensureInitialized();
     return _authService!;
+  }
+
+  AdminService get admin {
+    _ensureInitialized();
+    return _adminService!;
   }
 
   CropService get crops {
@@ -141,6 +149,7 @@ class ServiceLocator {
     _storageService = null;
     _apiClient = null;
     _authService = null;
+    _adminService = null;
     _cropService = null;
     _predictionService = null;
     _soilDataService = null;

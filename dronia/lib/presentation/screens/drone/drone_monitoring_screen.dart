@@ -2764,6 +2764,8 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   SizedBox(height: 8),
                   GestureDetector(
                     onTap: () async {
+                      final isDark =
+                          Theme.of(context).brightness == Brightness.dark;
                       final date = await showDatePicker(
                         context: context,
                         initialDate: DateTime.now().add(
@@ -2773,10 +2775,17 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                         lastDate: DateTime.now().add(Duration(days: 365)),
                         builder: (context, child) {
                           return Theme(
-                            data: ThemeData.dark().copyWith(
-                              colorScheme: ColorScheme.dark(
+                            data: (isDark
+                                    ? ThemeData.dark()
+                                    : ThemeData.light())
+                                .copyWith(
+                              colorScheme: (isDark
+                                      ? const ColorScheme.dark()
+                                      : const ColorScheme.light())
+                                  .copyWith(
                                 primary: AppColors.primaryGreen,
                                 surface: context.colors.card,
+                                onSurface: context.colors.textPrimary,
                               ),
                             ),
                             child: child!,
@@ -2834,15 +2843,24 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   SizedBox(height: 8),
                   GestureDetector(
                     onTap: () async {
+                      final isDark =
+                          Theme.of(context).brightness == Brightness.dark;
                       final time = await showTimePicker(
                         context: context,
                         initialTime: TimeOfDay.now(),
                         builder: (context, child) {
                           return Theme(
-                            data: ThemeData.dark().copyWith(
-                              colorScheme: ColorScheme.dark(
+                            data: (isDark
+                                    ? ThemeData.dark()
+                                    : ThemeData.light())
+                                .copyWith(
+                              colorScheme: (isDark
+                                      ? const ColorScheme.dark()
+                                      : const ColorScheme.light())
+                                  .copyWith(
                                 primary: AppColors.primaryGreen,
                                 surface: context.colors.card,
+                                onSurface: context.colors.textPrimary,
                               ),
                             ),
                             child: child!,

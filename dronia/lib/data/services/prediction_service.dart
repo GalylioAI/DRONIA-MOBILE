@@ -10,8 +10,8 @@ class PredictionService {
 
   PredictionService({required ApiClient apiClient}) : _apiClient = apiClient;
 
-  /// Analyze an image for disease detection
-  /// Sends image to /api/analyze endpoint
+  /// Analyze an image for plant disease detection.
+  /// Calls the VPS ML API (`POST /ml-api/classify/base64`).
   Future<Prediction> analyzeImage({
     required File imageFile,
     required String region,
@@ -20,30 +20,22 @@ class PredictionService {
     String? diseaseSuspected,
     bool saveToHistory = true,
   }) async {
-    // Convert image to base64
     final bytes = await imageFile.readAsBytes();
     final base64Image = base64Encode(bytes);
-
-    final response = await _apiClient.post(
-      ApiEndpoints.analyze,
-      body: AnalyzeRequest(
-        image: base64Image,
-        region: region,
-        lat: lat,
-        lng: lng,
-        diseaseSuspected: diseaseSuspected,
-        saveToHistory: saveToHistory,
-      ).toJson(),
+    return analyzeBase64Image(
+      base64Image: base64Image,
+      region: region,
+      lat: lat,
+      lng: lng,
+      diseaseSuspected: diseaseSuspected,
+      saveToHistory: saveToHistory,
     );
-
-    // The analyze endpoint returns the prediction directly
-    if (response['data'] != null) {
-      return Prediction.fromJson(response['data'] as Map<String, dynamic>);
-    }
-    return Prediction.fromJson(response as Map<String, dynamic>);
   }
 
-  /// Analyze a base64 encoded image
+  /// Analyze a base64-encoded image with the VPS ML API.
+  /// The ML endpoint only runs inference — it does not persist anything;
+  /// the [region]/[lat]/[lng] context is attached client-side to keep the
+  /// returned [Prediction] shape compatible with the rest of the app.
   Future<Prediction> analyzeBase64Image({
     required String base64Image,
     required String region,
@@ -52,22 +44,46 @@ class PredictionService {
     String? diseaseSuspected,
     bool saveToHistory = true,
   }) async {
-    final response = await _apiClient.post(
-      ApiEndpoints.analyze,
-      body: AnalyzeRequest(
-        image: base64Image,
-        region: region,
-        lat: lat,
-        lng: lng,
-        diseaseSuspected: diseaseSuspected,
-        saveToHistory: saveToHistory,
-      ).toJson(),
+    final response = await _apiClient.postForm(
+      ApiEndpoints.mlClassifyBase64,
+      fields: {'image': base64Image},
+      requiresAuth: false,
+      baseUrl: AppConstants.mlBaseUrl,
     );
 
-    if (response['data'] != null) {
-      return Prediction.fromJson(response['data'] as Map<String, dynamic>);
-    }
-    return Prediction.fromJson(response as Map<String, dynamic>);
+    final mlMap = response as Map<String, dynamic>;
+    final predictions = (mlMap['predictions'] as List?) ?? const [];
+    final top = predictions.isNotEmpty
+        ? predictions.first as Map<String, dynamic>
+        : <String, dynamic>{};
+
+    final disease = (top['class_french'] ?? top['class'] ?? 'Inconnu').toString();
+    final rawConfidence = (top['confidence'] as num?)?.toDouble() ?? 0.0;
+    final confidence = rawConfidence > 1 ? rawConfidence / 100 : rawConfidence;
+    final isHealthy = disease.toLowerCase().contains('sain') ||
+        disease.toLowerCase().contains('healthy');
+
+    return Prediction.fromJson({
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'userId': '',
+      'region': region,
+      'location': {'lat': lat, 'lng': lng},
+      'diseaseSuspected': diseaseSuspected,
+      'createdAt': DateTime.now().toIso8601String(),
+      'result': {
+        'disease': disease,
+        'diseaseClass': top['class'],
+        'confidence': confidence,
+        'severity': isHealthy ? 'Nulle' : 'Modérée',
+        'status': isHealthy ? 'Sain' : 'Malade',
+        'generalStatus': isHealthy ? 'Saine' : 'Malade',
+        'predictionSource': mlMap['model_used'] ?? 'EfficientNet',
+        'recommendations': {
+          'treatment': top['treatment'] ?? '',
+          'prevention': top['prevention'] ?? '',
+        },
+      },
+    });
   }
 
   /// Get all predictions for the current user

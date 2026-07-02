@@ -252,11 +252,17 @@ class AnalysisHistoryService {
 
   // ============ Backend API Methods ============
 
-  /// Save analysis to backend
+  /// Save analysis to backend.
+  /// VPS exposes /api/predictions read-only — the actual persistence happens
+  /// on the ML call when an Authorization header is attached. This method is
+  /// kept as a no-op so callers compile, and so we don't hit Render anymore.
   Future<SavedAnalysis?> saveAnalysisToBackend(SavedAnalysis analysis) async {
+    return null;
+    // Unreachable — preserved for reference if a write endpoint is later added.
+    // ignore: dead_code
     try {
       final response = await _api.post(
-        '/analyses',
+        '/predictions',
         body: {
           'imageBase64': analysis.imageBase64,
           'imagePath': analysis.imagePath,
@@ -301,11 +307,18 @@ class AnalysisHistoryService {
       if (status != null) queryParams['status'] = status;
       if (cropType != null) queryParams['cropType'] = cropType;
 
-      final response = await _api.get('/analyses', queryParams: queryParams);
+      final response = await _api.get(
+        '/predictions',
+        queryParams: queryParams,
+      );
 
-      if (response['success'] == true && response['analyses'] != null) {
-        final List analyses = response['analyses'];
-        return analyses.map((a) => SavedAnalysis.fromJson(a)).toList();
+      // VPS returns `{ success, predictions: [...] }` on success; older
+      // Render returned `{ success, analyses: [...] }`. Accept both.
+      if (response['success'] == true) {
+        final List? list = (response['predictions'] ?? response['analyses']) as List?;
+        if (list != null) {
+          return list.map((a) => SavedAnalysis.fromJson(a)).toList();
+        }
       }
       return [];
     } catch (e) {
@@ -318,7 +331,7 @@ class AnalysisHistoryService {
   /// Get analysis stats from backend
   Future<AnalysisStats?> getStatsFromBackend() async {
     try {
-      final response = await _api.get('/analyses/stats');
+      final response = await _api.get('/predictions/stats');
       if (response['success'] == true && response['stats'] != null) {
         return AnalysisStats.fromJson(response['stats']);
       }
@@ -331,8 +344,11 @@ class AnalysisHistoryService {
   /// Delete analysis from backend
   Future<bool> deleteAnalysisFromBackend(String analysisId) async {
     try {
-      print('DEBUG: Deleting analysis $analysisId from backend...');
-      final response = await _api.delete('/analyses/$analysisId');
+      // VPS does not expose DELETE for predictions. No-op.
+      print('DEBUG: deleteAnalysisFromBackend skipped (no VPS endpoint) for $analysisId');
+      return false;
+      // ignore: dead_code
+      final response = await _api.delete('/predictions/$analysisId');
       print('DEBUG: Delete response: $response');
       return response['success'] == true;
     } catch (e) {
@@ -354,25 +370,62 @@ class AnalysisHistoryService {
     await saveAnalysisToBackend(analysis);
   }
 
-  /// Get all analyses from backend ONLY (no local fallback)
+  /// Get all analyses (backend + local merged).
+  ///
+  /// Toute analyse sauvegardée localement via [saveAnalysis] (bouton
+  /// "Sauvegarder" du wizard) doit apparaître dans la page historique, même
+  /// si :
+  /// - le VPS /predictions est en panne (cas vu en logs : 500),
+  /// - le user vient juste de sauvegarder (delay d'indexation côté VPS),
+  /// - on est hors-ligne.
+  ///
+  /// Stratégie : on prend les deux sources, on déduplique par ID, et on
+  /// retourne la liste triée par date décroissante.
   Future<List<SavedAnalysis>> getAnalyses({
     String? status,
     String? cropType,
   }) async {
+    List<SavedAnalysis> backendAnalyses = const [];
     try {
-      // ONLY use backend data - no local fallback
-      print('DEBUG: Fetching analyses from backend ONLY...');
-      final backendAnalyses = await getAnalysesFromBackend(
+      backendAnalyses = await getAnalysesFromBackend(
         status: status,
         cropType: cropType,
       );
       print('DEBUG: Got ${backendAnalyses.length} analyses from backend');
-      return backendAnalyses;
     } catch (e) {
-      // Return empty list on error - don't use local data
-      print('DEBUG: Backend fetch failed: $e - returning empty list');
-      return [];
+      print('DEBUG: Backend fetch failed: $e - using local only');
     }
+
+    // Toujours inclure les analyses locales (sauvegardées par l'utilisateur).
+    final localAnalyses = await getLocalAnalyses();
+
+    // Filtres optionnels appliqués au local (le backend filtre déjà côté API).
+    final filteredLocal = localAnalyses.where((a) {
+      if (status != null && a.healthStatus != status) return false;
+      if (cropType != null &&
+          a.cropType.toLowerCase() != cropType.toLowerCase()) {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    // Déduplication par id (backend gagne en cas de conflit — données fraîches
+    // canoniques + recommandations enrichies serveur).
+    final merged = <String, SavedAnalysis>{};
+    for (final a in filteredLocal) {
+      merged[a.id] = a;
+    }
+    for (final a in backendAnalyses) {
+      merged[a.id] = a;
+    }
+
+    final result = merged.values.toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    print(
+      'DEBUG: History = ${result.length} '
+      '(backend=${backendAnalyses.length}, local=${filteredLocal.length})',
+    );
+    return result;
   }
 
   /// Clear all local analyses (to remove auto-generated demo data)
@@ -414,14 +467,14 @@ class AnalysisHistoryService {
     await deleteAnalysisFromBackend(analysisId);
   }
 
-  /// Delete ALL analyses from backend
+  /// Delete ALL analyses from backend.
+  /// VPS does not expose a bulk-delete endpoint — clear only the local store.
   Future<bool> deleteAllAnalyses() async {
     try {
-      print('DEBUG: Deleting ALL analyses from backend...');
-      final response = await _api.delete('/analyses');
-      print('DEBUG: Delete all response: $response');
-      // Also clear local storage
       await clearLocalAnalyses();
+      return true;
+      // ignore: dead_code
+      final response = await _api.delete('/predictions');
       return response['success'] == true;
     } catch (e) {
       print('DEBUG: Failed to delete all analyses: $e');

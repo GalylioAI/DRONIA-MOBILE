@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
+import '../../core/constants/app_constants.dart';
 import '../models/field_monitoring_model.dart';
 
 /// Crop Monitoring API Service
@@ -28,7 +29,60 @@ class EosdaApiService {
   EosdaApiService({http.Client? client}) : _client = client ?? http.Client();
 
   // ============================================================
-  // OAUTH2 AUTHENTICATION
+  // VPS PROXY (`/api/field-monitoring`) — preferred entry point.
+  // The previous direct-to-Copernicus path is kept below ONLY for the
+  // pixel-grid / point-sampling helpers that the VPS does not expose.
+  // ============================================================
+
+  /// POST to the VPS field-monitoring endpoint with the given `action` body.
+  /// Throws on non-2xx so callers can fall back to mocked/empty results.
+  Future<Map<String, dynamic>> _callFieldMonitoring(
+    Map<String, dynamic> body,
+  ) async {
+    final uri = Uri.parse(
+      '${AppConstants.baseUrl}${ApiEndpoints.fieldMonitoring}',
+    );
+    final response = await _client
+        .post(
+          uri,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: jsonEncode(body),
+        )
+        .timeout(const Duration(seconds: 60));
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw EosdaApiException(
+        'field-monitoring ${body['action']} → ${response.statusCode}: ${response.body}',
+      );
+    }
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    if (decoded['success'] == false) {
+      throw EosdaApiException(
+        'field-monitoring ${body['action']} → ${decoded['error'] ?? 'unknown error'}',
+      );
+    }
+    return decoded;
+  }
+
+  /// Convert a polygon to the `[[lng, lat], ...]` shape expected by the VPS.
+  /// Sentinel Hub requires a CLOSED ring (last point must equal the first).
+  List<List<double>> _polygonForVps(List<LatLng> polygon) {
+    final ring = polygon.map((p) => [p.longitude, p.latitude]).toList();
+    if (ring.length >= 3) {
+      final first = ring.first;
+      final last = ring.last;
+      if (first[0] != last[0] || first[1] != last[1]) {
+        ring.add([first[0], first[1]]);
+      }
+    }
+    return ring;
+  }
+
+  // ============================================================
+  // OAUTH2 AUTHENTICATION (Copernicus — used by grid/point helpers only)
   // ============================================================
 
   Future<String> _getAccessToken() async {
@@ -219,123 +273,46 @@ function evaluatePixel(sample) {
   }
 
   /// Get vegetation index data using Statistical API
+  /// VPS proxy → `POST /api/field-monitoring` with `action: "vegetation"`.
+  /// Returns a daily time series of statistics for the requested index.
   Future<List<IndexDataPoint>> getVegetationIndex({
     required List<LatLng> polygon,
     required VegetationIndex index,
     required String dateStart,
     required String dateEnd,
   }) async {
-    final token = await _getAccessToken();
-    final coords = _toGeoJsonCoords(polygon);
-    final start = DateTime.parse(dateStart);
-    final end = DateTime.parse(dateEnd);
-
-    // Build Statistical API request
-    final body = jsonEncode({
-      'input': {
-        'bounds': {
-          'geometry': {
-            'type': 'Polygon',
-            'coordinates': [coords],
-          },
-        },
-        'data': [
-          {
-            'dataFilter': {
-              'timeRange': {
-                'from': '${DateFormat('yyyy-MM-dd').format(start)}T00:00:00Z',
-                'to': '${DateFormat('yyyy-MM-dd').format(end)}T23:59:59Z',
-              },
-              'maxCloudCoverage': 30,
-            },
-            'type': 'sentinel-2-l2a',
-          },
-        ],
-      },
-      'aggregation': {
-        'timeRange': {
-          'from': '${DateFormat('yyyy-MM-dd').format(start)}T00:00:00Z',
-          'to': '${DateFormat('yyyy-MM-dd').format(end)}T23:59:59Z',
-        },
-        'aggregationInterval': {'of': 'P1D'},
-        'evalscript': _getEvalscript(index),
-      },
-      'calculations': {
-        'default': {
-          'statistics': {
-            'default': {
-              'percentiles': {
-                'k': [25, 50, 75],
-              },
-            },
-          },
-        },
-      },
-    });
-
     try {
-      final response = await _client
-          .post(
-            Uri.parse(_statisticsUrl),
-            headers: {
-              'Authorization': 'Bearer $token',
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-            body: body,
-          )
-          .timeout(const Duration(seconds: 60));
+      final data = await _callFieldMonitoring({
+        'action': 'vegetation',
+        'polygon': _polygonForVps(polygon),
+        'index': index.code.toLowerCase(),
+        'dateStart': dateStart,
+        'dateEnd': dateEnd,
+      });
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final results = <IndexDataPoint>[];
-
-        final dataList = data['data'] as List? ?? [];
-        for (final item in dataList) {
-          final interval = item['interval'] as Map<String, dynamic>?;
-          final outputs = item['outputs'] as Map<String, dynamic>?;
-          if (interval == null || outputs == null) continue;
-
-          final from = interval['from'] as String?;
-          if (from == null) continue;
-
-          final defaultOutput = outputs['default'] as Map<String, dynamic>?;
-          final bands = defaultOutput?['bands'] as Map<String, dynamic>?;
-          final b0 = bands?['B0'] as Map<String, dynamic>?;
-          final stats = b0?['stats'] as Map<String, dynamic>?;
-
-          if (stats == null) continue;
-
-          final percentiles = stats['percentiles'] as Map<String, dynamic>?;
-
-          results.add(
-            IndexDataPoint(
-              date: DateTime.parse(from),
-              sceneId: 'Sentinel-2',
-              viewId: '',
-              cloud: null,
-              average: (stats['mean'] as num?)?.toDouble(),
-              min: (stats['min'] as num?)?.toDouble(),
-              max: (stats['max'] as num?)?.toDouble(),
-              median: (percentiles?['50.0'] as num?)?.toDouble(),
-              std: (stats['stDev'] as num?)?.toDouble(),
-              q1: (percentiles?['25.0'] as num?)?.toDouble(),
-              q3: (percentiles?['75.0'] as num?)?.toDouble(),
-            ),
-          );
-        }
-
-        results.sort((a, b) => a.date.compareTo(b.date));
-        debugPrint('Sentinel Hub ${index.code}: ${results.length} data points');
-        return results;
-      } else {
-        debugPrint(
-          'Statistical API error: ${response.statusCode} ${response.body}',
+      final dataList = (data['data'] as List?) ?? const [];
+      final results = dataList.map((e) {
+        final m = e as Map<String, dynamic>;
+        return IndexDataPoint(
+          date: DateTime.parse(m['date'] as String),
+          sceneId: 'Sentinel-2',
+          viewId: '',
+          cloud: null,
+          average: (m['average'] as num?)?.toDouble(),
+          min: (m['min'] as num?)?.toDouble(),
+          max: (m['max'] as num?)?.toDouble(),
+          median: (m['median'] as num?)?.toDouble(),
+          q1: (m['q1'] as num?)?.toDouble(),
+          q3: (m['q3'] as num?)?.toDouble(),
         );
-        return [];
-      }
+      }).toList()
+        ..sort((a, b) => a.date.compareTo(b.date));
+      debugPrint(
+        'VPS field-monitoring ${index.code}: ${results.length} data points',
+      );
+      return results;
     } catch (e) {
-      debugPrint('Statistical API request error: $e');
+      debugPrint('VPS vegetation request error: $e');
       return [];
     }
   }
@@ -345,127 +322,52 @@ function evaluatePixel(sample) {
   // https://open-meteo.com/
   // ============================================================
 
-  /// Get weather data from Open-Meteo for polygon centroid.
-  /// Handles both historical (archive API) and forecast (forecast API).
+  /// VPS proxy → `POST /api/field-monitoring` with `action: "weather"`.
+  /// The server transparently picks the historical or forecast Open-Meteo API
+  /// based on the date range, so the client only sends the field centroid.
   Future<List<DailyWeatherSummary>> getOpenMeteoWeather({
     required List<LatLng> polygon,
     required String dateStart,
     required String dateEnd,
   }) async {
+    if (polygon.isEmpty) return const [];
     double latSum = 0, lonSum = 0;
     for (final p in polygon) {
       latSum += p.latitude;
       lonSum += p.longitude;
     }
-    final lat = latSum / polygon.length;
-    final lon = lonSum / polygon.length;
+    final centroid = {
+      'lat': latSum / polygon.length,
+      'lng': lonSum / polygon.length,
+    };
 
-    final now = DateTime.now();
-    final start = DateTime.parse(dateStart);
-    final end = DateTime.parse(dateEnd);
+    try {
+      final data = await _callFieldMonitoring({
+        'action': 'weather',
+        'centroid': centroid,
+        'dateStart': dateStart,
+        'dateEnd': dateEnd,
+      });
 
-    final summaries = <DailyWeatherSummary>[];
-    double accumulated = 0;
-
-    // Historical part
-    if (start.isBefore(now)) {
-      final histEnd = end.isBefore(now)
-          ? end
-          : now.subtract(const Duration(days: 1));
-      final histUrl = Uri.parse(
-        'https://archive-api.open-meteo.com/v1/archive'
-        '?latitude=$lat&longitude=$lon'
-        '&start_date=$dateStart'
-        '&end_date=${DateFormat('yyyy-MM-dd').format(histEnd)}'
-        '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum'
-        '&timezone=auto',
-      );
-
-      try {
-        final response = await _client.get(histUrl);
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          final daily = data['daily'] as Map<String, dynamic>?;
-          if (daily != null) {
-            final dates = (daily['time'] as List).cast<String>();
-            final tMax = daily['temperature_2m_max'] as List;
-            final tMin = daily['temperature_2m_min'] as List;
-            final precip = daily['precipitation_sum'] as List;
-
-            for (int i = 0; i < dates.length; i++) {
-              final dayPrecip = (precip[i] as num?)?.toDouble() ?? 0.0;
-              accumulated += dayPrecip;
-              summaries.add(
-                DailyWeatherSummary(
-                  date: DateTime.parse(dates[i]),
-                  tempMax: (tMax[i] as num?)?.toDouble(),
-                  tempMin: (tMin[i] as num?)?.toDouble(),
-                  dailyPrecipitation: dayPrecip,
-                  accumulatedPrecipitation: accumulated,
-                ),
-              );
-            }
-          }
-        }
-      } catch (e) {
-        debugPrint('Open-Meteo historical error: $e');
-      }
+      final dataList = (data['data'] as List?) ?? const [];
+      final summaries = dataList.map((e) {
+        final m = e as Map<String, dynamic>;
+        return DailyWeatherSummary(
+          date: DateTime.parse(m['date'] as String),
+          tempMax: (m['tempMax'] as num?)?.toDouble(),
+          tempMin: (m['tempMin'] as num?)?.toDouble(),
+          dailyPrecipitation:
+              (m['dailyPrecipitation'] as num?)?.toDouble() ?? 0.0,
+          accumulatedPrecipitation:
+              (m['accumulatedPrecipitation'] as num?)?.toDouble() ?? 0.0,
+        );
+      }).toList()
+        ..sort((a, b) => a.date.compareTo(b.date));
+      return summaries;
+    } catch (e) {
+      debugPrint('VPS weather request error: $e');
+      return [];
     }
-
-    // Forecast part
-    if (end.isAfter(now.subtract(const Duration(days: 1)))) {
-      final fcStart = start.isAfter(now) ? start : now;
-      final fcUrl = Uri.parse(
-        'https://api.open-meteo.com/v1/forecast'
-        '?latitude=$lat&longitude=$lon'
-        '&start_date=${DateFormat('yyyy-MM-dd').format(fcStart)}'
-        '&end_date=$dateEnd'
-        '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum'
-        '&timezone=auto',
-      );
-
-      try {
-        final response = await _client.get(fcUrl);
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          final daily = data['daily'] as Map<String, dynamic>?;
-          if (daily != null) {
-            final dates = (daily['time'] as List).cast<String>();
-            final tMax = daily['temperature_2m_max'] as List;
-            final tMin = daily['temperature_2m_min'] as List;
-            final precip = daily['precipitation_sum'] as List;
-
-            for (int i = 0; i < dates.length; i++) {
-              final d = DateTime.parse(dates[i]);
-              if (summaries.any(
-                (s) =>
-                    s.date.year == d.year &&
-                    s.date.month == d.month &&
-                    s.date.day == d.day,
-              )) {
-                continue;
-              }
-              final dayPrecip = (precip[i] as num?)?.toDouble() ?? 0.0;
-              accumulated += dayPrecip;
-              summaries.add(
-                DailyWeatherSummary(
-                  date: d,
-                  tempMax: (tMax[i] as num?)?.toDouble(),
-                  tempMin: (tMin[i] as num?)?.toDouble(),
-                  dailyPrecipitation: dayPrecip,
-                  accumulatedPrecipitation: accumulated,
-                ),
-              );
-            }
-          }
-        }
-      } catch (e) {
-        debugPrint('Open-Meteo forecast error: $e');
-      }
-    }
-
-    summaries.sort((a, b) => a.date.compareTo(b.date));
-    return summaries;
   }
 
   // ============================================================
@@ -500,112 +402,38 @@ function evaluatePixel(sample) {
 ''';
   }
 
-  /// Get soil moisture data from Sentinel-1
+  /// VPS proxy → `POST /api/field-monitoring` with `action: "soilMoisture"`.
+  /// Server-side Sentinel-1 SAR processing returns normalized 0–1 moisture.
   Future<List<SoilMoistureDataPoint>> getSoilMoisture({
     required List<LatLng> polygon,
     required String dateStart,
     required String dateEnd,
   }) async {
-    final token = await _getAccessToken();
-    final coords = _toGeoJsonCoords(polygon);
-    final start = DateTime.parse(dateStart);
-    final end = DateTime.parse(dateEnd);
-
-    final body = jsonEncode({
-      'input': {
-        'bounds': {
-          'geometry': {
-            'type': 'Polygon',
-            'coordinates': [coords],
-          },
-        },
-        'data': [
-          {
-            'dataFilter': {
-              'timeRange': {
-                'from': '${DateFormat('yyyy-MM-dd').format(start)}T00:00:00Z',
-                'to': '${DateFormat('yyyy-MM-dd').format(end)}T23:59:59Z',
-              },
-            },
-            'type': 'sentinel-1-grd',
-          },
-        ],
-      },
-      'aggregation': {
-        'timeRange': {
-          'from': '${DateFormat('yyyy-MM-dd').format(start)}T00:00:00Z',
-          'to': '${DateFormat('yyyy-MM-dd').format(end)}T23:59:59Z',
-        },
-        'aggregationInterval': {'of': 'P1D'},
-        'evalscript': _getSoilMoistureEvalscript(),
-      },
-      'calculations': {
-        'default': {
-          'statistics': {
-            'default': {
-              'percentiles': {
-                'k': [50],
-              },
-            },
-          },
-        },
-      },
-    });
-
     try {
-      final response = await _client
-          .post(
-            Uri.parse(_statisticsUrl),
-            headers: {
-              'Authorization': 'Bearer $token',
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-            body: body,
-          )
-          .timeout(const Duration(seconds: 60));
+      final data = await _callFieldMonitoring({
+        'action': 'soilMoisture',
+        'polygon': _polygonForVps(polygon),
+        'dateStart': dateStart,
+        'dateEnd': dateEnd,
+      });
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final results = <SoilMoistureDataPoint>[];
-
-        final dataList = data['data'] as List? ?? [];
-        for (final item in dataList) {
-          final interval = item['interval'] as Map<String, dynamic>?;
-          final outputs = item['outputs'] as Map<String, dynamic>?;
-          if (interval == null || outputs == null) continue;
-
-          final from = interval['from'] as String?;
-          if (from == null) continue;
-
-          final defaultOutput = outputs['default'] as Map<String, dynamic>?;
-          final bands = defaultOutput?['bands'] as Map<String, dynamic>?;
-
-          final b0 = bands?['B0'] as Map<String, dynamic>?;
-          final b1 = bands?['B1'] as Map<String, dynamic>?;
-          final b2 = bands?['B2'] as Map<String, dynamic>?;
-
-          results.add(
-            SoilMoistureDataPoint(
-              date: DateTime.parse(from),
-              moisture: (b0?['stats']?['mean'] as num?)?.toDouble(),
-              vv: (b1?['stats']?['mean'] as num?)?.toDouble(),
-              vh: (b2?['stats']?['mean'] as num?)?.toDouble(),
-            ),
-          );
-        }
-
-        results.sort((a, b) => a.date.compareTo(b.date));
-        debugPrint('Sentinel-1 Soil Moisture: ${results.length} data points');
-        return results;
-      } else {
-        debugPrint(
-          'Soil Moisture API error: ${response.statusCode} ${response.body}',
+      final dataList = (data['data'] as List?) ?? const [];
+      final results = dataList.map((e) {
+        final m = e as Map<String, dynamic>;
+        return SoilMoistureDataPoint(
+          date: DateTime.parse(m['date'] as String),
+          moisture: (m['moisture'] as num?)?.toDouble(),
+          vv: (m['vv'] as num?)?.toDouble(),
+          vh: (m['vh'] as num?)?.toDouble(),
         );
-        return [];
-      }
+      }).toList()
+        ..sort((a, b) => a.date.compareTo(b.date));
+      debugPrint(
+        'VPS field-monitoring soil moisture: ${results.length} data points',
+      );
+      return results;
     } catch (e) {
-      debugPrint('Soil Moisture request error: $e');
+      debugPrint('VPS soil moisture request error: $e');
       return [];
     }
   }
@@ -989,116 +817,165 @@ function evaluatePixel(sample) {
     final dateEnd = DateTime.now();
     final dateStart = dateEnd.subtract(const Duration(days: 30));
 
-    // Query sub-regions for better spatial resolution
-    // Split the polygon bbox into a coarser grid (e.g. 4x4) and query stats for each
-    const subGridSize = 4;
+    // Query sub-regions in PARALLEL (was sequential = 16-30s). With a 6×6
+    // sub-grid + Future.wait, the 36 Statistics API calls overlap and total
+    // wall-time drops to ~2-3s. The fine grid is then bilinearly interpolated
+    // from those anchor points so cells blend smoothly instead of forming
+    // 4×4 monochrome blocks.
+    const subGridSize = 6;
     final subCellLat = latRange / subGridSize;
     final subCellLng = lngRange / subGridSize;
-    final subValues = <String, double>{};
 
-    for (int si = 0; si < subGridSize; si++) {
-      for (int sj = 0; sj < subGridSize; sj++) {
-        final south = minLat + si * subCellLat;
-        final north = south + subCellLat;
-        final west = minLng + sj * subCellLng;
-        final east = west + subCellLng;
+    Future<MapEntry<String, double>?> querySub(int si, int sj) async {
+      final south = minLat + si * subCellLat;
+      final north = south + subCellLat;
+      final west = minLng + sj * subCellLng;
+      final east = west + subCellLng;
 
-        final subCoords = [
-          [west, south],
-          [east, south],
-          [east, north],
-          [west, north],
-          [west, south],
-        ];
+      final subCoords = [
+        [west, south],
+        [east, south],
+        [east, north],
+        [west, north],
+        [west, south],
+      ];
 
-        try {
-          final body = jsonEncode({
-            'input': {
-              'bounds': {
-                'geometry': {
-                  'type': 'Polygon',
-                  'coordinates': [subCoords],
-                },
+      try {
+        final body = jsonEncode({
+          'input': {
+            'bounds': {
+              'geometry': {
+                'type': 'Polygon',
+                'coordinates': [subCoords],
               },
-              'data': [
-                {
-                  'dataFilter': {
-                    'timeRange': {
-                      'from':
-                          '${DateFormat('yyyy-MM-dd').format(dateStart)}T00:00:00Z',
-                      'to':
-                          '${DateFormat('yyyy-MM-dd').format(dateEnd)}T23:59:59Z',
-                    },
-                    'maxCloudCoverage': 30,
-                    'mosaickingOrder': 'mostRecent',
+            },
+            'data': [
+              {
+                'dataFilter': {
+                  'timeRange': {
+                    'from':
+                        '${DateFormat('yyyy-MM-dd').format(dateStart)}T00:00:00Z',
+                    'to':
+                        '${DateFormat('yyyy-MM-dd').format(dateEnd)}T23:59:59Z',
                   },
-                  'type': 'sentinel-2-l2a',
+                  'maxCloudCoverage': 30,
+                  'mosaickingOrder': 'mostRecent',
                 },
-              ],
-            },
-            'aggregation': {
-              'timeRange': {
-                'from':
-                    '${DateFormat('yyyy-MM-dd').format(dateStart)}T00:00:00Z',
-                'to': '${DateFormat('yyyy-MM-dd').format(dateEnd)}T23:59:59Z',
+                'type': 'sentinel-2-l2a',
               },
-              'aggregationInterval': {'of': 'P30D'},
-              'evalscript': _getEvalscript(index),
+            ],
+          },
+          'aggregation': {
+            'timeRange': {
+              'from':
+                  '${DateFormat('yyyy-MM-dd').format(dateStart)}T00:00:00Z',
+              'to': '${DateFormat('yyyy-MM-dd').format(dateEnd)}T23:59:59Z',
             },
-            'calculations': {
-              'default': {
-                'statistics': {
-                  'default': {
-                    'percentiles': {
-                      'k': [50],
-                    },
+            'aggregationInterval': {'of': 'P30D'},
+            'evalscript': _getEvalscript(index),
+          },
+          'calculations': {
+            'default': {
+              'statistics': {
+                'default': {
+                  'percentiles': {
+                    'k': [50],
                   },
                 },
               },
             },
-          });
+          },
+        });
 
-          final response = await _client
-              .post(
-                Uri.parse(_statisticsUrl),
-                headers: {
-                  'Authorization': 'Bearer $token',
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json',
-                },
-                body: body,
-              )
-              .timeout(const Duration(seconds: 15));
+        final response = await _client
+            .post(
+              Uri.parse(_statisticsUrl),
+              headers: {
+                'Authorization': 'Bearer $token',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+              },
+              body: body,
+            )
+            .timeout(const Duration(seconds: 15));
 
-          if (response.statusCode == 200) {
-            final data = jsonDecode(response.body);
-            final dataList = data['data'] as List? ?? [];
-            if (dataList.isNotEmpty) {
-              final item = dataList.last;
-              final outputs = item['outputs'] as Map<String, dynamic>?;
-              final defOut = outputs?['default'] as Map<String, dynamic>?;
-              final bands = defOut?['bands'] as Map<String, dynamic>?;
-              final b0 = bands?['B0'] as Map<String, dynamic>?;
-              final stats = b0?['stats'] as Map<String, dynamic>?;
-              if (stats != null) {
-                final mean = (stats['mean'] as num?)?.toDouble();
-                if (mean != null) {
-                  subValues['${si}_$sj'] = mean;
-                }
-              }
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final dataList = data['data'] as List? ?? [];
+          if (dataList.isNotEmpty) {
+            final item = dataList.last;
+            final outputs = item['outputs'] as Map<String, dynamic>?;
+            final defOut = outputs?['default'] as Map<String, dynamic>?;
+            final bands = defOut?['bands'] as Map<String, dynamic>?;
+            final b0 = bands?['B0'] as Map<String, dynamic>?;
+            final stats = b0?['stats'] as Map<String, dynamic>?;
+            if (stats != null) {
+              final mean = (stats['mean'] as num?)?.toDouble();
+              if (mean != null) return MapEntry('${si}_$sj', mean);
             }
           }
-        } catch (_) {
-          // Skip this sub-cell
         }
+      } catch (_) {/* skip */}
+      return null;
+    }
+
+    // Fire all sub-cell requests in parallel.
+    final entries = <Future<MapEntry<String, double>?>>[];
+    for (int si = 0; si < subGridSize; si++) {
+      for (int sj = 0; sj < subGridSize; sj++) {
+        entries.add(querySub(si, sj));
       }
     }
+    final settled = await Future.wait(entries);
+
+    final subValues = <String, double>{
+      for (final e in settled)
+        if (e != null) e.key: e.value,
+    };
 
     debugPrint(
       'Sub-grid stats collected: ${subValues.length}/${subGridSize * subGridSize}',
     );
 
-    // Build the fine grid using bilinear interpolation of sub-grid values
+    // True bilinear interpolation: each fine cell takes the weighted average
+    // of the 4 nearest sub-cell centers. Sub-cells with no data are ignored
+    // when their weight contribution is zero.
+    double? sampleAt(double lat, double lng) {
+      // Position in sub-cell space (cell-centre coordinates 0..subGridSize-1).
+      final x = (lng - (minLng + subCellLng / 2)) / subCellLng;
+      final y = (lat - (minLat + subCellLat / 2)) / subCellLat;
+
+      final x0 = x.floor().clamp(0, subGridSize - 1);
+      final x1 = (x0 + 1).clamp(0, subGridSize - 1);
+      final y0 = y.floor().clamp(0, subGridSize - 1);
+      final y1 = (y0 + 1).clamp(0, subGridSize - 1);
+
+      final tx = (x - x0).clamp(0.0, 1.0);
+      final ty = (y - y0).clamp(0.0, 1.0);
+
+      final v00 = subValues['${y0}_$x0'];
+      final v10 = subValues['${y0}_$x1'];
+      final v01 = subValues['${y1}_$x0'];
+      final v11 = subValues['${y1}_$x1'];
+
+      double sum = 0;
+      double weight = 0;
+      void contrib(double? v, double w) {
+        if (v != null) {
+          sum += v * w;
+          weight += w;
+        }
+      }
+
+      contrib(v00, (1 - tx) * (1 - ty));
+      contrib(v10, tx * (1 - ty));
+      contrib(v01, (1 - tx) * ty);
+      contrib(v11, tx * ty);
+
+      if (weight == 0) return null;
+      return sum / weight;
+    }
+
     final results = <Map<String, dynamic>>[];
     for (int i = 0; i < gridSize; i++) {
       for (int j = 0; j < gridSize; j++) {
@@ -1112,29 +989,21 @@ function evaluatePixel(sample) {
 
         if (!_isPointInPolygon(LatLng(centerLat, centerLng), polygon)) continue;
 
-        // Find which sub-cell this belongs to
-        final si = ((centerLat - minLat) / subCellLat)
-            .clamp(0, subGridSize - 1)
-            .floor();
-        final sj = ((centerLng - minLng) / subCellLng)
-            .clamp(0, subGridSize - 1)
-            .floor();
-        final cellValue = subValues['${si}_$sj'];
-
-        if (cellValue != null) {
+        final value = sampleAt(centerLat, centerLng);
+        if (value != null) {
           results.add({
             'south': cellSouth,
             'north': cellNorth,
             'west': cellWest,
             'east': cellEast,
-            'ndvi': cellValue,
+            'ndvi': value,
           });
         }
       }
     }
 
     debugPrint(
-      'Stats-based grid: ${results.length} cells with real ${index.code} values',
+      'Stats-based grid: ${results.length} interpolated cells with real ${index.code} values',
     );
     return results;
   }
@@ -1349,9 +1218,13 @@ function evaluatePixel(sample) {
     }
   }
 
-  /// Get vegetation index imagery as PNG bytes using Process API
-  /// This returns actual satellite pixel data, not synthetic
-  /// Supports all vegetation indices (NDVI, NDRE, NDWI, SAVI, EVI, etc.)
+  /// VPS proxy → `POST /api/field-monitoring` with `action: "heatmap"`.
+  /// Returns the colorized index PNG as bytes; the `width`/`height` arguments
+  /// are ignored — the server picks the resolution (~512px wide).
+  ///
+  /// The caller can derive the on-map bounds with [getPolygonBounds]; the more
+  /// precise satellite bounds returned by the VPS are dropped to preserve the
+  /// existing method signature.
   Future<Uint8List?> getNdviImagery({
     required List<LatLng> polygon,
     VegetationIndex index = VegetationIndex.ndvi,
@@ -1359,87 +1232,37 @@ function evaluatePixel(sample) {
     int height = 1024,
   }) async {
     try {
-      final token = await _getAccessToken();
-      final coords = _toGeoJsonCoords(polygon);
-
-      // Calculate polygon bounds for output size
-      double minLat = double.infinity, maxLat = double.negativeInfinity;
-      double minLng = double.infinity, maxLng = double.negativeInfinity;
-
-      for (final point in polygon) {
-        if (point.latitude < minLat) minLat = point.latitude;
-        if (point.latitude > maxLat) maxLat = point.latitude;
-        if (point.longitude < minLng) minLng = point.longitude;
-        if (point.longitude > maxLng) maxLng = point.longitude;
-      }
-
-      // Get last 30 days for most recent imagery
-      final dateEnd = DateTime.now();
-      final dateStart = dateEnd.subtract(const Duration(days: 30));
-
-      // Build Process API request with polygon geometry (clips to polygon shape)
-      final body = jsonEncode({
-        'input': {
-          'bounds': {
-            'geometry': {
-              'type': 'Polygon',
-              'coordinates': [coords],
-            },
-            'properties': {'crs': 'http://www.opengis.net/def/crs/EPSG/0/4326'},
-          },
-          'data': [
-            {
-              'dataFilter': {
-                'timeRange': {
-                  'from':
-                      '${DateFormat('yyyy-MM-dd').format(dateStart)}T00:00:00Z',
-                  'to': '${DateFormat('yyyy-MM-dd').format(dateEnd)}T23:59:59Z',
-                },
-                'maxCloudCoverage': 30,
-                'mosaickingOrder': 'mostRecent',
-              },
-              'type': 'sentinel-2-l2a',
-            },
-          ],
-        },
-        'output': {
-          'width': width,
-          'height': height,
-          'responses': [
-            {
-              'identifier': 'default',
-              'format': {'type': 'image/png'},
-            },
-          ],
-        },
-        'evalscript': _getIndexColorEvalscript(index),
+      final now = DateTime.now();
+      final dateEnd = DateFormat('yyyy-MM-dd').format(now);
+      final dateStart = DateFormat('yyyy-MM-dd').format(
+        now.subtract(const Duration(days: 30)),
+      );
+      // VPS rejects the request with "Missing required fields" if dateStart
+      // is omitted, even though the doc marks it as optional for heatmap.
+      final data = await _callFieldMonitoring({
+        'action': 'heatmap',
+        'polygon': _polygonForVps(polygon),
+        'index': index.code.toLowerCase(),
+        'dateStart': dateStart,
+        'dateEnd': dateEnd,
       });
 
-      final response = await _client
-          .post(
-            Uri.parse(_processUrl),
-            headers: {
-              'Authorization': 'Bearer $token',
-              'Content-Type': 'application/json',
-              'Accept': 'image/png',
-            },
-            body: body,
-          )
-          .timeout(const Duration(seconds: 60));
-
-      if (response.statusCode == 200) {
-        debugPrint(
-          '${index.name.toUpperCase()} imagery fetched: ${response.bodyBytes.length} bytes (${width}x${height})',
-        );
-        return response.bodyBytes;
-      } else {
-        debugPrint(
-          'Process API error for ${index.name}: ${response.statusCode} ${response.body}',
-        );
+      final imageUrl = data['imageUrl'] as String?;
+      if (imageUrl == null || imageUrl.isEmpty) {
+        debugPrint('VPS heatmap returned no imageUrl');
         return null;
       }
+
+      // Expected shape: `data:image/png;base64,<...>`
+      final commaIdx = imageUrl.indexOf(',');
+      final b64 = commaIdx >= 0 ? imageUrl.substring(commaIdx + 1) : imageUrl;
+      final bytes = base64Decode(b64);
+      debugPrint(
+        '${index.name.toUpperCase()} heatmap fetched: ${bytes.length} bytes',
+      );
+      return bytes;
     } catch (e) {
-      debugPrint('${index.name} imagery request error: $e');
+      debugPrint('VPS heatmap request error: $e');
       return null;
     }
   }

@@ -162,7 +162,6 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
         LatLng(maxLat, maxLng),
       );
 
-      // Try Process API for actual satellite imagery (smooth gradients like web)
       final imageBytes = await _eosdaService.getNdviImagery(
         polygon: _polygonPoints,
         index: _selectedIndex,
@@ -171,23 +170,21 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
       );
 
       if (imageBytes != null && mounted) {
-        // Successfully got satellite imagery
         setState(() {
           _ndviImageBytes = imageBytes;
           _ndviImageBounds = bounds;
-          _heatmapCellData = []; // Clear grid data, using image instead
+          _heatmapCellData = [];
           _isLoadingHeatmap = false;
         });
-        debugPrint('Using Process API satellite imagery');
+        debugPrint('Using Process API satellite imagery (${imageBytes.length} bytes)');
         return;
       }
 
-      // Fallback: Load grid data if Process API failed
       debugPrint('Process API failed, falling back to grid data');
       final gridData = await _eosdaService.getVegetationIndexGrid(
         polygon: _polygonPoints,
         index: _selectedIndex,
-        gridSize: 50,
+        gridSize: 100,
       );
 
       if (mounted) {
@@ -197,6 +194,7 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
           _heatmapCellData = gridData;
           _isLoadingHeatmap = false;
         });
+        debugPrint('Using grid heatmap (${gridData.length} cells)');
       }
     } catch (e) {
       if (mounted) {
@@ -631,7 +629,6 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
   List<Widget> _buildHeatmapLayers() {
     if (_polygonPoints.length < 3) return [];
 
-    // Priority 1: Use actual satellite imagery from Process API (smooth gradients)
     if (_ndviImageBytes != null && _ndviImageBounds != null) {
       return [
         OverlayImageLayer(
@@ -646,7 +643,6 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
       ];
     }
 
-    // Priority 2: Use grid data from API (already clipped to polygon)
     if (_heatmapCellData.isNotEmpty) {
       final heatmapPolygons = <Polygon>[];
 
@@ -2596,21 +2592,23 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
 
     return Column(
       children: [
-        // Chart 1: Accumulated precipitation
+        // Chart 1: Accumulated precipitation (shortened title: ", mm" was
+        // pushing the legend row past the card and triggering the 11px
+        // overflow stripe).
         _buildWeatherChartCard(
-          title: 'Accumulated precipitation, mm',
+          title: 'Précipitation cumulée',
           icon: Icons.show_chart,
           child: _buildAccumulatedPrecipChart(),
         ),
         // Chart 2: Daily precipitation
         _buildWeatherChartCard(
-          title: 'Daily precipitation, mm',
+          title: 'Précipitation journalière',
           icon: Icons.bar_chart,
           child: _buildDailyPrecipChart(),
         ),
         // Chart 3: Temperature
         _buildWeatherChartCard(
-          title: 'Daily temperature, °C',
+          title: 'Température journalière',
           icon: Icons.thermostat,
           child: _buildTemperatureChart(),
         ),
@@ -2708,20 +2706,24 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
             SizedBox(height: 16),
             SizedBox(
               height: 260,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                physics: BouncingScrollPhysics(),
+              child: ClipRect(
                 child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+                  scrollDirection: Axis.vertical,
                   physics: BouncingScrollPhysics(),
-                  child: Container(
-                    padding: const EdgeInsets.only(right: 20, bottom: 20),
-                    width: math.max(
-                      MediaQuery.of(context).size.width - 48,
-                      _weatherData.length * 25.0,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: BouncingScrollPhysics(),
+                    child: Container(
+                      // Bumped from 20 → 36 right padding to absorb the ~11px
+                      // overflow caused by the right-axis "NDVI" label.
+                      padding: const EdgeInsets.only(right: 36, bottom: 20),
+                      width: math.max(
+                        MediaQuery.of(context).size.width - 48,
+                        _weatherData.length * 25.0,
+                      ),
+                      height: 240,
+                      child: child,
                     ),
-                    height: 240,
-                    child: child,
                   ),
                 ),
               ),
@@ -2980,31 +2982,11 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
           topTitles: AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
-          rightTitles: AxisTitles(
-            axisNameWidget: Text(
-              'NDVI',
-              style: TextStyle(color: AppColors.primaryGreen, fontSize: 9),
-            ),
-            sideTitles: SideTitles(
-              showTitles: _indexData.isNotEmpty,
-              reservedSize: 45,
-              interval: precipInterval,
-              getTitlesWidget: (value, _) {
-                final ndviVal = value / maxAccum;
-                if (ndviVal < 0 || ndviVal > 1.2) return SizedBox();
-                return Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: Text(
-                    ndviVal.toStringAsFixed(2),
-                    style: TextStyle(
-                      color: AppColors.primaryGreen,
-                      fontSize: 9,
-                      fontFamily: 'monospace',
-                    ),
-                  ),
-                );
-              },
-            ),
+          // Right axis removed entirely — was the source of the chronic
+          // "RIGHT OVERFLOWED BY 11 PIXELS" debug stripe on narrow screens.
+          // The legend at the top of the card already labels the NDVI series.
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
           ),
           leftTitles: AxisTitles(
             axisNameWidget: Text(

@@ -7,36 +7,35 @@ import '../../core/config/environment.dart';
 class OpenWeatherService {
   static const String _baseUrl = 'https://api.openweathermap.org/data/2.5';
 
-  /// Get current weather for a location
+  /// Get current weather for a location.
+  ///
+  /// Prefers the VPS App API (`/api/weather`) since OpenWeather keys are now
+  /// stored server-side per the migration. Falls back to a direct OpenWeather
+  /// call only if the backend is unreachable AND a local key is configured.
   Future<WeatherData> getCurrentWeather({
     required double latitude,
     required double longitude,
   }) async {
     try {
+      return await _getWeatherFromBackend(latitude, longitude);
+    } catch (_) {
       final apiKey = Environment.openWeatherApiKey;
-
       if (apiKey.isEmpty || apiKey == 'your-openweather-api-key') {
-        // Try backend API if no local key
-        return _getWeatherFromBackend(latitude, longitude);
+        return WeatherData.mock();
       }
-
-      final response = await http
-          .get(
-            Uri.parse(
-              '$_baseUrl/weather?lat=$latitude&lon=$longitude&appid=$apiKey&units=metric&lang=fr',
-            ),
-          )
-          .timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return WeatherData.fromOpenWeatherJson(data);
-      } else {
-        throw Exception('Weather API error: ${response.statusCode}');
-      }
-    } catch (e) {
-      // Fallback to backend
-      return _getWeatherFromBackend(latitude, longitude);
+      try {
+        final response = await http
+            .get(
+              Uri.parse(
+                '$_baseUrl/weather?lat=$latitude&lon=$longitude&appid=$apiKey&units=metric&lang=fr',
+              ),
+            )
+            .timeout(const Duration(seconds: 15));
+        if (response.statusCode == 200) {
+          return WeatherData.fromOpenWeatherJson(json.decode(response.body));
+        }
+      } catch (_) {}
+      return WeatherData.mock();
     }
   }
 

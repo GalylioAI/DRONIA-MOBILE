@@ -84,13 +84,16 @@ class ApiClient {
               'Unknown error')
         : 'Request failed';
 
+    // Always surface the server-provided message when available — the VPS
+    // returns useful French strings (e.g. "Veuillez confirmer votre adresse
+    // e-mail...", "User not found") that the UI must show as-is.
     switch (statusCode) {
       case 401:
         throw UnauthorizedException(message);
       case 403:
-        throw ApiException('Forbidden', statusCode: statusCode, data: data);
+        throw ApiException(message, statusCode: statusCode, data: data);
       case 404:
-        throw ApiException('Not found', statusCode: statusCode, data: data);
+        throw ApiException(message, statusCode: statusCode, data: data);
       case 422:
         throw ApiException(message, statusCode: statusCode, data: data);
       case 500:
@@ -102,14 +105,17 @@ class ApiClient {
     }
   }
 
+  String _resolveBase(String? baseUrl) => baseUrl ?? AppConstants.baseUrl;
+
   /// GET request
   Future<dynamic> get(
     String endpoint, {
     Map<String, dynamic>? queryParams,
     bool requiresAuth = true,
+    String? baseUrl,
   }) async {
     try {
-      final uri = Uri.parse('${AppConstants.baseUrl}$endpoint').replace(
+      final uri = Uri.parse('${_resolveBase(baseUrl)}$endpoint').replace(
         queryParameters: queryParams?.map((k, v) => MapEntry(k, v.toString())),
       );
 
@@ -135,9 +141,10 @@ class ApiClient {
     String endpoint, {
     dynamic body,
     bool requiresAuth = true,
+    String? baseUrl,
   }) async {
     try {
-      final uri = Uri.parse('${AppConstants.baseUrl}$endpoint');
+      final uri = Uri.parse('${_resolveBase(baseUrl)}$endpoint');
       final headers = await _getHeaders(requiresAuth: requiresAuth);
 
       final response = await _client
@@ -157,9 +164,10 @@ class ApiClient {
     String endpoint, {
     required Map<String, String> fields,
     bool requiresAuth = true,
+    String? baseUrl,
   }) async {
     try {
-      final uri = Uri.parse('${AppConstants.baseUrl}$endpoint');
+      final uri = Uri.parse('${_resolveBase(baseUrl)}$endpoint');
       final headers = <String, String>{
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json',
@@ -193,9 +201,10 @@ class ApiClient {
     String endpoint, {
     dynamic body,
     bool requiresAuth = true,
+    String? baseUrl,
   }) async {
     try {
-      final uri = Uri.parse('${AppConstants.baseUrl}$endpoint');
+      final uri = Uri.parse('${_resolveBase(baseUrl)}$endpoint');
       final headers = await _getHeaders(requiresAuth: requiresAuth);
 
       final response = await _client
@@ -215,9 +224,10 @@ class ApiClient {
     String endpoint, {
     dynamic body,
     bool requiresAuth = true,
+    String? baseUrl,
   }) async {
     try {
-      final uri = Uri.parse('${AppConstants.baseUrl}$endpoint');
+      final uri = Uri.parse('${_resolveBase(baseUrl)}$endpoint');
       final headers = await _getHeaders(requiresAuth: requiresAuth);
 
       final response = await _client
@@ -237,9 +247,10 @@ class ApiClient {
     String endpoint, {
     Map<String, dynamic>? body,
     bool requiresAuth = true,
+    String? baseUrl,
   }) async {
     try {
-      final uri = Uri.parse('${AppConstants.baseUrl}$endpoint');
+      final uri = Uri.parse('${_resolveBase(baseUrl)}$endpoint');
       final headers = await _getHeaders(requiresAuth: requiresAuth);
 
       print('DEBUG API: DELETE $uri');
@@ -273,9 +284,10 @@ class ApiClient {
     String fieldName = 'file',
     Map<String, String>? fields,
     bool requiresAuth = true,
+    String? baseUrl,
   }) async {
     try {
-      final uri = Uri.parse('${AppConstants.baseUrl}$endpoint');
+      final uri = Uri.parse('${_resolveBase(baseUrl)}$endpoint');
       final request = http.MultipartRequest('POST', uri);
 
       // Add auth header

@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../../../data/models/models.dart';
+import '../../../data/services/service_locator.dart';
 import '../../widgets/common/animated_entrance.dart';
 import '../../widgets/common/app_drawer.dart';
 
@@ -114,6 +116,14 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               _ThemeCard(),
+              const SizedBox(height: 24),
+              _SectionHeader(
+                icon: Icons.workspace_premium_outlined,
+                title: 'Abonnement',
+                subtitle: 'Choisissez le plan qui correspond à votre exploitation',
+              ),
+              const SizedBox(height: 8),
+              _PlansCard(),
               const SizedBox(height: 24),
               Center(
                 child: Text(
@@ -312,6 +322,65 @@ class _ThemeCard extends StatelessWidget {
                     )
                   : null,
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Plans card ───────────────────────────────────────────────────────────
+class _PlansCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final currentPlan = services.auth.currentUser?.plan ?? UserPlan.free;
+    return InkWell(
+      onTap: () => Navigator.pushNamed(context, AppRoutes.plans),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colors.card,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.primaryGreen.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.workspace_premium_rounded,
+                color: AppColors.primaryGreen,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Plan ${currentPlan.displayName}',
+                    style: TextStyle(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    currentPlan.tagline,
+                    style: TextStyle(color: colors.textSecondary, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: colors.textSecondary),
           ],
         ),
       ),

@@ -3,7 +3,15 @@ import '../models/models.dart';
 import '../network/api_client.dart';
 import 'storage_service.dart';
 
-/// Authentication service matching the Next.js backend
+/// Authentication service backed by the VPS Next.js backend
+/// (`https://dronia-tunisie.tn/api/auth/*`).
+///
+/// Differences from the previous Render backend:
+///  - register no longer returns a token — the user must verify their email
+///    via the link sent automatically before being able to log in.
+///  - delete-account moved from `DELETE /auth/me` to `DELETE /auth/delete-account`.
+///  - forgot password is now a 3-step OTP flow (forgot → verify-otp → reset).
+///  - GET/PUT /auth/me return the user object directly (no `{ data: ... }` wrapper).
 class AuthService {
   final ApiClient _apiClient;
   final StorageService _storageService;
@@ -17,8 +25,7 @@ class AuthService {
   User? _currentUser;
   User? get currentUser => _currentUser;
 
-  /// Login with email and password
-  /// Backend returns: { token: string }
+  /// POST /auth/login → `{ message, token, user }`.
   Future<String> login(String email, String password) async {
     final response = await _apiClient.post(
       ApiEndpoints.login,
@@ -27,19 +34,25 @@ class AuthService {
     );
 
     final token = response['token'] as String;
-
-    // Save token
     await _storageService.saveToken(token);
 
-    // Fetch user profile after login
-    await getProfile();
+    // The login response already embeds the user — cache it without an extra round-trip.
+    final userData = response['user'] as Map<String, dynamic>?;
+    if (userData != null) {
+      final user = User.fromJson(userData);
+      await _storageService.saveUserJson(user.toJson());
+      _currentUser = user;
+    } else {
+      await getProfile();
+    }
 
     return token;
   }
 
-  /// Register a new user
-  /// Backend returns: { token: string, user: User, success: true } on success
-  Future<bool> register({
+  /// POST /auth/register → `{ message: "Compte créé. Vérifiez votre e-mail..." }`.
+  /// No token is returned: the user must verify their email before logging in.
+  /// Returns the success message so the UI can show it as-is.
+  Future<String> register({
     required String email,
     required String password,
     String? firstName,
@@ -68,39 +81,27 @@ class AuthService {
       requiresAuth: false,
     );
 
-    // Save token if returned (auto-login after registration)
-    final token = response['token'] as String?;
-    if (token != null) {
-      await _storageService.saveToken(token);
-
-      // Try to get user from response
-      final userData = response['user'] as Map<String, dynamic>?;
-      if (userData != null) {
-        final user = User.fromJson(userData);
-        await _storageService.saveUserJson(user.toJson());
-        _currentUser = user;
-      }
-    }
-
-    return response['success'] as bool? ?? true;
+    return response['message'] as String? ??
+        'Compte créé. Vérifiez votre e-mail pour activer votre compte.';
   }
 
-  /// Get current user profile
-  /// Backend returns: { success: true, data: User }
+  /// GET /auth/me → the user object directly (per VPS docs).
+  /// Falls back to `response['data']` for backward compatibility with the old
+  /// Render backend in case the call is routed there.
   Future<User> getProfile() async {
     final response = await _apiClient.get(ApiEndpoints.me);
 
-    final userData = response['data'] as Map<String, dynamic>;
+    final userData = (response is Map<String, dynamic> && response['data'] is Map)
+        ? response['data'] as Map<String, dynamic>
+        : response as Map<String, dynamic>;
     final user = User.fromJson(userData);
 
     await _storageService.saveUserJson(user.toJson());
     _currentUser = user;
-
     return user;
   }
 
-  /// Update user profile
-  /// Backend returns: { success: true, data: User }
+  /// PUT /auth/me — send any subset of fields; returns the updated user.
   Future<User> updateProfile({
     String? firstName,
     String? lastName,
@@ -125,47 +126,48 @@ class AuthService {
       ).toJson(),
     );
 
-    final userData = response['data'] as Map<String, dynamic>;
+    final userData = (response is Map<String, dynamic> && response['data'] is Map)
+        ? response['data'] as Map<String, dynamic>
+        : response as Map<String, dynamic>;
     final user = User.fromJson(userData);
 
     await _storageService.saveUserJson(user.toJson());
     _currentUser = user;
-
     return user;
   }
 
-  /// Logout - clear local auth data
+  /// Logout. JWT is stateless server-side, so we always clear the local token.
+  /// We also notify the server (best-effort) for symmetry; failure is ignored.
   Future<void> logout() async {
+    try {
+      await _apiClient.post(ApiEndpoints.logout, body: const {}, requiresAuth: false);
+    } catch (_) {
+      // ignore: server has no session to invalidate
+    }
     await _storageService.clearAuth();
     _currentUser = null;
   }
 
-  /// Check if user is logged in
-  Future<bool> isLoggedIn() async {
-    return await _storageService.isLoggedIn();
-  }
+  /// Check if a token is present in local storage.
+  Future<bool> isLoggedIn() async => _storageService.isLoggedIn();
 
-  /// Auto login - restore session from storage
+  /// Restore session from local storage at app start.
   Future<User?> autoLogin() async {
     final isLoggedIn = await _storageService.isLoggedIn();
     if (!isLoggedIn) return null;
 
-    // Try to get cached user first
     final userJson = await _storageService.getUserJson();
     if (userJson != null) {
       try {
         _currentUser = User.fromJson(userJson);
       } catch (_) {
-        // Ignore parse errors for cached data
+        // stale cache shape — ignore
       }
     }
 
-    // Try to refresh profile from server
     try {
       return await getProfile();
     } catch (e) {
-      // If profile fetch fails (e.g., token expired), return cached user
-      // or null to trigger re-login
       if (_currentUser == null) {
         await logout();
         return null;
@@ -174,21 +176,67 @@ class AuthService {
     }
   }
 
-  /// Get current token
-  Future<String?> getToken() async {
-    return await _storageService.getToken();
-  }
+  Future<String?> getToken() => _storageService.getToken();
 
-  /// Delete user account permanently
-  /// Requires user to confirm by typing their first name
-  Future<void> deleteAccount({required String confirmationName}) async {
-    await _apiClient.delete(
-      ApiEndpoints.me,
-      body: {'confirmationName': confirmationName},
+  /// PUT /auth/me/plan — switch the current user's subscription plan.
+  Future<User> updateMyPlan(UserPlan plan) async {
+    final response = await _apiClient.put(
+      ApiEndpoints.mePlan,
+      body: {'plan': plan.name},
     );
 
-    // Clear local data after successful deletion
+    final userData = (response is Map<String, dynamic> && response['data'] is Map)
+        ? response['data'] as Map<String, dynamic>
+        : response as Map<String, dynamic>;
+    final user = User.fromJson(userData);
+
+    await _storageService.saveUserJson(user.toJson());
+    _currentUser = user;
+    return user;
+  }
+
+  /// DELETE /auth/delete-account — irreversible.
+  /// The VPS backend takes no body; `confirmationName` is kept on the client
+  /// side as a UI guard before the call is issued.
+  Future<void> deleteAccount({String? confirmationName}) async {
+    await _apiClient.delete(ApiEndpoints.deleteAccount);
     await _storageService.clearAuth();
     _currentUser = null;
+  }
+
+  // ------- Forgot-password OTP flow (3 steps) -------
+
+  /// Step 1 — POST /auth/forgot-password. Always succeeds (does not reveal
+  /// whether the email is registered). The 6-digit OTP is valid 15 minutes.
+  Future<void> requestPasswordReset(String email) async {
+    await _apiClient.post(
+      ApiEndpoints.forgotPassword,
+      body: {'email': email},
+      requiresAuth: false,
+    );
+  }
+
+  /// Step 2 — POST /auth/verify-otp. Returns `true` if the code is valid,
+  /// throws [ApiException] otherwise (wrong code, expired, never requested).
+  Future<bool> verifyResetOtp({required String email, required String otp}) async {
+    final response = await _apiClient.post(
+      ApiEndpoints.verifyOtp,
+      body: {'email': email, 'otp': otp},
+      requiresAuth: false,
+    );
+    return response['success'] as bool? ?? false;
+  }
+
+  /// Step 3 — POST /auth/reset-password. Must follow a successful verify-otp
+  /// call. Throws [ApiException] (403) if the OTP step was skipped.
+  Future<void> resetPassword({
+    required String email,
+    required String newPassword,
+  }) async {
+    await _apiClient.post(
+      ApiEndpoints.resetPassword,
+      body: {'email': email, 'newPassword': newPassword},
+      requiresAuth: false,
+    );
   }
 }

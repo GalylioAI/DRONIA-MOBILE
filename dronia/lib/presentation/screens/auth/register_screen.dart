@@ -108,7 +108,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     setState(() => _isLoading = true);
 
     try {
-      await services.auth.register(
+      final message = await services.auth.register(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         firstName: _firstNameController.text.trim(),
@@ -118,12 +118,9 @@ class _RegisterScreenState extends State<RegisterScreen>
       );
 
       if (!mounted) return;
-      UIHelper.showSnackBar(
-        context,
-        'Inscription réussie ! Bienvenue sur DronIA.',
-        isSuccess: true,
-      );
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      // VPS backend requires email verification before login — no auto-login.
+      UIHelper.showSnackBar(context, message, isSuccess: true);
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
     } catch (e) {
       if (!mounted) return;
       UIHelper.showSnackBar(

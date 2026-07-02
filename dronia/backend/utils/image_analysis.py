@@ -74,28 +74,47 @@ def detect_disease_symptoms(image: Image.Image) -> dict:
     
     # Find contours of disease areas
     contours, _ = cv2.findContours(combined_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-    # Filter out very small areas (noise)
+
+    img_h, img_w = img_array.shape[:2]
     min_area = total_pixels * 0.001  # 0.1% of image
     symptom_areas = []
+
     for contour in contours:
         area = cv2.contourArea(contour)
-        if area > min_area:
-            x, y, w, h = cv2.boundingRect(contour)
-            symptom_areas.append({
-                'x': int(x),
-                'y': int(y),
-                'width': int(w),
-                'height': int(h),
-                'area': float(area),
-                'area_percentage': float((area / total_pixels) * 100)
-            })
-    
+        if area <= min_area:
+            continue
+
+        x, y, w, h = cv2.boundingRect(contour)
+
+        # Simplify contour with Douglas-Peucker to reduce point count
+        epsilon = 0.02 * cv2.arcLength(contour, True)
+        approx  = cv2.approxPolyDP(contour, epsilon, True)
+
+        # Normalize contour points to 0–100 percentage space
+        points_pct = [
+            [round(float(pt[0][0]) / img_w * 100, 2),
+             round(float(pt[0][1]) / img_h * 100, 2)]
+            for pt in approx
+        ]
+
+        symptom_areas.append({
+            'x':              int(x),
+            'y':              int(y),
+            'width':          int(w),
+            'height':         int(h),
+            'area':           float(area),
+            'area_percentage': float((area / total_pixels) * 100),
+            'contourPoints':  points_pct,   # polygon points in %
+        })
+
+    # Sort by area descending, keep top 15
+    symptom_areas.sort(key=lambda z: z['area'], reverse=True)
+
     return {
         'affected_surface': round(affected_surface, 2),
-        'severity': severity,
-        'symptom_count': len(symptom_areas),
-        'symptom_areas': symptom_areas[:20]  # Limit to top 20 areas
+        'severity':         severity,
+        'symptom_count':    len(symptom_areas),
+        'symptom_areas':    symptom_areas[:15],
     }
 
 

@@ -25,8 +25,10 @@ class InterventionService {
   }
 
   // ============ Backend API Methods ============
+  // Target the VPS Next.js routes (`/api/interventions`). Errors fall back
+  // to the local SharedPreferences cache so the feature keeps working until
+  // the server-side routes are deployed.
 
-  /// Save intervention to backend
   Future<Intervention?> saveInterventionToBackend(
     Intervention intervention,
   ) async {
@@ -44,55 +46,54 @@ class InterventionService {
           'notes': intervention.notes,
         },
       );
-
-      if (response['success'] == true && response['intervention'] != null) {
-        return _parseInterventionFromApi(response['intervention']);
-      }
+      final Map<String, dynamic>? data = response is Map<String, dynamic>
+          ? (response['intervention'] as Map<String, dynamic>?) ??
+              (response['data'] as Map<String, dynamic>?)
+          : null;
+      if (data != null) return _parseInterventionFromApi(data);
       return null;
-    } catch (e) {
-      // If backend fails, mark for sync later
+    } catch (_) {
       await _markForSync(intervention);
       return null;
     }
   }
 
-  /// Get interventions from backend
   Future<List<Intervention>> getInterventionsFromBackend({
     String? status,
   }) async {
     try {
-      final queryParams = status != null ? {'status': status} : null;
       final response = await _api.get(
         '/interventions',
-        queryParams: queryParams,
+        queryParams: status != null ? {'status': status} : null,
       );
-
-      if (response['success'] == true && response['interventions'] != null) {
-        final List interventions = response['interventions'];
-        return interventions.map((i) => _parseInterventionFromApi(i)).toList();
+      final dynamic raw = response is Map<String, dynamic>
+          ? (response['interventions'] ??
+              response['data'] ??
+              response['items'])
+          : null;
+      if (raw is List) {
+        return raw
+            .map((i) => _parseInterventionFromApi(i as Map<String, dynamic>))
+            .toList();
       }
       return [];
-    } catch (e) {
-      // Fallback to local storage
+    } catch (_) {
       return getInterventions();
     }
   }
 
-  /// Get pending count from backend
   Future<int> getPendingCountFromBackend() async {
     try {
       final response = await _api.get('/interventions/pending/count');
-      if (response['success'] == true) {
-        return response['count'] ?? 0;
+      if (response is Map<String, dynamic> && response['count'] is num) {
+        return (response['count'] as num).toInt();
       }
-      return 0;
-    } catch (e) {
-      // Fallback to local count
+      return getPendingCount();
+    } catch (_) {
       return getPendingCount();
     }
   }
 
-  /// Update intervention status on backend
   Future<bool> updateInterventionStatusOnBackend(
     String interventionId,
     InterventionStatus status,
@@ -102,18 +103,17 @@ class InterventionService {
         '/interventions/$interventionId/status',
         body: {'status': _statusToString(status)},
       );
-      return response['success'] == true;
-    } catch (e) {
+      return response is Map<String, dynamic> && response['success'] == true;
+    } catch (_) {
       return false;
     }
   }
 
-  /// Delete intervention from backend
   Future<bool> deleteInterventionFromBackend(String interventionId) async {
     try {
       final response = await _api.delete('/interventions/$interventionId');
-      return response['success'] == true;
-    } catch (e) {
+      return response is Map<String, dynamic> && response['success'] == true;
+    } catch (_) {
       return false;
     }
   }

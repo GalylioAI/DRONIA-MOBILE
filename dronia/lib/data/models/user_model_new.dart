@@ -1,4 +1,4 @@
-/// User model matching the Next.js backend schema
+/// User model matching the Next.js / FastAPI backend schema.
 class User {
   final String id;
   final String email;
@@ -10,6 +10,8 @@ class User {
   final String? profileImage;
   final double? totalSurface;
   final String? soilType;
+  final UserRole role;
+  final UserPlan plan;
 
   User({
     required this.id,
@@ -22,6 +24,8 @@ class User {
     this.profileImage,
     this.totalSurface,
     this.soilType,
+    this.role = UserRole.user,
+    this.plan = UserPlan.free,
   });
 
   String get fullName {
@@ -39,15 +43,17 @@ class User {
           : '';
       return '$first$last';
     }
-    return email[0].toUpperCase();
+    return email.isNotEmpty ? email[0].toUpperCase() : 'U';
   }
+
+  bool get isAdmin => role == UserRole.admin;
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['_id'] as String? ?? json['id'] as String,
+      id: (json['_id'] ?? json['id']).toString(),
       email: json['email'] as String,
-      firstName: json['firstName'] as String?,
-      lastName: json['lastName'] as String?,
+      firstName: (json['firstName'] ?? json['first_name']) as String?,
+      lastName: (json['lastName'] ?? json['last_name']) as String?,
       phone: json['phone'] as String?,
       location: json['location'] != null
           ? Location.fromJson(json['location'] as Map<String, dynamic>)
@@ -60,6 +66,8 @@ class User {
       profileImage: json['profileImage'] as String?,
       totalSurface: (json['totalSurface'] as num?)?.toDouble(),
       soilType: json['soilType'] as String?,
+      role: UserRole.fromString(json['role'] as String? ?? 'user'),
+      plan: UserPlan.fromString(json['plan'] as String? ?? 'free'),
     );
   }
 
@@ -74,6 +82,8 @@ class User {
     'profileImage': profileImage,
     'totalSurface': totalSurface,
     'soilType': soilType,
+    'role': role.name,
+    'plan': plan.name,
   };
 
   User copyWith({
@@ -85,6 +95,8 @@ class User {
     String? profileImage,
     double? totalSurface,
     String? soilType,
+    UserRole? role,
+    UserPlan? plan,
   }) {
     return User(
       id: id,
@@ -97,7 +109,95 @@ class User {
       profileImage: profileImage ?? this.profileImage,
       totalSurface: totalSurface ?? this.totalSurface,
       soilType: soilType ?? this.soilType,
+      role: role ?? this.role,
+      plan: plan ?? this.plan,
     );
+  }
+}
+
+/// Role assigned to a user account.
+enum UserRole {
+  admin,
+  user;
+
+  static UserRole fromString(String value) {
+    final v = value.toLowerCase();
+    return UserRole.values.firstWhere(
+      (e) => e.name == v,
+      orElse: () => UserRole.user,
+    );
+  }
+
+  String get displayName {
+    switch (this) {
+      case UserRole.admin:
+        return 'Administrateur';
+      case UserRole.user:
+        return 'Agriculteur';
+    }
+  }
+}
+
+/// Subscription plan tiers offered by DronIA.
+enum UserPlan {
+  free,
+  premium,
+  enterprise;
+
+  static UserPlan fromString(String value) {
+    final v = value.toLowerCase();
+    return UserPlan.values.firstWhere(
+      (e) => e.name == v,
+      orElse: () => UserPlan.free,
+    );
+  }
+
+  String get displayName {
+    switch (this) {
+      case UserPlan.free:
+        return 'Gratuit';
+      case UserPlan.premium:
+        return 'Premium';
+      case UserPlan.enterprise:
+        return 'Entreprise';
+    }
+  }
+
+  String get tagline {
+    switch (this) {
+      case UserPlan.free:
+        return 'Pour découvrir DronIA';
+      case UserPlan.premium:
+        return 'Pour l\'exploitation au quotidien';
+      case UserPlan.enterprise:
+        return 'Pour les coopératives';
+    }
+  }
+
+  List<String> get features {
+    switch (this) {
+      case UserPlan.free:
+        return [
+          '5 analyses IA par jour',
+          'Cartographie 1 parcelle',
+          'Météo locale et historique 7 jours',
+        ];
+      case UserPlan.premium:
+        return [
+          'Analyses IA illimitées',
+          'Parcelles illimitées',
+          'Indices satellite Sentinel-2 complets',
+          'Assistant IA Clawdbot avec vision',
+          'Génération de rapports PDF',
+        ];
+      case UserPlan.enterprise:
+        return [
+          'Toutes les fonctionnalités Premium',
+          'Suivi multi-exploitations',
+          'Support prioritaire',
+          'Tableau de bord agronomique avancé',
+        ];
+    }
   }
 }
 

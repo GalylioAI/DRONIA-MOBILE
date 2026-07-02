@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/services/analysis_history_service.dart';
 import '../../../data/services/storage_service.dart';
 import '../../../data/network/api_client.dart';
+import '../../widgets/disease_knowledge_card.dart';
 
 /// Analysis result screen - Modern elegant design with EfficientNet integration
 class AnalysisResultScreen extends StatefulWidget {
@@ -45,6 +47,7 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen>
   String _healthStatus = '';
   List<Map<String, dynamic>> _detectedIssues = [];
   List<String> _recommendations = [];
+
 
   @override
   void initState() {
@@ -98,6 +101,7 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen>
         '/classify/base64',
         fields: {'image': base64Image},
         requiresAuth: false,
+        baseUrl: AppConstants.mlBaseUrl,
       );
 
       // Process the response
@@ -124,11 +128,24 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen>
         : (rawConfidence * 100).toDouble();
 
     // Use correct field names from API
-    final String diseaseFrench =
+    final String rawDisease =
         result['disease'] ??
         result['disease_name_fr'] ??
         result['diseaseName'] ??
         'Inconnu';
+
+    // Si la plante sélectionnée est disponible et que la maladie est connue,
+    // afficher "[Plante] — [Maladie]" pour que le résultat corresponde au choix utilisateur.
+    final String? selectedPlant = result['selectedPlant'] as String?;
+    final String diseaseFrench = () {
+      if (isHealthy) return rawDisease;
+      if (selectedPlant != null && selectedPlant.isNotEmpty) {
+        final String diseaseType = (result['diseaseType'] as String?) ?? rawDisease;
+        return '$selectedPlant — $diseaseType';
+      }
+      return rawDisease;
+    }();
+
     final String diseaseClass =
         result['diseaseClass'] ?? result['disease_name'] ?? 'Unknown';
     final String severity = result['severity'] ?? 'Faible';
@@ -228,6 +245,7 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen>
     debugPrint(
       'Processed: healthScore=$healthScore, status=$status, issues=${issues.length}',
     );
+
   }
 
   /// Get description for a detected issue
@@ -602,6 +620,8 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen>
           SizedBox(height: 20),
           _buildDetectedIssues(),
           SizedBox(height: 20),
+          _buildDiseaseKnowledgeSection(),
+          SizedBox(height: 20),
           _buildRecommendations(),
           SizedBox(height: 24),
           _buildActionButtons(),
@@ -629,7 +649,6 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen>
       ),
       child: Stack(
         children: [
-          // Show actual image if available, otherwise show placeholder
           if (hasImage)
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
@@ -651,23 +670,17 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen>
                       color: AppColors.primaryGreen.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      Icons.image,
-                      size: 48,
-                      color: AppColors.primaryGreen,
-                    ),
+                    child: const Icon(Icons.image,
+                        size: 48, color: AppColors.primaryGreen),
                   ),
-                  SizedBox(height: 12),
-                  Text(
-                    'Image analysée',
-                    style: TextStyle(
-                      color: context.colors.textSecondary,
-                      fontSize: 14,
-                    ),
-                  ),
+                  const SizedBox(height: 12),
+                  Text('Image analysée',
+                      style: TextStyle(
+                          color: context.colors.textSecondary, fontSize: 14)),
                 ],
               ),
             ),
+          // Badge "Analysée"
           Positioned(
             top: 12,
             right: 12,
@@ -676,23 +689,18 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen>
               decoration: BoxDecoration(
                 color: AppColors.success.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.success.withValues(alpha: 0.3),
-                ),
+                border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.check_circle, color: AppColors.success, size: 14),
-                  SizedBox(width: 6),
-                  Text(
-                    'Analysée',
-                    style: TextStyle(
-                      color: AppColors.success,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  const SizedBox(width: 6),
+                  const Text('Analysée',
+                      style: TextStyle(
+                          color: AppColors.success,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -1063,6 +1071,21 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen>
     );
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // FICHE MALADIE — utilise DiseaseKnowledgeCard (widget partagé)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  Widget _buildDiseaseKnowledgeSection() {
+    final result = _analysisResult;
+    if (result == null) return const SizedBox.shrink();
+    final bool isHealthy = result['isHealthy'] ?? result['is_healthy'] ?? true;
+    if (isHealthy) return const SizedBox.shrink();
+    return DiseaseKnowledgeCard(
+      analysisResult: result,
+      selectedPlant: result['selectedPlant'] as String?,
+    );
+  }
+
   Widget _buildRecommendations() {
     // Define icons for different recommendation types
     final List<IconData> recommendationIcons = [
@@ -1420,3 +1443,10 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen>
     }
   }
 }
+
+/// Dessine les zones de maladie en rouge translucide sur l'image.
+/// Chaque zone est décrite avec des coordonnées en pourcentage (0–100)
+/// via les champs x1Pct, y1Pct, x2Pct, y2Pct.
+// ─────────────────────────────────────────────────────────────────────────────
+// Painter : contours organiques rouges (style pathologie végétale)
+// ─────────────────────────────────────────────────────────────────────────────
