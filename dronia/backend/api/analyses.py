@@ -10,8 +10,9 @@ from datetime import datetime
 from bson import ObjectId
 from api.auth import get_current_user, get_database
 
-# Initialize router
-router = APIRouter(prefix="/analyses", tags=["Analyses"])
+# Initialize router (no baked prefix: monté sous /analyses ET /predictions dans main.py
+# pour rester compatible avec l'app mobile qui appelle /predictions)
+router = APIRouter(tags=["Analyses"])
 
 
 # ============ Pydantic Models ============

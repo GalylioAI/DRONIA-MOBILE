@@ -33,7 +33,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
   late Animation<double> _fadeAnimation;
 
   // Step 1: Model & Image
-  String _selectedModel = 'efficientnet';
+  String _selectedModel = 'vit';
   String _selectedCulture = '';
   String _selectedClass = '';   // 'cereals' | 'legumes' | 'fruits'
   String _selectedPlant = '';   // plant name chosen from dropdown
@@ -341,50 +341,17 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
       Map<String, dynamic> response;
 
       if (_selectedModel == 'vit') {
-        // ViT — appel direct HuggingFace depuis le téléphone
-        final hfToken = Environment.hfToken;
-        final hfUrl = Uri.parse(
-          'https://api-inference.huggingface.co/models/aladinhabibi/vit-plantdoc',
+        // ViT Combined — HF Space backend
+        final raw = await apiClient.postForm(
+          '/classify/vit',
+          fields: {'image': base64Image},
+          requiresAuth: true,
+          baseUrl: Environment.legacyApiBaseUrl,
         );
-        final imageBytes = base64Decode(base64Image);
-        final vitClient = http.Client();
-        http.Response? hfResp;
-        try {
-          // Retry jusqu'à 5 fois si model loading (503)
-          for (int i = 0; i < 5; i++) {
-            hfResp = await vitClient.post(
-              Uri.parse('$hfUrl?wait_for_model=true'),
-              headers: {
-                'Authorization': 'Bearer $hfToken',
-                'Content-Type': 'application/octet-stream',
-              },
-              body: imageBytes,
-            ).timeout(const Duration(seconds: 60));
-            if (hfResp.statusCode != 503) break;
-            await Future.delayed(const Duration(seconds: 15));
-          }
-        } finally {
-          vitClient.close();
+        if (raw is! Map<String, dynamic>) {
+          throw Exception('Réponse HF Space invalide (format inattendu).');
         }
-        if (hfResp == null || hfResp.statusCode != 200) {
-          throw Exception('HuggingFace erreur: ${hfResp?.statusCode} — ${hfResp?.body.substring(0, 200)}');
-        }
-        final hfResults = jsonDecode(hfResp.body) as List;
-        final top3 = hfResults.take(3).map((r) => {
-          'class': r['label'] as String,
-          'confidence': (r['score'] as double),
-        }).toList();
-        final primary = top3.first;
-        final isHealthy = (primary['class'] as String).toLowerCase().contains('healthy');
-        response = {
-          'success': true,
-          'disease': primary['class'],
-          'confidence': ((primary['confidence'] as double) * 100).round(),
-          'isHealthy': isHealthy,
-          'generalStatus': isHealthy ? 'Saine' : 'Malade',
-          'top3': top3,
-          'source': 'vit-combined-hf',
-        };
+        response = raw;
         response['selectedPlant'] = _selectedPlant;
       } else if (_selectedModel == 'demo') {
         // Mock demo result
@@ -446,7 +413,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
     if (msg.contains('SocketException') ||
         msg.contains('Failed host lookup') ||
         msg.contains('Network is unreachable')) {
-      return 'Impossible de joindre le serveur VPS. Vérifiez votre connexion internet.';
+      return 'Impossible de joindre le serveur. Vérifiez votre connexion internet.';
     }
     if (msg.contains('TimeoutException') || msg.contains('timed out')) {
       return 'Le modèle IA met du temps à répondre (chargement initial). Réessayez dans 30 secondes.';
@@ -836,27 +803,11 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
         ),
         SizedBox(height: 12),
         _buildModelTile(
-          id: 'efficientnet',
-          icon: Icons.auto_awesome,
-          color: AppColors.primaryGreen,
-          title: 'EfficientNet — VPS',
-          subtitle: 'PlantVillage 38 classes • 96% précision',
-        ),
-        SizedBox(height: 10),
-        _buildModelTile(
           id: 'vit',
           icon: Icons.hub_outlined,
           color: Color(0xFF1976D2),
-          title: 'ViT Combined — HuggingFace',
-          subtitle: 'PlantDoc + PlantSeg 142 classes • Vision Transformer',
-        ),
-        SizedBox(height: 10),
-        _buildModelTile(
-          id: 'demo',
-          icon: Icons.science_outlined,
-          color: context.colors.textSecondary,
-          title: 'Mode Démo',
-          subtitle: 'Données de démonstration',
+          title: 'Modèle de détection des maladies',
+          subtitle: 'Google Vision Transformer',
         ),
       ],
     );
@@ -2483,11 +2434,15 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
     final rawConfidence = (_analysisResult!['confidence'] ?? 95).toDouble();
     final confidence = (rawConfidence > 1 ? rawConfidence : rawConfidence * 100)
         .toInt();
-    final diseaseName =
+    final rawDiseaseName =
         _analysisResult!['disease'] ??
         _analysisResult!['disease_name_fr'] ??
         _analysisResult!['disease_name'] ??
         'Inconnu';
+    // Replace the plant family in parentheses with the user-selected crop
+    final diseaseName = (_selectedPlant.isNotEmpty && rawDiseaseName.contains('('))
+        ? rawDiseaseName.replaceAll(RegExp(r'\([^)]*\)'), '($_selectedPlant)')
+        : rawDiseaseName;
     final affectedSurface =
         (_analysisResult!['affectedSurface'] ??
                 _analysisResult!['affected_surface'] ??
@@ -3253,7 +3208,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen>
                 ),
                 SizedBox(height: 10),
                 _buildResultInfoRow('Source', 'Smartphone'),
-                _buildResultInfoRow('Appareil', 'Camera'),
+                _buildResultInfoRow('Appareil', 'Caméra'),
                 _buildResultInfoRow('Résolution', 'HD / 4K'),
                 _buildResultInfoRow('Qualité', 'Optimale', AppColors.success),
                 _buildResultInfoRow('Modèle IA', 'DronIA v2.1'),

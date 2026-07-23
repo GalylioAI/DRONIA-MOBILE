@@ -167,6 +167,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
         index: _selectedIndex,
         width: 1024,
         height: 1024,
+        dateStart: DateFormat('yyyy-MM-dd').format(_dateStart),
+        dateEnd: DateFormat('yyyy-MM-dd').format(_dateEnd),
       );
 
       if (imageBytes != null && mounted) {
@@ -185,6 +187,8 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
         polygon: _polygonPoints,
         index: _selectedIndex,
         gridSize: 100,
+        dateStart: DateFormat('yyyy-MM-dd').format(_dateStart),
+        dateEnd: DateFormat('yyyy-MM-dd').format(_dateEnd),
       );
 
       if (mounted) {
@@ -902,14 +906,18 @@ class _FieldMonitoringScreenState extends State<FieldMonitoringScreen> {
       firstDate: DateTime(2015),
       lastDate: DateTime.now().add(Duration(days: 14)),
       initialDateRange: DateTimeRange(start: _dateStart, end: _dateEnd),
+      // Calendrier assorti au thème de l'app (clair ou sombre).
       builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.primaryGreen,
-              onPrimary: Colors.white,
-              surface: Color(0xFF1E1E2E),
-            ),
+          data: (isDark ? ThemeData.dark() : ThemeData.light()).copyWith(
+            colorScheme:
+                (isDark ? const ColorScheme.dark() : const ColorScheme.light())
+                    .copyWith(
+                      primary: AppColors.primaryGreen,
+                      onPrimary: Colors.white,
+                      surface: isDark ? const Color(0xFF1E1E2E) : Colors.white,
+                    ),
           ),
           child: child!,
         );

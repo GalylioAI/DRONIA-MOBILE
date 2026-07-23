@@ -1,0 +1,13 @@
+{
+  "name": "drone-simulator",
+  "version": "1.0.0",
+  "description": "Simulateur de drone DJI pour l'application DronIA — WebSocket temps réel",
+  "type": "module",
+  "main": "server/websocket_server.js",
+  "scripts": {
+    "start": "node server/websocket_server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

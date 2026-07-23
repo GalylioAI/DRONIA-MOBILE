@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/network/api_client.dart';
 import '../../../data/services/openweathermap_service.dart';
@@ -54,85 +52,58 @@ class _DashboardScreenState extends State<DashboardScreen> {
     int alerts = 0;
     double surface = 0;
 
-    // 1. Plant disease analyses (local cache populated by Upload Photo).
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString('saved_analyses');
-      if (raw != null && raw.isNotEmpty) {
-        final list = (json.decode(raw) as List).cast<Map<String, dynamic>>();
-        total += list.length;
-        for (final a in list) {
-          final status = (a['healthStatus'] ?? a['status'] ?? '').toString();
-          if (status.toLowerCase().contains('sain')) {
-            healthy++;
-          } else {
-            alerts++;
-          }
-        }
-      }
-    } catch (_) {/* ignore */}
-
-    // 2. Insect analyses (local cache populated by Insect screen).
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString('insect_analyses_history');
-      if (raw != null && raw.isNotEmpty) {
-        final list = (json.decode(raw) as List).cast<Map<String, dynamic>>();
-        total += list.length;
-        for (final a in list) {
-          final has = a['hasInsects'] == true ||
-              ((a['totalCount'] ?? 0) is num &&
-                  (a['totalCount'] as num) > 0) ||
-              ((a['detections'] as List?)?.isNotEmpty ?? false);
-          if (has) {
-            alerts++;
-          } else {
-            healthy++;
-          }
-        }
-      }
-    } catch (_) {/* ignore */}
-
-    // 3. Predictions history (server-side, VPS /api/predictions).
+    // 1. Analyses de maladies (plantes) — agrégées côté serveur, par compte.
+    //    /analyses/stats combine les collections `analyses` et `predictions`
+    //    filtrées par utilisateur : source de vérité unique, identique sur tous
+    //    les appareils connectés au même compte (plus de cache local par appareil).
     try {
       final api = ApiClient(storage: StorageService());
-      final res = await api.get('/predictions', queryParams: {'limit': 200});
-      final dynamic listRaw = res['predictions'] ?? res['data'] ?? res['analyses'];
-      if (listRaw is List) {
-        total += listRaw.length;
-        for (final raw in listRaw) {
-          final a = Map<String, dynamic>.from(raw as Map);
-          final status = (a['healthStatus'] ?? a['status'] ?? a['disease'] ?? '')
-              .toString()
-              .toLowerCase();
-          if (status.contains('sain') || status.contains('healthy')) {
-            healthy++;
-          } else {
-            alerts++;
-          }
-        }
-      }
-    } catch (_) {/* ignore — endpoint may be unavailable */}
+      final res = await api.get('/analyses/stats');
+      final stats = (res is Map && res['stats'] is Map)
+          ? Map<String, dynamic>.from(res['stats'] as Map)
+          : <String, dynamic>{};
+      total += (stats['total'] as num?)?.toInt() ?? 0;
+      healthy += (stats['healthy'] as num?)?.toInt() ?? 0;
+      alerts += ((stats['disease'] as num?)?.toInt() ?? 0) +
+          ((stats['stress'] as num?)?.toInt() ?? 0);
+    } catch (_) {/* ignore — endpoint indisponible */}
 
-    // 4. Total surface — prefer the user profile's totalSurface, otherwise
-    //    sum every saved region's hectares.
+    // 2. Analyses d'insectes — agrégées côté serveur, par compte.
+    //    Une analyse sans insecte détecté compte comme "saine", avec insecte(s)
+    //    comme "alerte" (même logique métier qu'auparavant).
     try {
       final api = ApiClient(storage: StorageService());
-      final me = await api.get('/auth/me');
-      final Map<String, dynamic> user = me is Map<String, dynamic> && me['data'] is Map
-          ? me['data'] as Map<String, dynamic>
-          : me as Map<String, dynamic>;
-      surface = (user['totalSurface'] as num?)?.toDouble() ?? 0;
+      final res = await api.get('/analyses/insects/stats');
+      final stats = (res is Map && res['stats'] is Map)
+          ? Map<String, dynamic>.from(res['stats'] as Map)
+          : <String, dynamic>{};
+      final insectTotal = (stats['totalAnalyses'] as num?)?.toInt() ?? 0;
+      final withInsects = (stats['analysesWithInsects'] as num?)?.toInt() ?? 0;
+      total += insectTotal;
+      alerts += withInsects;
+      healthy += insectTotal - withInsects;
+    } catch (_) {/* ignore */}
+
+    // 3. Surface totale = somme RÉELLE des parcelles (régions) de l'utilisateur,
+    //    identique à "Mes régions" du profil. Repli sur le totalSurface du profil
+    //    seulement si l'utilisateur n'a aucune parcelle enregistrée.
+    try {
+      final api = ApiClient(storage: StorageService());
+      final res = await api.get('/regions');
+      final dynamic ha = (res is Map<String, dynamic>)
+          ? (res['totalHectares'] ?? res['total'] ?? 0)
+          : 0;
+      if (ha is num) surface = ha.toDouble();
     } catch (_) {/* ignore */}
 
     if (surface == 0) {
       try {
         final api = ApiClient(storage: StorageService());
-        final res = await api.get('/regions');
-        final dynamic ha = (res is Map<String, dynamic>)
-            ? (res['totalHectares'] ?? res['total'] ?? 0)
-            : 0;
-        if (ha is num) surface = ha.toDouble();
+        final me = await api.get('/auth/me');
+        final Map<String, dynamic> user = me is Map<String, dynamic> && me['data'] is Map
+            ? me['data'] as Map<String, dynamic>
+            : me as Map<String, dynamic>;
+        surface = (user['totalSurface'] as num?)?.toDouble() ?? 0;
       } catch (_) {/* ignore */}
     }
 

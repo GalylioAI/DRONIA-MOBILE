@@ -51,7 +51,20 @@ def detect_disease_symptoms(image: Image.Image) -> dict:
     
     # Combine all symptom masks
     combined_mask = cv2.bitwise_or(yellow_mask, cv2.bitwise_or(brown_mask, cv2.bitwise_or(dark_mask, dark_brown_mask)))
-    
+
+    # ── Exclure le fond (ciel, nuages, horizon, reflets) ──────────────────────
+    # Le drone filme la plante sur un fond de ciel / relief lointain. Les teintes
+    # bleutées du ciel et les zones très lumineuses (nuages, surexposition,
+    # montagnes voilées) déclenchaient de faux foyers de symptômes hors plante
+    # (ex. un point sur le ciel). On retire ces régions du masque avant de
+    # localiser les foyers, pour que les points restent sur le feuillage réel.
+    sky_blue = cv2.inRange(hsv, np.array([90, 30, 90]), np.array([140, 255, 255]))
+    bright_bg = cv2.inRange(hsv, np.array([0, 0, 200]), np.array([180, 60, 255]))
+    background_mask = cv2.bitwise_or(sky_blue, bright_bg)
+    # Dilatation légère pour absorber les bords flous du ciel.
+    background_mask = cv2.dilate(background_mask, np.ones((7, 7), np.uint8), iterations=1)
+    combined_mask = cv2.bitwise_and(combined_mask, cv2.bitwise_not(background_mask))
+
     # Remove small noise
     kernel = np.ones((5, 5), np.uint8)
     combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_OPEN, kernel)

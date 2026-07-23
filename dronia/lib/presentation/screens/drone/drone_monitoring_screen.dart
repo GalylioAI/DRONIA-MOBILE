@@ -14,9 +14,12 @@ import 'dart:io';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../data/models/detection_model.dart';
+import '../../../data/models/drone_telemetry_model.dart';
 import '../../../data/models/intervention_model.dart';
 import '../../../data/services/detection_service.dart';
+import '../../../data/services/drone_simulator_service.dart';
 import '../../../data/services/intervention_service.dart';
+import '../../../data/services/service_locator.dart';
 import 'fullscreen_player_screen.dart';
 import 'planned_interventions_screen.dart';
 
@@ -34,6 +37,20 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
   // Video player
   late VideoPlayerController _videoController;
   bool _isVideoInitialized = false;
+
+  // Sources vidéo réelles (démonstration scan IA) — uniquement Maladies &
+  // Insectes : chaque onglet pilote son propre modèle IA (ViT / YOLO11s).
+  static const Map<String, String> _videoSources = {
+    'Maladies': 'assets/videos/leaf_disease_vid.mp4',
+    // Vidéo validée avec yolo11s_pest_detection : Locustoidea (criquets) et
+    // Bactrocera minax (mouche des fruits) détectés de t≈23s à la fin.
+    'Insectes': 'assets/videos/vid_insecte.mp4',
+  };
+
+  /// Mode actif déduit de la vidéo courante : `true` = onglet Insectes
+  /// (détection YOLO11s), `false` = onglet Maladies (classification ViT).
+  bool get _isInsectMode => _videoAsset == _videoSources['Insectes'];
+  String _videoAsset = 'assets/videos/leaf_disease_vid.mp4';
 
   // Screen capture
   final GlobalKey _videoGlobalKey = GlobalKey();
@@ -64,18 +81,70 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
   final double _temperature = 22.1;
   Timer? _telemetryTimer;
 
+  // Simulateur de drone DJI (WebSocket) — remplace le SDK DJI en attendant
+  // le drone réel. Quand il est connecté, sa télémétrie remplace les
+  // valeurs simulées localement.
+  final DroneSimulatorService _droneSim = DroneSimulatorService();
+  StreamSubscription<DroneTelemetry>? _telemetrySub;
+  StreamSubscription<bool>? _simConnectionSub;
+  bool _simConnected = false;
+  DroneTelemetry? _simTelemetry;
+
   // Stats
   int _healthyCount = 4;
   int _detectionCount = 0;
   int _alertCount = 0;
+
+  // Badge « zone saine » affiché après un scan IA sans anomalie
+  bool _showHealthyBadge = false;
+  Timer? _healthyBadgeTimer;
+
+  // Étiquette maladie figée pour la vidéo en cours (le top-1 du ViT est
+  // instable d'une frame à l'autre) — remise à zéro au changement de vidéo.
+  String? _sessionDiseaseLabel;
 
   @override
   void initState() {
     super.initState();
     _initializeVideo();
     _startTelemetrySimulation();
+    _connectDroneSimulator();
     _loadRecentDetections();
     _loadPendingInterventionsCount();
+  }
+
+  /// Connexion au simulateur de drone (reconnexion automatique intégrée).
+  void _connectDroneSimulator() {
+    _droneSim.connect();
+    _telemetrySub = _droneSim.telemetryStream.listen(_onSimTelemetry);
+    _simConnectionSub = _droneSim.connectionStream.listen((connected) {
+      if (mounted) setState(() => _simConnected = connected);
+      // Les parcelles de l'utilisateur sont poussées vers le simulateur :
+      // la vue web les dessine et le drone démarre sur la première.
+      if (connected) _sendRegionsToSimulator();
+    });
+  }
+
+  Future<void> _sendRegionsToSimulator() async {
+    try {
+      final response = await ServiceLocator().regions.getRegions();
+      if (response.regions.isNotEmpty) {
+        _droneSim.sendRegions(response.regions);
+      }
+    } catch (_) {
+      // Hors ligne ou non connecté : le simulateur garde sa position par défaut.
+    }
+  }
+
+  /// Applique la télémétrie temps réel du simulateur (toutes les 100 ms).
+  void _onSimTelemetry(DroneTelemetry telemetry) {
+    if (!mounted) return;
+    setState(() {
+      _simTelemetry = telemetry;
+      _battery = telemetry.battery;
+      _altitude = telemetry.altitude;
+      _speed = telemetry.speed;
+    });
   }
 
   Future<void> _loadPendingInterventionsCount() async {
@@ -86,7 +155,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
   }
 
   Future<void> _initializeVideo() async {
-    _videoController = VideoPlayerController.asset('assets/videos/pov.mp4');
+    _videoController = VideoPlayerController.asset(_videoAsset);
 
     try {
       await _videoController.initialize();
@@ -105,6 +174,28 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     }
   }
 
+  /// Change la vidéo source (Maladies / Insectes / POV) et relance le scan IA.
+  Future<void> _switchVideo(String asset) async {
+    if (asset == _videoAsset) return;
+    _detectionTimer?.cancel();
+    _recordingTimer?.cancel();
+    try {
+      await _videoController.pause();
+      await _videoController.dispose();
+    } catch (_) {}
+    setState(() {
+      _videoAsset = asset;
+      _isVideoInitialized = false;
+      _currentDetection = null;
+      _showDetectionAlert = false;
+      _recordingSeconds = 0;
+      _isMissionActive = true;
+      // Nouvelle vidéo = nouveau cas : l'étiquette maladie figée repart à zéro.
+      _sessionDiseaseLabel = null;
+    });
+    await _initializeVideo();
+  }
+
   void _startRecording() {
     _isRecording = true;
     _recordingTimer = Timer.periodic(Duration(seconds: 1), (timer) {
@@ -120,44 +211,76 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
   }
 
   void _startDetection() {
-    // Run detection every 3-5 seconds
-    _detectionTimer = Timer.periodic(Duration(seconds: 4), (timer) async {
+    _detectionTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
       if (!_isMissionActive || !mounted) return;
 
-      final detection = await _detectionService.runDetection();
-
-      if (detection != null && mounted) {
-        // Save to history
-        await _detectionService.saveDetection(detection);
-
-        // Pause video when disease is detected
-        if (detection.type == DetectionType.disease) {
-          _videoController.pause();
+      // Capture the current video frame from the RepaintBoundary
+      Uint8List? frameBytes;
+      try {
+        final boundary =
+            _videoGlobalKey.currentContext?.findRenderObject()
+                as RenderRepaintBoundary?;
+        if (boundary != null) {
+          final img = await boundary.toImage(pixelRatio: 1.5);
+          final data = await img.toByteData(format: ui.ImageByteFormat.png);
+          frameBytes = data?.buffer.asUint8List();
         }
+      } catch (_) {}
+
+      Detection? detection;
+      var scanOk = false;
+      if (frameBytes != null) {
+        // Détection IA réelle, ciblée sur l'onglet actif :
+        //   Maladies → ViT (points) · Insectes → YOLO11s (rectangle).
+        final result = await _detectionService.runRealDetection(
+          frameBytes,
+          insectMode: _isInsectMode,
+        );
+        scanOk = result.ok;
+        detection = result.detection;
+      } else {
+        // Fallback to mock si la capture a échoué
+        detection = await _detectionService.runDetection();
+      }
+
+      if (!mounted) return;
+
+      if (detection != null) {
+        // Une même vidéo = un même cas : le ViT (~100 classes) hésite entre
+        // classes proches d'une frame à l'autre (probabilité brute ~5 %).
+        // On fige donc l'étiquette maladie de la première détection tant
+        // que la vidéo ne change pas (reset dans _switchVideo).
+        if (detection.type == DetectionType.disease) {
+          _sessionDiseaseLabel ??= detection.label;
+          detection = detection.copyWith(label: _sessionDiseaseLabel);
+        }
+        await _detectionService.saveDetection(detection);
+        if (!mounted) return;
+
+        // Le drone "s'arrête" sur l'anomalie : pause sur TOUTE détection
+        // (maladie OU insecte). La vidéo ne reprend qu'à la fermeture du
+        // pop-up par l'utilisateur (cf. _dismissDetectionAlert).
+        _detectionTimer?.cancel();
+        _videoController.pause();
 
         setState(() {
           _currentDetection = detection;
-          _recentDetections.insert(0, detection);
-          if (_recentDetections.length > 5) {
-            _recentDetections.removeLast();
-          }
+          _showHealthyBadge = false;
+          _recentDetections.insert(0, detection!);
+          if (_recentDetections.length > 5) _recentDetections.removeLast();
           _detectionCount++;
-
-          if (detection.type == DetectionType.disease) {
-            _alertCount++;
-            _showDetectionAlert = true;
-          }
+          _alertCount++;
+          _showDetectionAlert = true;
         });
-
-        // Hide alert after 2 seconds and resume video
-        Future.delayed(Duration(seconds: 2), () {
-          if (mounted) {
-            setState(() => _showDetectionAlert = false);
-            // Resume video after alert is dismissed
-            if (_isMissionActive) {
-              _videoController.play();
-            }
-          }
+      } else if (scanOk) {
+        // Le modèle a répondu et n'a rien trouvé → zone saine.
+        _healthyBadgeTimer?.cancel();
+        setState(() {
+          _healthyCount++;
+          _showHealthyBadge = true;
+        });
+        _healthyBadgeTimer = Timer(const Duration(seconds: 4), () {
+          if (mounted) setState(() => _showHealthyBadge = false);
         });
       }
     });
@@ -166,6 +289,8 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
   void _startTelemetrySimulation() {
     _telemetryTimer = Timer.periodic(Duration(seconds: 2), (timer) {
       if (!mounted) return;
+      // La télémétrie réelle du simulateur remplace les variations locales.
+      if (_simConnected) return;
       setState(() {
         // Simulate small variations
         _altitude += (DateTime.now().millisecond % 3 - 1) * 0.1;
@@ -192,6 +317,10 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     _recordingTimer?.cancel();
     _detectionTimer?.cancel();
     _telemetryTimer?.cancel();
+    _healthyBadgeTimer?.cancel();
+    _telemetrySub?.cancel();
+    _simConnectionSub?.cancel();
+    _droneSim.dispose();
     super.dispose();
   }
 
@@ -217,10 +346,14 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             currentDetection: _currentDetection,
             showDetectionAlert: _showDetectionAlert,
             isMissionActive: _isMissionActive,
-            onVoirPressed: () {
-              if (_currentDetection != null) {
-                _showDetectionDetailsDialog(_currentDetection!);
-              }
+            onVoirPressed: () async {
+              final detection = _currentDetection;
+              if (detection == null) return;
+              // Même règle qu'en mode normal : la vidéo reste en pause
+              // jusqu'à la fermeture du détail / de la planification.
+              _hideDetectionAlert();
+              await _showDetectionDetailsDialog(detection);
+              _resumeAfterDetection();
             },
           );
         },
@@ -238,9 +371,11 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
       _isMissionActive = !_isMissionActive;
       if (_isMissionActive) {
         // Resume mission - restore values
-        _battery = 86;
-        _altitude = 31.0;
-        _speed = 6.3;
+        if (!_simConnected) {
+          _battery = 86;
+          _altitude = 31.0;
+          _speed = 6.3;
+        }
         _videoController.play();
         _startRecording();
         _startTelemetrySimulation();
@@ -253,11 +388,18 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
         _telemetryTimer?.cancel();
         _detectionTimer?.cancel();
         // Reset telemetry to 0
-        _battery = 0;
-        _altitude = 0;
-        _speed = 0;
+        if (!_simConnected) {
+          _battery = 0;
+          _altitude = 0;
+          _speed = 0;
+        }
       }
     });
+
+    // Répercute la mission sur le drone virtuel : décollage / arrêt.
+    if (_simConnected) {
+      _droneSim.sendCommand(_isMissionActive ? 'TAKEOFF' : 'STOP');
+    }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -270,14 +412,27 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     );
   }
 
+  /// Fermeture directe du petit pop-up (croix) : masque ET reprend le flux.
   void _dismissDetectionAlert() {
+    _hideDetectionAlert();
+    _resumeAfterDetection();
+  }
+
+  /// Masque le pop-up d'alerte SANS relancer la vidéo — le flux reste en
+  /// pause tant que la chaîne détail → planification n'est pas refermée.
+  void _hideDetectionAlert() {
     setState(() {
       _showDetectionAlert = false;
+      _currentDetection = null;
     });
-    // Resume video when alert is dismissed
-    if (_isMissionActive) {
-      _videoController.play();
-    }
+  }
+
+  /// Reprise du flux + relance du scan IA une fois tous les pop-ups fermés.
+  void _resumeAfterDetection() {
+    if (!mounted || !_isMissionActive) return;
+    _videoController.play();
+    _detectionTimer?.cancel();
+    _startDetection();
   }
 
   @override
@@ -295,6 +450,8 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   SizedBox(height: 12),
                   _buildQuickStats(),
                   SizedBox(height: 12),
+                  _buildVideoSourceSelector(),
+                  SizedBox(height: 8),
                   _buildVideoSection(),
                   SizedBox(height: 12),
                   _buildScreenCaptureSection(),
@@ -327,6 +484,21 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
       ),
       child: Row(
         children: [
+          // Indicateur de connexion au simulateur de drone
+          Tooltip(
+            message: _simConnected
+                ? 'Simulateur de drone connecté'
+                : 'Simulateur de drone hors ligne',
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _simConnected ? AppColors.primaryGreen : AppColors.error,
+              ),
+            ),
+          ),
+          SizedBox(width: 10),
           // Main control buttons
           _buildCompactButton(
             icon: Icons.arrow_upward,
@@ -410,132 +582,213 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            20,
-            20,
-            MediaQuery.of(context).padding.bottom + 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.gamepad,
-                    color: AppColors.primaryGreen,
-                    size: 20,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Commandes Drone',
-                    style: TextStyle(
-                      color: context.colors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+      // Le panneau reste ouvert pendant le pilotage : seuls « Voir moins »
+      // ou un glissement vers le bas le ferment. StatefulBuilder permet de
+      // rafraîchir le libellé Arrêter/Reprendre sans fermer.
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              20,
+              20,
+              MediaQuery.of(context).padding.bottom + 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.gamepad,
+                      color: AppColors.primaryGreen,
+                      size: 20,
                     ),
-                  ),
-                  Spacer(),
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: context.colors.textSecondary.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Commandes Drone',
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
-                      child: Text(
-                        'Voir moins',
-                        style: TextStyle(
-                          color: context.colors.textSecondary,
-                          fontSize: 12,
+                    ),
+                    Spacer(),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: context.colors.textSecondary.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          'Voir moins',
+                          style: TextStyle(
+                            color: context.colors.textSecondary,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                // Movement controls
+                Text(
+                  'Mouvement',
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
+                    fontSize: 12,
                   ),
-                ],
-              ),
-              SizedBox(height: 16),
-              // Movement controls
-              Text(
-                'Mouvement',
-                style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
-              ),
-              SizedBox(height: 6),
-              Row(
-                children: [
-                  _buildOptionButton(Icons.keyboard_arrow_up, 'Avancer', () {
-                    _onDroneCommand('forward');
-                    Navigator.pop(context);
-                  }),
-                  SizedBox(width: 6),
-                  _buildOptionButton(Icons.keyboard_arrow_down, 'Reculer', () {
-                    _onDroneCommand('backward');
-                    Navigator.pop(context);
-                  }),
-                  SizedBox(width: 6),
-                  _buildOptionButton(Icons.keyboard_arrow_left, 'Gauche', () {
-                    _onDroneCommand('left');
-                    Navigator.pop(context);
-                  }),
-                  SizedBox(width: 6),
-                  _buildOptionButton(Icons.keyboard_arrow_right, 'Droite', () {
-                    _onDroneCommand('right');
-                    Navigator.pop(context);
-                  }),
-                ],
-              ),
-              SizedBox(height: 12),
-              // Altitude controls
-              Text(
-                'Altitude',
-                style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
-              ),
-              SizedBox(height: 6),
-              Row(
-                children: [
-                  _buildOptionButton(Icons.arrow_upward, 'Monter', () {
-                    _onDroneCommand('up');
-                    Navigator.pop(context);
-                  }),
-                  SizedBox(width: 6),
-                  _buildOptionButton(Icons.arrow_downward, 'Descendre', () {
-                    _onDroneCommand('down');
-                    Navigator.pop(context);
-                  }),
-                ],
-              ),
-              SizedBox(height: 12),
-              // Actions
-              Text(
-                'Actions',
-                style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
-              ),
-              SizedBox(height: 6),
-              Row(
-                children: [
-                  _buildOptionButton(
-                    _isMissionActive ? Icons.stop : Icons.play_arrow,
-                    _isMissionActive ? 'Arrêter' : 'Reprendre',
-                    () {
-                      _toggleMission();
-                      Navigator.pop(context);
-                    },
-                    color: _isMissionActive
-                        ? AppColors.error
-                        : AppColors.primaryGreen,
+                ),
+                SizedBox(height: 6),
+                Row(
+                  children: [
+                    _buildOptionButton(
+                      Icons.keyboard_arrow_up,
+                      'Avancer',
+                      () => _onDroneCommand('forward'),
+                    ),
+                    SizedBox(width: 6),
+                    _buildOptionButton(
+                      Icons.keyboard_arrow_down,
+                      'Reculer',
+                      () => _onDroneCommand('backward'),
+                    ),
+                    SizedBox(width: 6),
+                    _buildOptionButton(
+                      Icons.keyboard_arrow_left,
+                      'Gauche',
+                      () => _onDroneCommand('left'),
+                    ),
+                    SizedBox(width: 6),
+                    _buildOptionButton(
+                      Icons.keyboard_arrow_right,
+                      'Droite',
+                      () => _onDroneCommand('right'),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                // Altitude controls
+                Text(
+                  'Altitude',
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
+                    fontSize: 12,
                   ),
-                  SizedBox(width: 6),
-                  _buildOptionButton(Icons.home, 'Retour Base', () {
-                    _onDroneCommand('return_home');
-                    Navigator.pop(context);
-                  }, color: AppColors.warning),
-                ],
-              ),
-            ],
+                ),
+                SizedBox(height: 6),
+                Row(
+                  children: [
+                    _buildOptionButton(
+                      Icons.arrow_upward,
+                      'Monter',
+                      () => _onDroneCommand('up'),
+                    ),
+                    SizedBox(width: 6),
+                    _buildOptionButton(
+                      Icons.arrow_downward,
+                      'Descendre',
+                      () => _onDroneCommand('down'),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                // Rotation (yaw)
+                Text(
+                  'Rotation',
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+                SizedBox(height: 6),
+                Row(
+                  children: [
+                    _buildOptionButton(
+                      Icons.rotate_left,
+                      'Pivoter gauche',
+                      () => _onDroneCommand('rotate_left'),
+                    ),
+                    SizedBox(width: 6),
+                    _buildOptionButton(
+                      Icons.rotate_right,
+                      'Pivoter droite',
+                      () => _onDroneCommand('rotate_right'),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                // Vol (décollage / atterrissage / arrêt du mouvement)
+                Text(
+                  'Vol',
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+                SizedBox(height: 6),
+                Row(
+                  children: [
+                    _buildOptionButton(
+                      Icons.flight_takeoff,
+                      'Décollage',
+                      () => _onDroneCommand('takeoff'),
+                    ),
+                    SizedBox(width: 6),
+                    _buildOptionButton(
+                      Icons.flight_land,
+                      'Atterrissage',
+                      () => _onDroneCommand('land'),
+                      color: AppColors.info,
+                    ),
+                    SizedBox(width: 6),
+                    _buildOptionButton(
+                      Icons.stop_circle,
+                      'Stop',
+                      () => _onDroneCommand('stop'),
+                      color: AppColors.error,
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                // Actions
+                Text(
+                  'Actions',
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+                SizedBox(height: 6),
+                Row(
+                  children: [
+                    _buildOptionButton(
+                      _isMissionActive ? Icons.stop : Icons.play_arrow,
+                      _isMissionActive ? 'Arrêter' : 'Reprendre',
+                      () {
+                        _toggleMission();
+                        // Rafraîchit le libellé Arrêter/Reprendre sans fermer.
+                        setSheetState(() {});
+                      },
+                      color: _isMissionActive
+                          ? AppColors.error
+                          : AppColors.primaryGreen,
+                    ),
+                    SizedBox(width: 6),
+                    _buildOptionButton(
+                      Icons.home,
+                      'Retour Base',
+                      () => _onDroneCommand('return_home'),
+                      color: AppColors.warning,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -575,39 +828,59 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     );
   }
 
+  /// Commandes UI → protocole du simulateur (plus tard : SDK DJI).
+  static const Map<String, String> _wsCommands = {
+    'takeoff': 'TAKEOFF',
+    'land': 'LAND',
+    'up': 'UP',
+    'down': 'DOWN',
+    'left': 'LEFT',
+    'right': 'RIGHT',
+    'forward': 'FORWARD',
+    'backward': 'BACKWARD',
+    'rotate_left': 'ROTATE_LEFT',
+    'rotate_right': 'ROTATE_RIGHT',
+    'stop': 'STOP',
+    'return_home': 'RETURN_HOME',
+  };
+
+  static const Map<String, String> _commandLabels = {
+    'takeoff': 'Décollage',
+    'land': 'Atterrissage',
+    'up': 'Monter',
+    'down': 'Descendre',
+    'left': 'Gauche',
+    'right': 'Droite',
+    'forward': 'Avancer',
+    'backward': 'Reculer',
+    'rotate_left': 'Rotation gauche',
+    'rotate_right': 'Rotation droite',
+    'stop': 'Arrêt du mouvement',
+    'return_home': 'Retour au point de départ',
+  };
+
+  /// Envoie une commande de pilotage au simulateur de drone via WebSocket.
   void _onDroneCommand(String command) {
-    // In production, this would send commands to the drone via API
+    final wsCommand = _wsCommands[command];
+    final label = _commandLabels[command];
+
     String message;
-    switch (command) {
-      case 'up':
-        message = 'Drone: Monter';
-        break;
-      case 'down':
-        message = 'Drone: Descendre';
-        break;
-      case 'forward':
-        message = 'Drone: Avancer';
-        break;
-      case 'backward':
-        message = 'Drone: Reculer';
-        break;
-      case 'left':
-        message = 'Drone: Tourner à gauche';
-        break;
-      case 'right':
-        message = 'Drone: Tourner à droite';
-        break;
-      case 'return_home':
-        message = 'Drone: Retour au point de départ';
-        break;
-      default:
-        message = 'Commande inconnue';
+    Color color;
+    if (wsCommand == null || label == null) {
+      message = 'Commande inconnue';
+      color = AppColors.error;
+    } else if (_droneSim.sendCommand(wsCommand)) {
+      message = 'Drone: $label';
+      color = AppColors.primaryGreen;
+    } else {
+      message = 'Simulateur hors ligne — "$label" non envoyée';
+      color = AppColors.warning;
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.primaryGreen,
+        backgroundColor: color,
         duration: Duration(milliseconds: 500),
         behavior: SnackBarBehavior.floating,
       ),
@@ -673,8 +946,8 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   Expanded(
                     child: Text(
                       detection.type == DetectionType.disease
-                          ? 'Maladie!'
-                          : 'Stress!',
+                          ? 'Maladie détectée !'
+                          : 'Insecte détecté !',
                       style: TextStyle(
                         color: color,
                         fontWeight: FontWeight.bold,
@@ -713,9 +986,12 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    _dismissDetectionAlert();
-                    _showDetectionDetailsDialog(detection);
+                  onPressed: () async {
+                    // La vidéo reste en pause pendant les pop-ups détail et
+                    // planification ; reprise à la fermeture du dernier.
+                    _hideDetectionAlert();
+                    await _showDetectionDetailsDialog(detection);
+                    _resumeAfterDetection();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: color,
@@ -794,7 +1070,9 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                 decoration: BoxDecoration(
                   color: context.colors.card,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
                 ),
                 child: Icon(
                   Icons.calendar_month,
@@ -812,15 +1090,9 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.error,
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: context.colors.bg,
-                      width: 2,
-                    ),
+                    border: Border.all(color: context.colors.bg, width: 2),
                   ),
-                  constraints: BoxConstraints(
-                    minWidth: 18,
-                    minHeight: 18,
-                  ),
+                  constraints: BoxConstraints(minWidth: 18, minHeight: 18),
                   child: Text(
                     _pendingInterventionsCount > 9
                         ? '9+'
@@ -880,6 +1152,73 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     );
   }
 
+  /// Sélecteur de vidéo source (Maladies / Insectes / POV) — relance le scan IA.
+  Widget _buildVideoSourceSelector() {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: context.colors.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        children: _videoSources.entries.map((e) {
+          final selected = _videoAsset == e.value;
+          final icon = e.key == 'Maladies'
+              ? Icons.coronavirus_outlined
+              : e.key == 'Insectes'
+              ? Icons.bug_report_outlined
+              : Icons.videocam_outlined;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => _switchVideo(e.value),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? AppColors.primaryGreen.withValues(alpha: 0.18)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: selected
+                        ? AppColors.primaryGreen
+                        : Colors.transparent,
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      icon,
+                      size: 18,
+                      color: selected
+                          ? AppColors.primaryGreen
+                          : context.colors.textSecondary,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      e.key,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: selected
+                            ? FontWeight.bold
+                            : FontWeight.w500,
+                        color: selected
+                            ? AppColors.primaryGreen
+                            : context.colors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _buildVideoSection() {
     return Container(
       decoration: BoxDecoration(
@@ -896,7 +1235,9 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
               RepaintBoundary(
                 key: _videoGlobalKey,
                 child: AspectRatio(
-                  aspectRatio: 16 / 9,
+                  aspectRatio: _videoController.value.aspectRatio == 0
+                      ? 16 / 9
+                      : _videoController.value.aspectRatio,
                   child: VideoPlayer(_videoController),
                 ),
               )
@@ -960,9 +1301,45 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                 ],
               ),
             ),
-            // Detection marker on video when disease detected
+            // Boîte de détection (localisation réelle) sur la vidéo
             if (_showDetectionAlert && _currentDetection != null)
-              _buildDetectionMarkerOnVideo(),
+              _buildDetectionBoxOverlay(),
+            // Badge « zone saine » après un scan IA sans anomalie
+            if (_showHealthyBadge && !_showDetectionAlert)
+              Positioned(
+                top: 40,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryGreen.withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.white, size: 16),
+                        SizedBox(width: 6),
+                        Text(
+                          _isInsectMode
+                              ? 'Aucun ravageur détecté — zone saine'
+                              : 'Culture saine et en bonne santé',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -1267,37 +1644,156 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
     );
   }
 
-  /// Detection marker overlay on video - simple circled point
-  Widget _buildDetectionMarkerOnVideo() {
+  /// Boîte de détection localisée sur la vidéo (mappée depuis le bbox % du backend).
+  /// Si aucune localisation, affiche un marqueur central.
+  Widget _buildDetectionBoxOverlay() {
     final detection = _currentDetection!;
-    final color = detection.type == DetectionType.disease
-        ? AppColors.error
-        : AppColors.warning;
+    final isDisease = detection.type == DetectionType.disease;
+    final color = isDisease ? AppColors.error : AppColors.warning;
+    final labelText =
+        '${detection.label} ${(detection.confidence * 100).toStringAsFixed(0)}%';
 
-    return Positioned(
-      // Position the marker at center of the video
-      top: 90,
-      left: 120,
-      child: Container(
-        width: 28,
-        height: 28,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color.withOpacity(0.3),
-          border: Border.all(color: color, width: 3),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.5),
-              blurRadius: 12,
-              spreadRadius: 2,
-            ),
-          ],
+    // ── MALADIE → foyers de symptômes en POINTS (jamais de rectangle) ──────
+    if (isDisease) {
+      final points = detection.pointsPct;
+      if (points == null || points.isEmpty) {
+        return _buildCenterMarker(color);
+      }
+      return Positioned.fill(
+        child: LayoutBuilder(
+          builder: (context, c) {
+            final w = c.maxWidth;
+            final h = c.maxHeight;
+            return Stack(
+              children: [
+                for (final p in points)
+                  Positioned(
+                    left: ((p[0] / 100) * w - 9).clamp(0.0, w - 18),
+                    top: ((p[1] / 100) * h - 9).clamp(0.0, h - 18),
+                    child: _DiseaseDot(color: color),
+                  ),
+                // Étiquette maladie en haut à gauche de la vidéo
+                Positioned(
+                  left: 6,
+                  top: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      labelText,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
-        child: Center(
-          child: Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      );
+    }
+
+    // ── INSECTE → RECTANGLE autour du ravageur ─────────────────────────────
+    final box = detection.boxPct;
+    if (box == null || box.length < 4) {
+      return _buildCenterMarker(color);
+    }
+    return Positioned.fill(
+      child: LayoutBuilder(
+        builder: (context, c) {
+          final w = c.maxWidth;
+          final h = c.maxHeight;
+          final left = (box[0] / 100) * w;
+          final top = (box[1] / 100) * h;
+          final bw = ((box[2] - box[0]) / 100) * w;
+          final bh = ((box[3] - box[1]) / 100) * h;
+          return Stack(
+            children: [
+              Positioned(
+                left: left.clamp(0.0, w),
+                top: top.clamp(0.0, h),
+                width: bw.clamp(12.0, w),
+                height: bh.clamp(12.0, h),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    border: Border.all(color: color, width: 2.5),
+                    borderRadius: BorderRadius.circular(6),
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.4),
+                        blurRadius: 10,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(4),
+                          bottomRight: Radius.circular(6),
+                        ),
+                      ),
+                      child: Text(
+                        labelText,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// Marqueur central pulsé — repli quand aucune localisation n'est fournie.
+  Widget _buildCenterMarker(Color color) {
+    return Positioned.fill(
+      child: Center(
+        child: Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: color.withValues(alpha: 0.25),
+            border: Border.all(color: color, width: 3),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.5),
+                blurRadius: 14,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Center(
+            child: Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
           ),
         ),
       ),
@@ -1326,11 +1822,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             children: [
               Row(
                 children: [
-                  Icon(
-                    Icons.sensors,
-                    color: AppColors.primaryGreen,
-                    size: 18,
-                  ),
+                  Icon(Icons.sensors, color: AppColors.primaryGreen, size: 18),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -1431,7 +1923,9 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                             'm',
                             AppColors.primaryGreen,
                             null,
-                            subtitle: 'Optimal',
+                            subtitle: _simConnected && _simTelemetry != null
+                                ? '${_simTelemetry!.stateLabel} · cap ${_simTelemetry!.yaw.round()}°'
+                                : 'Optimal',
                           ),
                         ),
                       ],
@@ -1474,11 +1968,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             children: [
               Row(
                 children: [
-                  Icon(
-                    Icons.public,
-                    color: AppColors.primaryGreen,
-                    size: 18,
-                  ),
+                  Icon(Icons.public, color: AppColors.primaryGreen, size: 18),
                   SizedBox(width: 8),
                   Text(
                     'CONDITIONS ENVIRONNEMENTALES',
@@ -1703,10 +2193,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                 ),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    color: AppColors.primaryGreen,
-                    fontSize: 10,
-                  ),
+                  style: TextStyle(color: AppColors.primaryGreen, fontSize: 10),
                 ),
               ],
             ),
@@ -1731,7 +2218,10 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
             children: [
               Text(
                 'Signal GPS',
-                style: TextStyle(color: context.colors.textSecondary, fontSize: 10),
+                style: TextStyle(
+                  color: context.colors.textSecondary,
+                  fontSize: 10,
+                ),
               ),
               Icon(
                 Icons.signal_cellular_alt,
@@ -1884,10 +2374,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
           SizedBox(height: 2),
           Text(
             label,
-            style: TextStyle(
-              color: context.colors.textSecondary,
-              fontSize: 10,
-            ),
+            style: TextStyle(color: context.colors.textSecondary, fontSize: 10),
           ),
         ],
       ),
@@ -2083,7 +2570,10 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
   }
 
   /// Show detection details dialog like the web version
-  void _showDetectionDetailsDialog(Detection detection) {
+  /// Détails d'une détection. Le `Future` se termine quand TOUTE la chaîne
+  /// de pop-ups est refermée (y compris « Planifier une intervention »),
+  /// pour que l'appelant ne relance la vidéo qu'à ce moment-là.
+  Future<void> _showDetectionDetailsDialog(Detection detection) async {
     final color = detection.type == DetectionType.disease
         ? AppColors.error
         : detection.type == DetectionType.stress
@@ -2096,7 +2586,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
         ? Icons.warning_amber
         : Icons.check_circle;
 
-    showDialog(
+    final action = await showDialog<String>(
       context: context,
       builder: (context) => Dialog(
         backgroundColor: context.colors.card,
@@ -2437,15 +2927,22 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
         ),
       ),
     );
+
+    // Enchaîne sur la planification demandée depuis le détail : le Future
+    // de cette méthode ne se termine qu'après la fermeture de ce pop-up,
+    // pour que la vidéo ne reprenne qu'à ce moment-là.
+    if (action == 'plan' && mounted) {
+      await _showInterventionPlanningDialog(detection);
+    }
   }
 
   /// Show location dialog with grid map
-  void _showLocationDialog(Detection detection) {
+  Future<void> _showLocationDialog(Detection detection) async {
     // Generate random coordinates for demo
     final xCoord = (30 + (detection.label.hashCode % 40)).abs();
     final yCoord = (30 + (detection.zone.hashCode % 40)).abs();
 
-    showDialog(
+    final action = await showDialog<String>(
       context: context,
       builder: (context) => Dialog(
         backgroundColor: context.colors.card,
@@ -2459,11 +2956,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
               // Header
               Row(
                 children: [
-                  Icon(
-                    Icons.location_on,
-                    color: AppColors.error,
-                    size: 18,
-                  ),
+                  Icon(Icons.location_on, color: AppColors.error, size: 18),
                   SizedBox(width: 6),
                   Expanded(
                     child: Text(
@@ -2495,18 +2988,19 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                 decoration: BoxDecoration(
                   color: context.colors.bg,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
                 ),
                 child: Stack(
                   children: [
                     // Grid
                     GridView.builder(
                       physics: NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            childAspectRatio: 1,
-                          ),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        childAspectRatio: 1,
+                      ),
                       itemCount: 12,
                       itemBuilder: (context, index) {
                         // Highlight the cell with detection (center cell = 5)
@@ -2651,8 +3145,9 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.pop(context);
-                    _showInterventionPlanningDialog(detection);
+                    // Ferme le détail en signalant d'enchaîner sur la
+                    // planification (gérée par l'appelant ci-dessous).
+                    Navigator.pop(context, 'plan');
                   },
                   icon: Icon(Icons.schedule, size: 18),
                   label: Text('Planifier une intervention'),
@@ -2671,10 +3166,16 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
         ),
       ),
     );
+
+    // Enchaîne sur la planification demandée depuis la carte : le bouton
+    // referme le pop-up avec le résultat 'plan'.
+    if (action == 'plan' && mounted) {
+      await _showInterventionPlanningDialog(detection);
+    }
   }
 
   /// Show intervention planning dialog
-  void _showInterventionPlanningDialog(Detection detection) {
+  Future<void> _showInterventionPlanningDialog(Detection detection) async {
     DateTime? selectedDate;
     TimeOfDay? selectedTime;
     String? selectedInterventionType;
@@ -2689,7 +3190,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
       'Autre',
     ];
 
-    showDialog(
+    await showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => Dialog(
@@ -2768,26 +3269,25 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                           Theme.of(context).brightness == Brightness.dark;
                       final date = await showDatePicker(
                         context: context,
-                        initialDate: DateTime.now().add(
-                          Duration(days: 1),
-                        ),
+                        initialDate: DateTime.now().add(Duration(days: 1)),
                         firstDate: DateTime.now(),
                         lastDate: DateTime.now().add(Duration(days: 365)),
                         builder: (context, child) {
                           return Theme(
-                            data: (isDark
-                                    ? ThemeData.dark()
-                                    : ThemeData.light())
-                                .copyWith(
-                              colorScheme: (isDark
-                                      ? const ColorScheme.dark()
-                                      : const ColorScheme.light())
-                                  .copyWith(
-                                primary: AppColors.primaryGreen,
-                                surface: context.colors.card,
-                                onSurface: context.colors.textPrimary,
-                              ),
-                            ),
+                            data:
+                                (isDark ? ThemeData.dark() : ThemeData.light())
+                                    .copyWith(
+                                      colorScheme:
+                                          (isDark
+                                                  ? const ColorScheme.dark()
+                                                  : const ColorScheme.light())
+                                              .copyWith(
+                                                primary: AppColors.primaryGreen,
+                                                surface: context.colors.card,
+                                                onSurface:
+                                                    context.colors.textPrimary,
+                                              ),
+                                    ),
                             child: child!,
                           );
                         },
@@ -2804,7 +3304,9 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       decoration: BoxDecoration(
                         color: context.colors.bg,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -2850,19 +3352,20 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                         initialTime: TimeOfDay.now(),
                         builder: (context, child) {
                           return Theme(
-                            data: (isDark
-                                    ? ThemeData.dark()
-                                    : ThemeData.light())
-                                .copyWith(
-                              colorScheme: (isDark
-                                      ? const ColorScheme.dark()
-                                      : const ColorScheme.light())
-                                  .copyWith(
-                                primary: AppColors.primaryGreen,
-                                surface: context.colors.card,
-                                onSurface: context.colors.textPrimary,
-                              ),
-                            ),
+                            data:
+                                (isDark ? ThemeData.dark() : ThemeData.light())
+                                    .copyWith(
+                                      colorScheme:
+                                          (isDark
+                                                  ? const ColorScheme.dark()
+                                                  : const ColorScheme.light())
+                                              .copyWith(
+                                                primary: AppColors.primaryGreen,
+                                                surface: context.colors.card,
+                                                onSurface:
+                                                    context.colors.textPrimary,
+                                              ),
+                                    ),
                             child: child!,
                           );
                         },
@@ -2879,7 +3382,9 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                       decoration: BoxDecoration(
                         color: context.colors.bg,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -2921,7 +3426,9 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                     decoration: BoxDecoration(
                       color: context.colors.bg,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
@@ -2971,7 +3478,9 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                     decoration: BoxDecoration(
                       color: context.colors.bg,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
                     ),
                     child: TextField(
                       controller: notesController,
@@ -3001,9 +3510,7 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
                           onPressed: () => Navigator.pop(context),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: context.colors.textSecondary,
-                            side: BorderSide(
-                              color: context.colors.divider,
-                            ),
+                            side: BorderSide(color: context.colors.divider),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
@@ -3395,5 +3902,38 @@ class _DroneMonitoringScreenState extends State<DroneMonitoringScreen> {
 
   String _formatTime(DateTime time) {
     return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
+  }
+}
+
+/// Pastille marquant un foyer de symptômes (maladie) sur la vidéo drone.
+class _DiseaseDot extends StatelessWidget {
+  final Color color;
+  const _DiseaseDot({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 18,
+      height: 18,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color.withValues(alpha: 0.30),
+        border: Border.all(color: color, width: 2.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.5),
+            blurRadius: 8,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Center(
+        child: Container(
+          width: 6,
+          height: 6,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+      ),
+    );
   }
 }

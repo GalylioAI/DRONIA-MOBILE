@@ -72,3 +72,19 @@ ios/*.p12
 .env.production
 .env
 backend/.env*
+
+# Large datasets / archives - NEVER commit (see CLAUDE.md, ~1.5GB)
+archive/
+
+# Node dependencies (drone_simulator)
+**/node_modules/
+
+# ML model weights - served from HuggingFace Hub, too big for git (100MB limit)
+backend/models/**/*.pth
+backend/models/combined/
+backend/models/vit-base-patch16-224-in21k/
+!backend/models/*.json
+!backend/models/.gitkeep
+
+# Stray PFE deliverable PDFs (not app code)
+PROJET DE FIN*.pdf

@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DronIA — Backend API Endpoints</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f0f1a; color: #e0e0e0; padding: 40px; line-height: 1.7; }
+  h1 { color: #7FD957; font-size: 32px; margin-bottom: 6px; }
+  .subtitle { color: #aaa; font-size: 15px; margin-bottom: 8px; }
+
+  .arch-box { background: #16213e; border: 1px solid #2a3a5c; border-radius: 10px; padding: 20px 24px; margin: 24px 0 36px; }
+  .arch-box h3 { color: #89b4fa; font-size: 14px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .arch-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 10px; }
+  .arch-item { flex: 1; min-width: 220px; background: #0d1117; border-radius: 8px; padding: 12px 16px; }
+  .arch-item .label { font-size: 11px; color: #7FD957; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .arch-item .val { font-family: monospace; font-size: 13px; color: white; }
+  .arch-item .note { font-size: 12px; color: #888; margin-top: 4px; }
+
+  .warn-box { background: #2e1a0a; border-left: 4px solid #f39c12; border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 20px 0; font-size: 14px; }
+  .warn-box strong { color: #f39c12; }
+  .info-box { background: #1a2e1a; border-left: 4px solid #7FD957; border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 10px 0; font-size: 13px; color: #ccc; }
+  .info-box strong { color: #7FD957; }
+  .error-box { background: #2a1010; border-left: 4px solid #e74c3c; border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 10px 0; font-size: 13px; color: #ccc; }
+  .error-box strong { color: #e74c3c; }
+  .new-box { background: #1a1a2e; border-left: 4px solid #cba6f7; border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 10px 0; font-size: 13px; color: #ccc; }
+  .new-box strong { color: #cba6f7; }
+
+  .section-title { font-size: 13px; font-weight: 700; color: #7FD957; text-transform: uppercase; letter-spacing: 2px; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 1px solid #333; }
+
+  .endpoint { background: #16213e; border: 1px solid #2a3a5c; border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
+  .endpoint-header { padding: 14px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid #2a3a5c; flex-wrap: wrap; }
+  .method { font-size: 12px; font-weight: 900; padding: 4px 10px; border-radius: 5px; flex-shrink: 0; }
+  .get    { background: #1a4731; color: #7FD957; }
+  .post   { background: #1a2e4a; color: #89b4fa; }
+  .put    { background: #2e2a0a; color: #f9e2af; }
+  .delete { background: #2a1010; color: #f38ba8; }
+  .disabled { background: #3a1a1a; color: #888; }
+  .path { font-family: monospace; font-size: 15px; color: white; }
+  .desc { color: #aaa; font-size: 13px; }
+  .endpoint-body { padding: 16px 20px; }
+
+  .full-url { background: #0d1117; border: 1px solid #7FD957; border-radius: 6px; padding: 10px 14px; font-family: monospace; font-size: 13px; color: #7FD957; word-break: break-all; margin-bottom: 14px; }
+  .full-url .label { font-size: 10px; color: #555; margin-bottom: 4px; font-family: sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+  .full-url.frontend { border-color: #89b4fa; color: #89b4fa; }
+
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th { background: #1a2a3a; color: #89b4fa; padding: 8px 12px; font-size: 12px; text-align: left; }
+  td { padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #1e2e3e; vertical-align: top; }
+  td code { background: #0d1117; color: #f9e2af; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  .required { color: #f38ba8; font-size: 11px; font-weight: 700; }
+  .optional { color: #6c7086; font-size: 11px; }
+
+  pre { background: #0d1117; color: #cdd6f4; padding: 14px 16px; border-radius: 8px; font-size: 12px; line-height: 1.7; overflow-x: auto; margin: 10px 0; white-space: pre-wrap; word-break: break-all; }
+  .c { color: #6c7086; }
+  .g { color: #7FD957; }
+  .b { color: #89b4fa; }
+  .y { color: #f9e2af; }
+  .r { color: #f38ba8; }
+  .p { color: #cba6f7; }
+
+  .badge-disabled { background: #3a1a1a; color: #888; border: 1px solid #555; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+  .badge-active { background: #0d2a10; color: #7FD957; border: 1px solid #7FD957; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+  .badge-na { background: #1a1a2e; color: #aaa; border: 1px solid #444; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+  .badge-new { background: #1a1a2e; color: #cba6f7; border: 1px solid #cba6f7; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+
+  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 700; margin-left: 6px; }
+  .tag-ml      { background: #1a4731; color: #7FD957; }
+  .tag-auth    { background: #2e2a0a; color: #f9e2af; }
+  .tag-weather { background: #1a2e4a; color: #89b4fa; }
+  .tag-data    { background: #2a1a3a; color: #cba6f7; }
+  .tag-field   { background: #1a3a2a; color: #a6e3a1; }
+  .tag-advisor { background: #2a1a2e; color: #f5c2e7; }
+  .tag-new     { background: #1a1a2e; color: #cba6f7; font-size: 10px; }
+
+  .step-flow { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
+  .step { background: #0d1117; border: 1px solid #2a3a5c; border-radius: 8px; padding: 10px 14px; flex: 1; min-width: 160px; }
+  .step .num { font-size: 11px; color: #7FD957; font-weight: 700; margin-bottom: 4px; }
+  .step .name { font-family: monospace; font-size: 12px; color: white; margin-bottom: 2px; }
+  .step .note { font-size: 11px; color: #888; }
+
+  .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #333; color: #555; font-size: 13px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>DronIA — Complete API Reference</h1>
+<div class="subtitle">For the Flutter mobile developer — all active endpoints on the VPS</div>
+
+<!-- ARCHITECTURE -->
+<div class="arch-box">
+  <h3>Architecture Overview</h3>
+  <div class="arch-row">
+    <div class="arch-item">
+      <div class="label">ML Backend (FastAPI)</div>
+      <div class="val">https://dronia-tunisie.tn/ml-api</div>
+      <div class="note">Python · AI models (EfficientNet + YOLO11s)</div>
+    </div>
+    <div class="arch-item">
+      <div class="label">App Backend (Next.js)</div>
+      <div class="val">https://dronia-tunisie.tn/api</div>
+      <div class="note">Node.js · Auth, Weather, History, DB, Field Monitoring</div>
+    </div>
+    <div class="arch-item">
+      <div class="label">Database</div>
+      <div class="val">MongoDB Atlas</div>
+      <div class="note">Cloud database · users, predictions, insects</div>
+    </div>
+  </div>
+  <div class="info-box" style="margin-top:10px;">
+    <strong>Important for Flutter:</strong> There are two separate backends. The ML models are at <code>/ml-api/...</code> (FastAPI). Everything else — auth, weather, field monitoring, advisor — is at <code>/api/...</code> (Next.js). Both are on the same domain.
+  </div>
+</div>
+
+<!-- ===================== ML API ===================== -->
+<div class="section-title">ML API — FastAPI (https://dronia-tunisie.tn/ml-api)</div>
+
+<!-- GET / -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="path">/</span>
+    <span class="tag tag-ml">ML</span>
+    <span class="desc">API status &amp; model info</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url"><div class="label">Full URL</div>https://dronia-tunisie.tn/ml-api/</div>
+    <pre>{
+  <span class="g">"status"</span>: <span class="y">"online"</span>,
+  <span class="g">"service"</span>: <span class="y">"Plant Disease Detection API (EfficientNet)"</span>,
+  <span class="g">"classification_model"</span>: <span class="y">"efficientnet_plantvillage_olive_extra_best.pth"</span>,
+  <span class="g">"yolo_model"</span>: <span class="y">"disabled"</span>
+}</pre>
+  </div>
+</div>
+
+<!-- GET /health -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="path">/health</span>
+    <span class="tag tag-ml">ML</span>
+    <span class="desc">Health check — call at app startup</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url"><div class="label">Full URL</div>https://dronia-tunisie.tn/ml-api/health</div>
+    <pre>{
+  <span class="g">"status"</span>: <span class="y">"healthy"</span>,
+  <span class="g">"classification_model_loaded"</span>: <span class="b">true</span>,
+  <span class="g">"insects_model_loaded"</span>: <span class="b">false</span>,  <span class="c">// false until first insect request — NORMAL</span>
+  <span class="g">"yolo_model_loaded"</span>: <span class="b">false</span>,
+  <span class="g">"mode"</span>: <span class="y">"EfficientNet + Insects"</span>
+}</pre>
+    <div class="info-box"><strong>Note:</strong> <code>insects_model_loaded: false</code> on cold start is normal. It lazy-loads on the first insect detection request to save RAM.</div>
+  </div>
+</div>
+
+<!-- POST /classify/base64 -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="path">/classify/base64</span>
+    <span class="tag tag-ml">ML</span>
+    <span class="desc">Plant disease detection (EfficientNet — 38 classes)</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url"><div class="label">Full URL</div>https://dronia-tunisie.tn/ml-api/classify/base64</div>
+    <p style="font-size:13px; color:#aaa; margin-bottom:12px;">Classifies plant diseases from a base64-encoded image. EfficientNet trained on PlantVillage (38 classes: tomato, potato, corn, apple, olive, grapes, etc.). Results returned in French.</p>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>image</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>Base64-encoded image (JPEG or PNG)</td></tr>
+      <tr><td><code>zones</code></td><td>string</td><td><span class="optional">optional</span></td><td>JSON string of bounding box zones — rarely used</td></tr>
+    </table>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Example Response:</p>
+    <pre>{
+  <span class="g">"success"</span>: <span class="b">true</span>,
+  <span class="g">"predictions"</span>: [
+    {
+      <span class="g">"class"</span>: <span class="y">"Tomato___Late_blight"</span>,
+      <span class="g">"confidence"</span>: <span class="b">0.87</span>,
+      <span class="g">"class_french"</span>: <span class="y">"Mildiou (Tomate)"</span>,
+      <span class="g">"treatment"</span>: <span class="y">"Appliquer des fongicides systemiques..."</span>,
+      <span class="g">"prevention"</span>: <span class="y">"Plants certifies, eviter l'humidite excessive..."</span>
+    }
+  ],
+  <span class="g">"model_used"</span>: <span class="y">"EfficientNet-b0"</span>,
+  <span class="g">"processing_time_ms"</span>: <span class="b">234</span>
+}</pre>
+    <p style="font-size:12px; color:#89b4fa; margin: 12px 0 6px;">Flutter / Dart example:</p>
+    <pre>import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+
+Future&lt;Map&lt;String, dynamic&gt;&gt; classifyPlant(File imageFile) async {
+  final bytes = await imageFile.readAsBytes();
+  final base64Img = base64Encode(bytes);
+
+  final request = http.MultipartRequest(
+    'POST',
+    Uri.parse('https://dronia-tunisie.tn/ml-api/classify/base64'),
+  );
+  request.fields['image'] = base64Img;
+
+  final response = await request.send();
+  final body = await response.stream.bytesToString();
+  return jsonDecode(body);
+}</pre>
+  </div>
+</div>
+
+<!-- POST /predict/insects -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="path">/predict/insects</span>
+    <span class="tag tag-ml">ML</span>
+    <span class="desc">Insect detection — file upload</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url"><div class="label">Full URL</div>https://dronia-tunisie.tn/ml-api/predict/insects</div>
+    <p style="font-size:13px; color:#aaa; margin-bottom:12px;">Detects and identifies insects from an uploaded image. Uses YOLO11s fine-tuned on IP102 dataset (102 agricultural pest species). Returns bounding boxes and French names.</p>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>file</code></td><td>File</td><td><span class="required">REQUIRED</span></td><td>Image file (JPEG or PNG) — multipart upload</td></tr>
+      <tr><td><code>confidence</code></td><td>float</td><td><span class="optional">optional</span></td><td>Detection threshold (default: 0.25)</td></tr>
+      <tr><td><code>iou</code></td><td>float</td><td><span class="optional">optional</span></td><td>IoU threshold for NMS (default: 0.45)</td></tr>
+    </table>
+    <div class="warn-box"><strong>⚠ First call is slow (~30s):</strong> The YOLO11s insect model lazy-loads on the first request. Subsequent calls are fast. Show a loading indicator on first use.</div>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Example Response:</p>
+    <pre>{
+  <span class="g">"success"</span>: <span class="b">true</span>,
+  <span class="g">"detections"</span>: [
+    {
+      <span class="g">"class"</span>: <span class="y">"aphid"</span>,
+      <span class="g">"class_french"</span>: <span class="y">"Puceron"</span>,
+      <span class="g">"confidence"</span>: <span class="b">0.92</span>,
+      <span class="g">"bbox"</span>: [<span class="b">120</span>, <span class="b">80</span>, <span class="b">240</span>, <span class="b">160</span>]
+    }
+  ],
+  <span class="g">"total_detections"</span>: <span class="b">1</span>,
+  <span class="g">"image_with_boxes"</span>: <span class="y">"&lt;base64 image with bounding boxes drawn&gt;"</span>
+}</pre>
+  </div>
+</div>
+
+<!-- POST /predict/insects/base64 -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="path">/predict/insects/base64</span>
+    <span class="tag tag-ml">ML</span>
+    <span class="desc">Insect detection — base64 (preferred for mobile)</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url"><div class="label">Full URL</div>https://dronia-tunisie.tn/ml-api/predict/insects/base64</div>
+    <p style="font-size:13px; color:#aaa; margin-bottom:12px;">Same as above but accepts base64 image instead of a file. Preferred for mobile apps to avoid multipart file handling.</p>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>image</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>Base64-encoded image string</td></tr>
+      <tr><td><code>confidence</code></td><td>float</td><td><span class="optional">optional</span></td><td>Detection confidence (default: 0.25)</td></tr>
+      <tr><td><code>iou</code></td><td>float</td><td><span class="optional">optional</span></td><td>IoU threshold (default: 0.45)</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- DISABLED ML -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method disabled">POST</span>
+    <span class="path">/predict &nbsp;&amp;&nbsp; /predict/base64</span>
+    <span class="badge-disabled">DISABLED — returns 503</span>
+  </div>
+  <div class="endpoint-body"><p style="color:#888; font-size:13px;">YOLO plant disease detection — disabled. Use <code>/ml-api/classify/base64</code> instead.</p></div>
+</div>
+
+
+<!-- ===================== AUTH API ===================== -->
+<div class="section-title">Auth API — Next.js (https://dronia-tunisie.tn/api/auth)</div>
+
+<!-- POST /api/auth/register -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="path">/api/auth/register</span>
+    <span class="tag tag-auth">AUTH</span>
+    <span class="desc">Create a new user account + send verification email</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/auth/register</div>
+    <p style="font-size:13px; color:#aaa; margin-bottom:12px;">Registers a new farmer account. Password is hashed with bcrypt. Sends a verification email automatically — the user must verify before logging in.</p>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>email</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>User email address</td></tr>
+      <tr><td><code>password</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>Password (min 6 chars, hashed with bcrypt)</td></tr>
+      <tr><td><code>firstName</code></td><td>string</td><td><span class="optional">optional</span></td><td>First name</td></tr>
+      <tr><td><code>lastName</code></td><td>string</td><td><span class="optional">optional</span></td><td>Last name</td></tr>
+      <tr><td><code>phone</code></td><td>string</td><td><span class="optional">optional</span></td><td>Phone number</td></tr>
+      <tr><td><code>location</code></td><td>string</td><td><span class="optional">optional</span></td><td>User region / city</td></tr>
+      <tr><td><code>plantTypes</code></td><td>array</td><td><span class="optional">optional</span></td><td>List of crops e.g. ["Olive","Tomato"]</td></tr>
+      <tr><td><code>totalSurface</code></td><td>number</td><td><span class="optional">optional</span></td><td>Total farm surface in hectares</td></tr>
+      <tr><td><code>soilType</code></td><td>string</td><td><span class="optional">optional</span></td><td>Soil type description</td></tr>
+      <tr><td><code>profileImage</code></td><td>string</td><td><span class="optional">optional</span></td><td>Base64-encoded profile photo</td></tr>
+    </table>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Success Response (201):</p>
+    <pre>{
+  <span class="g">"message"</span>: <span class="y">"Compte créé. Vérifiez votre e-mail pour activer votre compte."</span>
+}</pre>
+    <div class="info-box"><strong>Note:</strong> Register does NOT return a JWT token immediately. The user must verify their email first, then log in to get a token.</div>
+  </div>
+</div>
+
+<!-- POST /api/auth/login -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="path">/api/auth/login</span>
+    <span class="tag tag-auth">AUTH</span>
+    <span class="desc">Login and receive JWT token</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/auth/login</div>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>email</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>Registered email</td></tr>
+      <tr><td><code>password</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>User password</td></tr>
+    </table>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Success Response (200):</p>
+    <pre>{
+  <span class="g">"message"</span>: <span class="y">"Connexion réussie."</span>,
+  <span class="g">"token"</span>: <span class="y">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."</span>,
+  <span class="g">"user"</span>: {
+    <span class="g">"id"</span>: <span class="y">"64f3a2b1c9e77a0012345678"</span>,
+    <span class="g">"email"</span>: <span class="y">"farmer@example.com"</span>,
+    <span class="g">"firstName"</span>: <span class="y">"Ahmed"</span>,
+    <span class="g">"lastName"</span>: <span class="y">"Ben Ali"</span>,
+    <span class="g">"location"</span>: <span class="y">"Tunis"</span>,
+    <span class="g">"plantTypes"</span>: [<span class="y">"Olive"</span>, <span class="y">"Tomato"</span>]
+  }
+}</pre>
+    <p style="font-size:12px; color:#f38ba8; margin: 10px 0 6px;">If email not verified (401):</p>
+    <pre>{ <span class="g">"error"</span>: <span class="y">"Veuillez vérifier votre adresse e-mail avant de vous connecter."</span> }</pre>
+    <div class="info-box"><strong>Store the token:</strong> Save it in secure storage (Flutter: <code>flutter_secure_storage</code> package). Send it in every authenticated request as the header <code>Authorization: Bearer &lt;token&gt;</code>.</div>
+  </div>
+</div>
+
+<!-- GET /api/auth/verify-email -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="path">/api/auth/verify-email</span>
+    <span class="tag tag-auth">AUTH</span>
+    <span class="tag tag-new">✨ New</span>
+    <span class="desc">Verify email address via token link</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/auth/verify-email?token=&lt;TOKEN&gt;</div>
+    <p style="font-size:13px; color:#aaa; margin-bottom:12px;">Called automatically when the user clicks the verification link in their email. Not needed to call directly from Flutter — the email link opens a web browser. Once verified, the user can log in normally.</p>
+    <table>
+      <tr><th>Query param</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>token</code></td><td><span class="required">REQUIRED</span></td><td>Verification token from the email link</td></tr>
+    </table>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Success Response:</p>
+    <pre>{ <span class="g">"success"</span>: <span class="b">true</span>, <span class="g">"message"</span>: <span class="y">"Adresse e-mail confirmée. Vous pouvez maintenant vous connecter."</span> }</pre>
+  </div>
+</div>
+
+<!-- GET /api/auth/me -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="path">/api/auth/me</span>
+    <span class="tag tag-auth">AUTH</span>
+    <span class="desc">Get current user profile</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/auth/me</div>
+    <div class="info-box"><strong>Requires auth:</strong> Send <code>Authorization: Bearer &lt;token&gt;</code> header.</div>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Success Response:</p>
+    <pre>{
+  <span class="g">"id"</span>: <span class="y">"64f3a2b1c9e77a0012345678"</span>,
+  <span class="g">"email"</span>: <span class="y">"farmer@example.com"</span>,
+  <span class="g">"firstName"</span>: <span class="y">"Ahmed"</span>,
+  <span class="g">"lastName"</span>: <span class="y">"Ben Ali"</span>,
+  <span class="g">"phone"</span>: <span class="y">"+216 XX XXX XXX"</span>,
+  <span class="g">"location"</span>: <span class="y">"Sfax"</span>,
+  <span class="g">"plantTypes"</span>: [<span class="y">"Olive"</span>, <span class="y">"Tomato"</span>],
+  <span class="g">"totalSurface"</span>: <span class="b">5.5</span>,
+  <span class="g">"soilType"</span>: <span class="y">"Argilo-sableux"</span>,
+  <span class="g">"emailVerified"</span>: <span class="b">true</span>
+}</pre>
+  </div>
+</div>
+
+<!-- PUT /api/auth/me -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method put">PUT</span>
+    <span class="path">/api/auth/me</span>
+    <span class="tag tag-auth">AUTH</span>
+    <span class="desc">Update user profile</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/auth/me</div>
+    <div class="info-box"><strong>Requires auth:</strong> Send <code>Authorization: Bearer &lt;token&gt;</code> header. Send any subset of fields to update: firstName, lastName, phone, location, plantTypes, totalSurface, soilType, profileImage.</div>
+  </div>
+</div>
+
+<!-- POST /api/auth/logout -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="path">/api/auth/logout</span>
+    <span class="tag tag-auth">AUTH</span>
+    <span class="tag tag-new">✨ New</span>
+    <span class="desc">Logout (stateless — just delete token client-side)</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/auth/logout</div>
+    <p style="font-size:13px; color:#aaa; margin-bottom:12px;">JWT is stateless — the server has no session to invalidate. This endpoint exists for API consistency. <strong>The client must also delete the token from secure storage.</strong></p>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Response (200):</p>
+    <pre>{ <span class="g">"success"</span>: <span class="b">true</span>, <span class="g">"message"</span>: <span class="y">"Déconnexion réussie. Supprimez le token côté client."</span> }</pre>
+  </div>
+</div>
+
+<!-- DELETE /api/auth/delete-account -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method delete">DELETE</span>
+    <span class="path">/api/auth/delete-account</span>
+    <span class="tag tag-auth">AUTH</span>
+    <span class="tag tag-new">✨ New</span>
+    <span class="desc">Permanently delete user account and all data</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/auth/delete-account</div>
+    <div class="info-box"><strong>Requires auth:</strong> Send <code>Authorization: Bearer &lt;token&gt;</code> header.</div>
+    <p style="font-size:13px; color:#aaa; margin-bottom:12px;">Permanently deletes the user account and all associated predictions and insect detection records. Irreversible.</p>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Success Response (200):</p>
+    <pre>{ <span class="g">"success"</span>: <span class="b">true</span>, <span class="g">"message"</span>: <span class="y">"Compte supprimé définitivement."</span> }</pre>
+  </div>
+</div>
+
+<!-- Forgot Password Flow -->
+<div class="section-title">Forgot Password Flow — 3-step OTP via Email</div>
+
+<div class="new-box">
+  <strong>✨ Forgot password is fully implemented.</strong> It uses a 3-step OTP flow via email (not SMS). The OTP is a 6-digit code sent to the user's email, valid for 15 minutes.
+</div>
+
+<div class="step-flow">
+  <div class="step">
+    <div class="num">STEP 1</div>
+    <div class="name">POST /api/auth/forgot-password</div>
+    <div class="note">Send OTP code to email</div>
+  </div>
+  <div class="step">
+    <div class="num">STEP 2</div>
+    <div class="name">POST /api/auth/verify-otp</div>
+    <div class="note">Verify the 6-digit code</div>
+  </div>
+  <div class="step">
+    <div class="num">STEP 3</div>
+    <div class="name">POST /api/auth/reset-password</div>
+    <div class="note">Set new password</div>
+  </div>
+</div>
+
+<!-- POST /api/auth/forgot-password -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="path">/api/auth/forgot-password</span>
+    <span class="tag tag-auth">AUTH</span>
+    <span class="tag tag-new">✨ New</span>
+    <span class="desc">Step 1 — Send OTP code to email</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/auth/forgot-password</div>
+    <p style="font-size:13px; color:#aaa; margin-bottom:12px;">Sends a 6-digit OTP code to the user's email. OTP is valid for <strong>15 minutes</strong> and is stored hashed in the database. Always returns success to prevent email enumeration attacks.</p>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>email</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>The user's registered email address</td></tr>
+    </table>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Response (always 200 — does not reveal if email exists):</p>
+    <pre>{ <span class="g">"success"</span>: <span class="b">true</span>, <span class="g">"message"</span>: <span class="y">"Si cet e-mail existe, un code a été envoyé."</span> }</pre>
+  </div>
+</div>
+
+<!-- POST /api/auth/verify-otp -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="path">/api/auth/verify-otp</span>
+    <span class="tag tag-auth">AUTH</span>
+    <span class="tag tag-new">✨ New</span>
+    <span class="desc">Step 2 — Verify the 6-digit OTP code</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/auth/verify-otp</div>
+    <p style="font-size:13px; color:#aaa; margin-bottom:12px;">Verifies the OTP code entered by the user. If valid, marks the session as OTP-verified so the user can proceed to reset the password. Must be called before <code>reset-password</code>.</p>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>email</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>The user's email address</td></tr>
+      <tr><td><code>otp</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>The 6-digit code from the email</td></tr>
+    </table>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Success Response (200):</p>
+    <pre>{ <span class="g">"success"</span>: <span class="b">true</span>, <span class="g">"message"</span>: <span class="y">"Code vérifié. Vous pouvez maintenant réinitialiser votre mot de passe."</span> }</pre>
+    <p style="font-size:12px; color:#f38ba8; margin: 10px 0 6px;">Error responses:</p>
+    <pre>{ <span class="g">"error"</span>: <span class="y">"Code OTP incorrect."</span> }                        <span class="c">// wrong code</span>
+{ <span class="g">"error"</span>: <span class="y">"Le code OTP a expiré. Veuillez en demander un nouveau."</span> }  <span class="c">// after 15 min</span>
+{ <span class="g">"error"</span>: <span class="y">"Code invalide ou expiré."</span> }                     <span class="c">// no OTP was requested</span></pre>
+  </div>
+</div>
+
+<!-- POST /api/auth/reset-password -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="path">/api/auth/reset-password</span>
+    <span class="tag tag-auth">AUTH</span>
+    <span class="tag tag-new">✨ New</span>
+    <span class="desc">Step 3 — Set a new password</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/auth/reset-password</div>
+    <p style="font-size:13px; color:#aaa; margin-bottom:12px;">Sets a new password. Only works if the OTP was verified in step 2. Clears all OTP fields after success. The user can then log in with the new password.</p>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>email</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>The user's email address</td></tr>
+      <tr><td><code>newPassword</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>New password (minimum 6 characters)</td></tr>
+    </table>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Success Response (200):</p>
+    <pre>{ <span class="g">"success"</span>: <span class="b">true</span>, <span class="g">"message"</span>: <span class="y">"Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter."</span> }</pre>
+    <p style="font-size:12px; color:#f38ba8; margin: 10px 0 6px;">Error if OTP not verified first (403):</p>
+    <pre>{ <span class="g">"error"</span>: <span class="y">"Vous devez d'abord vérifier le code OTP."</span> }</pre>
+    <p style="font-size:12px; color:#89b4fa; margin: 12px 0 6px;">Flutter flow example:</p>
+    <pre><span class="c">// Step 1: request OTP</span>
+await http.post(
+  Uri.parse('https://dronia-tunisie.tn/api/auth/forgot-password'),
+  headers: {'Content-Type': 'application/json'},
+  body: jsonEncode({'email': userEmail}),
+);
+
+<span class="c">// Step 2: verify code the user typed</span>
+final verifyRes = await http.post(
+  Uri.parse('https://dronia-tunisie.tn/api/auth/verify-otp'),
+  headers: {'Content-Type': 'application/json'},
+  body: jsonEncode({'email': userEmail, 'otp': otpCode}),
+);
+if (jsonDecode(verifyRes.body)['success'] == true) {
+  <span class="c">// Step 3: set new password</span>
+  await http.post(
+    Uri.parse('https://dronia-tunisie.tn/api/auth/reset-password'),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({'email': userEmail, 'newPassword': newPassword}),
+  );
+}</pre>
+  </div>
+</div>
+
+
+<!-- ===================== WEATHER API ===================== -->
+<div class="section-title">Weather API — Next.js (https://dronia-tunisie.tn/api/weather)</div>
+
+<div class="info-box"><strong>✓ Weather endpoints are public — no authentication required.</strong> API keys are stored server-side; Flutter does not need them.</div>
+
+<!-- GET /api/weather -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="path">/api/weather</span>
+    <span class="tag tag-weather">WEATHER</span>
+    <span class="desc">Current weather by GPS coordinates</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/weather?lat=36.8&amp;lng=10.2</div>
+    <table>
+      <tr><th>Query param</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>lat</code></td><td><span class="required">REQUIRED</span></td><td>Latitude (e.g. 36.8)</td></tr>
+      <tr><td><code>lng</code></td><td><span class="required">REQUIRED</span></td><td>Longitude (e.g. 10.2)</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- GET /api/weather/forecast -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="path">/api/weather/forecast</span>
+    <span class="tag tag-weather">WEATHER</span>
+    <span class="desc">7-day weather forecast</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/weather/forecast?lat=36.8&amp;lng=10.2</div>
+    <table>
+      <tr><th>Query param</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>lat</code> + <code>lng</code></td><td><span class="required">REQUIRED*</span></td><td>GPS coordinates — use these OR country below</td></tr>
+      <tr><td><code>country</code></td><td><span class="required">REQUIRED*</span></td><td>Country name (e.g. "Tunisia") — alternative to lat/lng</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- GET /api/weather/historical -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="path">/api/weather/historical</span>
+    <span class="tag tag-weather">WEATHER</span>
+    <span class="desc">Historical weather data for a date range</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/weather/historical?lat=36.8&amp;lng=10.2&amp;start_date=2025-01-01&amp;end_date=2025-01-07</div>
+    <table>
+      <tr><th>Query param</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>lat</code> + <code>lng</code></td><td><span class="required">REQUIRED*</span></td><td>GPS coordinates — or use country</td></tr>
+      <tr><td><code>country</code></td><td><span class="optional">optional</span></td><td>Country name — alternative to lat/lng</td></tr>
+      <tr><td><code>start_date</code></td><td><span class="optional">optional</span></td><td>Format: YYYY-MM-DD (default: 7 days ago)</td></tr>
+      <tr><td><code>end_date</code></td><td><span class="optional">optional</span></td><td>Format: YYYY-MM-DD (default: today)</td></tr>
+    </table>
+  </div>
+</div>
+
+
+<!-- ===================== FIELD MONITORING ===================== -->
+<div class="section-title">Field Monitoring — Next.js (https://dronia-tunisie.tn/api/field-monitoring) ✨ New</div>
+
+<div class="new-box">
+  <strong>✨ New endpoint.</strong> Provides Sentinel-2 satellite vegetation indices, satellite heatmap imagery, weather data for a drawn polygon, and soil moisture from Sentinel-1 radar. Powered by <strong>Sentinel Hub (Copernicus Data Space)</strong> — OAuth2 credentials are stored server-side.
+</div>
+
+<div class="info-box"><strong>All actions:</strong> POST to the same URL with a JSON body. The <code>action</code> field selects which data to fetch.</div>
+
+<!-- POST /api/field-monitoring -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="path">/api/field-monitoring</span>
+    <span class="tag tag-field">FIELD</span>
+    <span class="desc">Satellite vegetation indices (time series)</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/field-monitoring</div>
+
+    <p style="font-size:13px; color:#aaa; margin:10px 0 14px;"><strong>Action: <code>"vegetation"</code></strong> — Returns daily statistics for the chosen index over the date range (Sentinel-2 L2A). Filters clouds ≤ 30%. Indices available: <code>ndvi</code>, <code>ndre</code>, <code>msavi</code>, <code>reci</code>, <code>ndmi</code>, <code>ndwi</code>.</p>
+    <p style="font-size:12px; color:#89b4fa; margin-bottom:6px;">Request body (JSON):</p>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>action</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td><code>"vegetation"</code></td></tr>
+      <tr><td><code>polygon</code></td><td>array</td><td><span class="required">REQUIRED</span></td><td>Array of [lng, lat] pairs (≥3 points) closing the field shape</td></tr>
+      <tr><td><code>index</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td><code>"ndvi"</code> | <code>"ndre"</code> | <code>"msavi"</code> | <code>"reci"</code> | <code>"ndmi"</code> | <code>"ndwi"</code></td></tr>
+      <tr><td><code>dateStart</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>Start date YYYY-MM-DD</td></tr>
+      <tr><td><code>dateEnd</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>End date YYYY-MM-DD</td></tr>
+    </table>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Success Response:</p>
+    <pre>{
+  <span class="g">"success"</span>: <span class="b">true</span>,
+  <span class="g">"data"</span>: [
+    {
+      <span class="g">"date"</span>: <span class="y">"2025-04-15"</span>,
+      <span class="g">"average"</span>: <span class="b">0.62</span>,
+      <span class="g">"min"</span>: <span class="b">0.31</span>,
+      <span class="g">"max"</span>: <span class="b">0.84</span>,
+      <span class="g">"median"</span>: <span class="b">0.65</span>,
+      <span class="g">"q1"</span>: <span class="b">0.52</span>,
+      <span class="g">"q3"</span>: <span class="b">0.74</span>
+    }
+    <span class="c">// ... one entry per day with valid satellite data</span>
+  ]
+}</pre>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="path">/api/field-monitoring</span>
+    <span class="tag tag-field">FIELD</span>
+    <span class="desc">Satellite heatmap image (colorized PNG)</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/field-monitoring</div>
+
+    <p style="font-size:13px; color:#aaa; margin:10px 0 14px;"><strong>Action: <code>"heatmap"</code></strong> — Returns a colorized PNG of the selected index, rendered using Sentinel Hub Process API. The color ramp maps: red → negative values, yellow → 0, lime → 0.5, dark-green → 1. The image bbox is returned to place it correctly on a map. Uses the most recent 30 days before <code>dateEnd</code>.</p>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>action</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td><code>"heatmap"</code></td></tr>
+      <tr><td><code>polygon</code></td><td>array</td><td><span class="required">REQUIRED</span></td><td>Array of [lng, lat] pairs</td></tr>
+      <tr><td><code>index</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td><code>"ndvi"</code> | <code>"ndre"</code> | <code>"msavi"</code> | <code>"reci"</code> | <code>"ndmi"</code> | <code>"ndwi"</code></td></tr>
+      <tr><td><code>dateEnd</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>End date YYYY-MM-DD (searches 30 days back from here)</td></tr>
+      <tr><td><code>dateStart</code></td><td>string</td><td><span class="optional">optional</span></td><td>Not used for heatmap — only dateEnd matters</td></tr>
+    </table>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Success Response:</p>
+    <pre>{
+  <span class="g">"success"</span>: <span class="b">true</span>,
+  <span class="g">"imageUrl"</span>: <span class="y">"data:image/png;base64,iVBORw0KGgo..."</span>,  <span class="c">// base64 PNG ~512px wide</span>
+  <span class="g">"bounds"</span>: {
+    <span class="g">"minLng"</span>: <span class="b">10.15</span>,
+    <span class="g">"maxLng"</span>: <span class="b">10.22</span>,
+    <span class="g">"minLat"</span>: <span class="b">36.78</span>,
+    <span class="g">"maxLat"</span>: <span class="b">36.85</span>
+  }
+}</pre>
+    <div class="info-box"><strong>Map overlay:</strong> Use <code>bounds</code> to place the image on a map (e.g. flutter_map <code>OverlayImageLayer</code>). The PNG covers the full bounding box rectangle — clip to the polygon shape on the client side if needed.</div>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="path">/api/field-monitoring</span>
+    <span class="tag tag-field">FIELD</span>
+    <span class="desc">Weather data for the field's location</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/field-monitoring</div>
+
+    <p style="font-size:13px; color:#aaa; margin:10px 0 14px;"><strong>Action: <code>"weather"</code></strong> — Returns daily temperature and precipitation for a date range at the field's centroid point. Automatically uses historical API for past dates and forecast API for future dates. No polygon needed — just a centroid.</p>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>action</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td><code>"weather"</code></td></tr>
+      <tr><td><code>centroid</code></td><td>object</td><td><span class="required">REQUIRED</span></td><td><code>{"lat": 36.8, "lng": 10.2}</code> — center point of the field</td></tr>
+      <tr><td><code>dateStart</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>Start date YYYY-MM-DD</td></tr>
+      <tr><td><code>dateEnd</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>End date YYYY-MM-DD</td></tr>
+    </table>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Success Response:</p>
+    <pre>{
+  <span class="g">"success"</span>: <span class="b">true</span>,
+  <span class="g">"data"</span>: [
+    {
+      <span class="g">"date"</span>: <span class="y">"2025-04-15"</span>,
+      <span class="g">"tempMax"</span>: <span class="b">28.4</span>,
+      <span class="g">"tempMin"</span>: <span class="b">16.1</span>,
+      <span class="g">"dailyPrecipitation"</span>: <span class="b">0.0</span>,
+      <span class="g">"accumulatedPrecipitation"</span>: <span class="b">12.3</span>
+    }
+  ]
+}</pre>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="path">/api/field-monitoring</span>
+    <span class="tag tag-field">FIELD</span>
+    <span class="desc">Soil moisture from Sentinel-1 radar</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/field-monitoring</div>
+
+    <p style="font-size:13px; color:#aaa; margin:10px 0 14px;"><strong>Action: <code>"soilMoisture"</code></strong> — Returns soil moisture estimates derived from Sentinel-1 GRD SAR backscatter (VV/VH bands). Values are normalized 0–1.</p>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>action</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td><code>"soilMoisture"</code></td></tr>
+      <tr><td><code>polygon</code></td><td>array</td><td><span class="required">REQUIRED</span></td><td>Array of [lng, lat] pairs</td></tr>
+      <tr><td><code>dateStart</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>Start date YYYY-MM-DD</td></tr>
+      <tr><td><code>dateEnd</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>End date YYYY-MM-DD</td></tr>
+    </table>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Success Response:</p>
+    <pre>{
+  <span class="g">"success"</span>: <span class="b">true</span>,
+  <span class="g">"data"</span>: [
+    {
+      <span class="g">"date"</span>: <span class="y">"2025-04-10"</span>,
+      <span class="g">"moisture"</span>: <span class="b">0.43</span>,  <span class="c">// 0=dry, 1=saturated</span>
+      <span class="g">"vv"</span>: <span class="b">-12.3</span>,
+      <span class="g">"vh"</span>: <span class="b">-18.7</span>
+    }
+  ]
+}</pre>
+  </div>
+</div>
+
+<!-- Vegetation index reference -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="tag tag-field" style="margin-left:0;">FIELD INDICES REFERENCE</span>
+  </div>
+  <div class="endpoint-body">
+    <table>
+      <tr><th>Index</th><th>Formula</th><th>What it measures</th><th>Good range</th></tr>
+      <tr><td><code>ndvi</code></td><td>(B08-B04)/(B08+B04)</td><td>General vegetation health / green biomass</td><td>0.4–0.8 healthy</td></tr>
+      <tr><td><code>ndre</code></td><td>(B08-B05)/(B08+B05)</td><td>Chlorophyll content, early stress detection</td><td>0.2–0.6 healthy</td></tr>
+      <tr><td><code>msavi</code></td><td>Modified soil-adjusted VI</td><td>Vegetation in sparse/bare soil areas</td><td>0.3–0.7 healthy</td></tr>
+      <tr><td><code>reci</code></td><td>(B08/B05) - 1</td><td>Canopy chlorophyll — crop nitrogen status</td><td>1.5–5.0 healthy</td></tr>
+      <tr><td><code>ndmi</code></td><td>(B08-B11)/(B08+B11)</td><td>Vegetation water content / drought stress</td><td>0.1–0.4 optimal</td></tr>
+      <tr><td><code>ndwi</code></td><td>(B03-B08)/(B03+B08)</td><td>Open water bodies / flood detection</td><td>&gt;0 = water present</td></tr>
+    </table>
+  </div>
+</div>
+
+
+<!-- ===================== AGRICULTURAL ADVISOR ===================== -->
+<div class="section-title">Agricultural Advisor — Next.js (https://dronia-tunisie.tn/api/agricultural-advisor) ✨ New</div>
+
+<div class="new-box">
+  <strong>✨ New AI agricultural advisor.</strong> Two endpoints: one generates smart advisories based on live weather at the user's location; the other is an AI chat backed by <strong>DeepSeek</strong> (with a rule-based French fallback if the API key is unavailable).
+</div>
+
+<!-- GET /api/agricultural-advisor -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="path">/api/agricultural-advisor</span>
+    <span class="tag tag-advisor">ADVISOR</span>
+    <span class="desc">Get AI advisories based on live weather + crop type</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/agricultural-advisor?lat=36.8&amp;lng=10.2&amp;crop=tomato</div>
+    <p style="font-size:13px; color:#aaa; margin-bottom:12px;">Generates actionable advisories (irrigation, disease risk, heat stress, frost, wind, fertilization, harvest calendar) based on the current weather at the user's coordinates. No auth required.</p>
+    <table>
+      <tr><th>Query param</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>lat</code></td><td><span class="optional">optional</span></td><td>Latitude (default: 34.0 — center of Tunisia)</td></tr>
+      <tr><td><code>lng</code></td><td><span class="optional">optional</span></td><td>Longitude (default: 9.0)</td></tr>
+      <tr><td><code>crop</code></td><td><span class="optional">optional</span></td><td>Crop type for seasonal advice: <code>tomato</code> | <code>wheat</code> | <code>grape</code> | <code>corn</code> | <code>potato</code> | <code>olive</code> | <code>orange</code> | <code>other</code></td></tr>
+    </table>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Success Response:</p>
+    <pre>{
+  <span class="g">"success"</span>: <span class="b">true</span>,
+  <span class="g">"data"</span>: [
+    {
+      <span class="g">"id"</span>: <span class="y">"irrigation-1"</span>,
+      <span class="g">"type"</span>: <span class="y">"irrigation"</span>,          <span class="c">// irrigation | fertilizer | pest | harvest | planting | general</span>
+      <span class="g">"title"</span>: <span class="y">"Irrigation Recommandée"</span>,
+      <span class="g">"description"</span>: <span class="y">"Les conditions sont sèches..."</span>,
+      <span class="g">"priority"</span>: <span class="y">"high"</span>,             <span class="c">// high | medium | low</span>
+      <span class="g">"icon"</span>: <span class="y">"💧"</span>,
+      <span class="g">"actionItems"</span>: [<span class="y">"Arroser tôt le matin..."</span>],
+      <span class="g">"weatherBased"</span>: <span class="b">true</span>
+    }
+  ],
+  <span class="g">"location"</span>: { <span class="g">"lat"</span>: <span class="b">36.8</span>, <span class="g">"lng"</span>: <span class="b">10.2</span> },
+  <span class="g">"timestamp"</span>: <span class="y">"2025-05-15T10:30:00.000Z"</span>
+}</pre>
+  </div>
+</div>
+
+<!-- POST /api/agricultural-advisor/chat -->
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="path">/api/agricultural-advisor/chat</span>
+    <span class="tag tag-advisor">ADVISOR</span>
+    <span class="desc">AI chat — ask agricultural questions in French</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/agricultural-advisor/chat</div>
+    <p style="font-size:13px; color:#aaa; margin-bottom:12px;">Conversational AI specialized in Tunisian/Mediterranean agriculture. Uses DeepSeek API (if key configured) with a rich rule-based French fallback. Always responds in French. Supports conversation history for multi-turn chat.</p>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>message</code></td><td>string</td><td><span class="required">REQUIRED</span></td><td>The user's message/question in French (or any language)</td></tr>
+      <tr><td><code>context</code></td><td>object</td><td><span class="required">REQUIRED</span></td><td>User context — see below</td></tr>
+      <tr><td><code>conversationHistory</code></td><td>array</td><td><span class="required">REQUIRED</span></td><td>Previous messages (can be empty array <code>[]</code> for first message)</td></tr>
+    </table>
+    <p style="font-size:12px; color:#89b4fa; margin:10px 0 6px;">Context object fields:</p>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+      <tr><td><code>location</code></td><td>object or null</td><td><code>{"lat": 36.8, "lng": 10.2}</code> — or null</td></tr>
+      <tr><td><code>cropType</code></td><td>string</td><td>e.g. <code>"tomato"</code>, <code>"wheat"</code>, <code>"olive"</code></td></tr>
+      <tr><td><code>concerns</code></td><td>string</td><td>Optional free-text concerns, e.g. <code>"mildiou detected last week"</code></td></tr>
+    </table>
+    <p style="font-size:12px; color:#89b4fa; margin:12px 0 6px;">Flutter example:</p>
+    <pre>final response = await http.post(
+  Uri.parse('https://dronia-tunisie.tn/api/agricultural-advisor/chat'),
+  headers: {'Content-Type': 'application/json'},
+  body: jsonEncode({
+    'message': 'Comment prévenir le mildiou sur mes tomates?',
+    'context': {
+      'location': {'lat': 36.8, 'lng': 10.2},
+      'cropType': 'tomato',
+      'concerns': '',
+    },
+    'conversationHistory': previousMessages, <span class="c">// List&lt;{role, content}&gt;</span>
+  }),
+);
+final data = jsonDecode(response.body);
+final aiReply = data['response'] as String;</pre>
+    <p style="font-size:12px; color:#7FD957; margin: 10px 0 6px;">Success Response:</p>
+    <pre>{
+  <span class="g">"success"</span>: <span class="b">true</span>,
+  <span class="g">"response"</span>: <span class="y">"Pour prévenir le mildiou sur vos tomates:\n\n1. **Espacement**..."</span>
+}</pre>
+    <div class="info-box"><strong>Conversation history format:</strong> Each message is <code>{"role": "user" | "assistant", "content": "..."}</code>. The last 8 messages are included in context. Store the full history client-side and pass it on every call.</div>
+  </div>
+</div>
+
+
+<!-- ===================== DATA HISTORY ===================== -->
+<div class="section-title">History &amp; Data — Next.js (https://dronia-tunisie.tn/api)</div>
+
+<div class="info-box"><strong>All history endpoints require auth:</strong> Include <code>Authorization: Bearer &lt;token&gt;</code> header on every request.</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="path">/api/predictions</span>
+    <span class="tag tag-data">DATA</span>
+    <span class="desc">Plant disease detection history</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/predictions</div>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="path">/api/predictions/:id</span>
+    <span class="tag tag-data">DATA</span>
+    <span class="desc">Single prediction with full detail</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/predictions/64f3a2b1c9e77a0012345678</div>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="path">/api/insects</span>
+    <span class="tag tag-data">DATA</span>
+    <span class="desc">Insect detection history</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/insects</div>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="path">/api/insects/:id</span>
+    <span class="tag tag-data">DATA</span>
+    <span class="desc">Single insect detection record</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/insects/64f3a2b1c9e77a0012345678</div>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="path">/api/soil-data</span>
+    <span class="tag tag-data">DATA</span>
+    <span class="desc">Soil moisture &amp; pest risk (no auth needed)</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="full-url frontend"><div class="label">Full URL</div>https://dronia-tunisie.tn/api/soil-data?lat=36.8&amp;lng=10.2</div>
+  </div>
+</div>
+
+
+<!-- ===================== QUICK REFERENCE ===================== -->
+<div class="section-title">Quick Reference Table</div>
+
+<table>
+  <tr><th>Method</th><th>Endpoint</th><th>Auth?</th><th>Purpose</th><th>Status</th></tr>
+
+  <tr><td colspan="5" style="background:#0d1117; color:#7FD957; font-size:11px; letter-spacing:1px; padding:8px 12px;">ML API — https://dronia-tunisie.tn/ml-api</td></tr>
+  <tr><td>GET</td><td><code>/ml-api/</code></td><td>No</td><td>API info</td><td><span class="badge-active">✓ Active</span></td></tr>
+  <tr><td>GET</td><td><code>/ml-api/health</code></td><td>No</td><td>Model health check</td><td><span class="badge-active">✓ Active</span></td></tr>
+  <tr><td>POST</td><td><code>/ml-api/classify/base64</code></td><td>No</td><td>Plant disease (EfficientNet)</td><td><span class="badge-active">✓ Active</span></td></tr>
+  <tr><td>POST</td><td><code>/ml-api/predict/insects</code></td><td>No</td><td>Insect detection (file)</td><td><span class="badge-active">✓ Active</span></td></tr>
+  <tr><td>POST</td><td><code>/ml-api/predict/insects/base64</code></td><td>No</td><td>Insect detection (base64)</td><td><span class="badge-active">✓ Active</span></td></tr>
+  <tr><td>POST</td><td><code>/ml-api/predict</code></td><td>—</td><td>—</td><td><span class="badge-disabled">✗ Disabled</span></td></tr>
+  <tr><td>POST</td><td><code>/ml-api/predict/base64</code></td><td>—</td><td>—</td><td><span class="badge-disabled">✗ Disabled</span></td></tr>
+
+  <tr><td colspan="5" style="background:#0d1117; color:#f9e2af; font-size:11px; letter-spacing:1px; padding:8px 12px;">Auth — https://dronia-tunisie.tn/api/auth</td></tr>
+  <tr><td>POST</td><td><code>/api/auth/register</code></td><td>No</td><td>Create account + send verification email</td><td><span class="badge-active">✓ Active</span></td></tr>
+  <tr><td>POST</td><td><code>/api/auth/login</code></td><td>No</td><td>Login → JWT token</td><td><span class="badge-active">✓ Active</span></td></tr>
+  <tr><td>GET</td><td><code>/api/auth/verify-email</code></td><td>No</td><td>Confirm email via token link</td><td><span class="badge-new">✨ New</span></td></tr>
+  <tr><td>GET</td><td><code>/api/auth/me</code></td><td>Yes</td><td>Get profile</td><td><span class="badge-active">✓ Active</span></td></tr>
+  <tr><td>PUT</td><td><code>/api/auth/me</code></td><td>Yes</td><td>Update profile</td><td><span class="badge-active">✓ Active</span></td></tr>
+  <tr><td>POST</td><td><code>/api/auth/logout</code></td><td>No</td><td>Logout (stateless — clear token client-side)</td><td><span class="badge-new">✨ New</span></td></tr>
+  <tr><td>DELETE</td><td><code>/api/auth/delete-account</code></td><td>Yes</td><td>Delete account permanently</td><td><span class="badge-new">✨ New</span></td></tr>
+  <tr><td>POST</td><td><code>/api/auth/forgot-password</code></td><td>No</td><td>Step 1: send OTP to email</td><td><span class="badge-new">✨ New</span></td></tr>
+  <tr><td>POST</td><td><code>/api/auth/verify-otp</code></td><td>No</td><td>Step 2: verify 6-digit OTP</td><td><span class="badge-new">✨ New</span></td></tr>
+  <tr><td>POST</td><td><code>/api/auth/reset-password</code></td><td>No</td><td>Step 3: set new password</td><td><span class="badge-new">✨ New</span></td></tr>
+
+  <tr><td colspan="5" style="background:#0d1117; color:#89b4fa; font-size:11px; letter-spacing:1px; padding:8px 12px;">Weather — https://dronia-tunisie.tn/api/weather</td></tr>
+  <tr><td>GET</td><td><code>/api/weather</code></td><td>No</td><td>Current weather</td><td><span class="badge-active">✓ Active</span></td></tr>
+  <tr><td>GET</td><td><code>/api/weather/forecast</code></td><td>No</td><td>7-day forecast</td><td><span class="badge-active">✓ Active</span></td></tr>
+  <tr><td>GET</td><td><code>/api/weather/historical</code></td><td>No</td><td>Historical weather</td><td><span class="badge-active">✓ Active</span></td></tr>
+
+  <tr><td colspan="5" style="background:#0d1117; color:#a6e3a1; font-size:11px; letter-spacing:1px; padding:8px 12px;">Field Monitoring — https://dronia-tunisie.tn/api/field-monitoring ✨ New</td></tr>
+  <tr><td>POST</td><td><code>/api/field-monitoring</code> <code>action="vegetation"</code></td><td>No</td><td>Sentinel-2 index time series (NDVI/NDRE/MSAVI/RECI/NDMI/NDWI)</td><td><span class="badge-new">✨ New</span></td></tr>
+  <tr><td>POST</td><td><code>/api/field-monitoring</code> <code>action="heatmap"</code></td><td>No</td><td>Colorized satellite PNG + bounds</td><td><span class="badge-new">✨ New</span></td></tr>
+  <tr><td>POST</td><td><code>/api/field-monitoring</code> <code>action="weather"</code></td><td>No</td><td>Daily temp + precipitation for field location</td><td><span class="badge-new">✨ New</span></td></tr>
+  <tr><td>POST</td><td><code>/api/field-monitoring</code> <code>action="soilMoisture"</code></td><td>No</td><td>Sentinel-1 soil moisture estimates</td><td><span class="badge-new">✨ New</span></td></tr>
+
+  <tr><td colspan="5" style="background:#0d1117; color:#f5c2e7; font-size:11px; letter-spacing:1px; padding:8px 12px;">Agricultural Advisor — https://dronia-tunisie.tn/api/agricultural-advisor ✨ New</td></tr>
+  <tr><td>GET</td><td><code>/api/agricultural-advisor</code></td><td>No</td><td>AI advisories based on weather + crop</td><td><span class="badge-new">✨ New</span></td></tr>
+  <tr><td>POST</td><td><code>/api/agricultural-advisor/chat</code></td><td>No</td><td>AI chat (DeepSeek + French fallback)</td><td><span class="badge-new">✨ New</span></td></tr>
+
+  <tr><td colspan="5" style="background:#0d1117; color:#cba6f7; font-size:11px; letter-spacing:1px; padding:8px 12px;">Data — https://dronia-tunisie.tn/api</td></tr>
+  <tr><td>GET</td><td><code>/api/predictions</code></td><td>Yes</td><td>Disease history</td><td><span class="badge-active">✓ Active</span></td></tr>
+  <tr><td>GET</td><td><code>/api/predictions/:id</code></td><td>Yes</td><td>Single prediction</td><td><span class="badge-active">✓ Active</span></td></tr>
+  <tr><td>GET</td><td><code>/api/insects</code></td><td>Yes</td><td>Insect history</td><td><span class="badge-active">✓ Active</span></td></tr>
+  <tr><td>GET</td><td><code>/api/insects/:id</code></td><td>Yes</td><td>Single insect record</td><td><span class="badge-active">✓ Active</span></td></tr>
+  <tr><td>GET</td><td><code>/api/soil-data</code></td><td>No</td><td>Soil data</td><td><span class="badge-active">✓ Active</span></td></tr>
+</table>
+
+
+<!-- INTERACTIVE DOCS -->
+<div class="section-title">Interactive API Docs (FastAPI only)</div>
+<div style="background: #16213e; border: 1px solid #2a3a5c; border-radius: 10px; padding: 20px 24px; margin-bottom: 30px;">
+  <p style="color:#aaa; font-size:14px; margin-bottom:12px;">FastAPI auto-generates interactive documentation. Test the ML endpoints directly in a browser — no code needed.</p>
+  <div style="display:flex; gap:12px; flex-wrap:wrap;">
+    <div style="background:#0d1117; border:1px solid #7FD957; border-radius:6px; padding:12px 16px; flex:1; min-width:220px;">
+      <div style="font-size:11px; color:#7FD957; margin-bottom:4px;">SWAGGER UI (interactive)</div>
+      <div style="font-family:monospace; color:white; font-size:13px;">https://dronia-tunisie.tn/ml-api/docs</div>
+    </div>
+    <div style="background:#0d1117; border:1px solid #555; border-radius:6px; padding:12px 16px; flex:1; min-width:220px;">
+      <div style="font-size:11px; color:#aaa; margin-bottom:4px;">REDOC (alternative)</div>
+      <div style="font-family:monospace; color:#aaa; font-size:13px;">https://dronia-tunisie.tn/ml-api/redoc</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  DronIA Backend · VPS 146.59.195.61 · dronia-tunisie.tn · May 2026
+</div>
+
+</body>
+</html>

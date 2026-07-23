@@ -76,4 +76,27 @@ class AdminService {
   Future<void> deleteUser(String userId) async {
     await _apiClient.delete(ApiEndpoints.adminUser(userId));
   }
+
+  /// Analyses (maladies) d'un utilisateur donné — admin uniquement.
+  Future<List<Map<String, dynamic>>> getUserAnalyses(String userId) async {
+    final response = await _apiClient.get(ApiEndpoints.adminUserAnalyses(userId));
+    final List<dynamic> raw = response is Map<String, dynamic>
+        ? (response['data'] as List<dynamic>? ?? const [])
+        : const [];
+    return raw.whereType<Map<String, dynamic>>().toList(growable: false);
+  }
+
+  /// Parcelles/régions d'un utilisateur donné — admin uniquement.
+  /// Renvoie la liste + le total d'hectares.
+  Future<({List<Map<String, dynamic>> regions, double totalHectares})>
+      getUserRegions(String userId) async {
+    final response = await _apiClient.get(ApiEndpoints.adminUserRegions(userId));
+    final map = response is Map<String, dynamic> ? response : <String, dynamic>{};
+    final List<dynamic> raw = map['data'] as List<dynamic>? ?? const [];
+    final total = (map['totalHectares'] as num?)?.toDouble() ?? 0;
+    return (
+      regions: raw.whereType<Map<String, dynamic>>().toList(growable: false),
+      totalHectares: total,
+    );
+  }
 }

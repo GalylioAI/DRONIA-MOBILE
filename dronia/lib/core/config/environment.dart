@@ -34,9 +34,24 @@ class Environment {
     return url;
   }
 
-  /// App backend base URL (Next.js on the VPS): auth, weather, advisor,
-  /// field-monitoring, predictions/insects history. Default base for [ApiClient].
+  /// Backend unique (FastAPI sur Hugging Face Spaces).
+  ///
+  /// Si `BACKEND_URL` est défini, TOUT (auth, IA maladie/insecte, régions,
+  /// interventions, analyses, dataset) pointe vers ce seul backend — comme
+  /// l'ancien déploiement Render. Les endpoints sont à la racine
+  /// (`/auth/login`, `/classify/base64`, ...), donc PAS de suffixe `/api`.
+  /// Renvoie `null` si non défini (on retombe alors sur la config VPS).
+  static String? get _singleBackendUrl {
+    final url = dotenv.env['BACKEND_URL'];
+    if (url != null && url.isNotEmpty) return _normalizeForAndroid(url);
+    return null;
+  }
+
+  /// App backend base URL: auth, régions, interventions, analyses, dataset.
+  /// Default base for [ApiClient].
   static String get appApiBaseUrl {
+    final single = _singleBackendUrl;
+    if (single != null) return single;
     final url = dotenv.env['APP_API_BASE_URL'];
     if (url != null && url.isNotEmpty) return _normalizeForAndroid(url);
     final nextUrl = dotenv.env['NEXT_PUBLIC_BASE_URL'];
@@ -46,9 +61,10 @@ class Environment {
     return 'https://dronia-tunisie.tn/api';
   }
 
-  /// ML backend base URL (FastAPI on the VPS): /classify/base64,
-  /// /predict/insects/base64.
+  /// ML backend base URL: /classify/base64, /analyze/insects, /analyze/frame.
   static String get mlApiBaseUrl {
+    final single = _singleBackendUrl;
+    if (single != null) return single;
     final url = dotenv.env['ML_API_BASE_URL'];
     if (url != null && url.isNotEmpty) return _normalizeForAndroid(url);
     final nextUrl = dotenv.env['NEXT_PUBLIC_BASE_URL'];
@@ -58,9 +74,10 @@ class Environment {
     return 'https://dronia-tunisie.tn/ml-api';
   }
 
-  /// Legacy backend (Render). Kept ONLY for endpoints not yet on the VPS:
-  /// /analyses, /regions, /interventions, /dataset. New code must not use this.
+  /// Legacy backend. Avec `BACKEND_URL` défini, pointe sur le backend unique.
   static String get legacyApiBaseUrl {
+    final single = _singleBackendUrl;
+    if (single != null) return single;
     final url = dotenv.env['API_BASE_URL'];
     if (url != null && url.isNotEmpty) return _normalizeForAndroid(url);
     if (Platform.isAndroid) return 'http://10.0.2.2:8000';
@@ -70,6 +87,17 @@ class Environment {
   /// Default base URL for [ApiClient] — the App API (Next.js on the VPS).
   /// Kept as `apiBaseUrl` for backward compatibility with existing call sites.
   static String get apiBaseUrl => appApiBaseUrl;
+
+  /// URL WebSocket du simulateur de drone DJI (`drone_simulator/`).
+  ///
+  /// Surchargeable via `DRONE_SIM_WS_URL` dans `.env` (ex. l'IP locale du
+  /// PC pour un téléphone physique). Par défaut `ws://localhost:8080`,
+  /// réécrit en `10.0.2.2` sur l'émulateur Android.
+  static String get droneSimulatorWsUrl {
+    final url = dotenv.env['DRONE_SIM_WS_URL'];
+    if (url != null && url.isNotEmpty) return _normalizeForAndroid(url);
+    return _normalizeForAndroid('ws://localhost:8080');
+  }
 
   // Alternative URLs for different platforms during development
   static const String androidEmulatorUrl = 'http://10.0.2.2:3000/api';

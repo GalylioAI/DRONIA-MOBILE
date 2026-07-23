@@ -252,14 +252,9 @@ class AnalysisHistoryService {
 
   // ============ Backend API Methods ============
 
-  /// Save analysis to backend.
-  /// VPS exposes /api/predictions read-only — the actual persistence happens
-  /// on the ML call when an Authorization header is attached. This method is
-  /// kept as a no-op so callers compile, and so we don't hit Render anymore.
+  /// Save analysis to backend (MongoDB via POST /predictions).
+  /// Le backend HF persiste l'analyse et renvoie le document avec son id Mongo.
   Future<SavedAnalysis?> saveAnalysisToBackend(SavedAnalysis analysis) async {
-    return null;
-    // Unreachable — preserved for reference if a write endpoint is later added.
-    // ignore: dead_code
     try {
       final response = await _api.post(
         '/predictions',
@@ -341,15 +336,10 @@ class AnalysisHistoryService {
     }
   }
 
-  /// Delete analysis from backend
+  /// Delete analysis from backend (DELETE /predictions/{id})
   Future<bool> deleteAnalysisFromBackend(String analysisId) async {
     try {
-      // VPS does not expose DELETE for predictions. No-op.
-      print('DEBUG: deleteAnalysisFromBackend skipped (no VPS endpoint) for $analysisId');
-      return false;
-      // ignore: dead_code
       final response = await _api.delete('/predictions/$analysisId');
-      print('DEBUG: Delete response: $response');
       return response['success'] == true;
     } catch (e) {
       print('DEBUG: Delete failed: $e');
@@ -359,73 +349,56 @@ class AnalysisHistoryService {
 
   // ============ Main Public Methods ============
 
-  /// Save a new analysis (local + backend)
+  /// Save a new analysis. Persiste sur le backend (MongoDB) en priorité,
+  /// puis met en cache local (pour l'affichage hors-ligne).
   Future<void> saveAnalysis(SavedAnalysis analysis) async {
-    // Save to local storage first
-    final analyses = await getLocalAnalyses();
-    analyses.insert(0, analysis);
-    await _saveLocalAnalyses(analyses);
+    // 1) Backend d'abord (vraie persistance MongoDB)
+    final saved = await saveAnalysisToBackend(analysis);
 
-    // Try to save to backend
-    await saveAnalysisToBackend(analysis);
+    // 2) Cache local : version backend (avec id Mongo) si dispo, sinon locale (offline)
+    final toCache = saved ?? analysis;
+    final analyses = await getLocalAnalyses();
+    analyses.removeWhere((a) => a.id == toCache.id);
+    analyses.insert(0, toCache);
+    await _saveLocalAnalyses(analyses);
   }
 
-  /// Get all analyses (backend + local merged).
+  /// Get all analyses — le backend (MongoDB) est la source de vérité.
   ///
-  /// Toute analyse sauvegardée localement via [saveAnalysis] (bouton
-  /// "Sauvegarder" du wizard) doit apparaître dans la page historique, même
-  /// si :
-  /// - le VPS /predictions est en panne (cas vu en logs : 500),
-  /// - le user vient juste de sauvegarder (delay d'indexation côté VPS),
-  /// - on est hors-ligne.
-  ///
-  /// Stratégie : on prend les deux sources, on déduplique par ID, et on
-  /// retourne la liste triée par date décroissante.
+  /// On n'affiche QUE les vraies analyses persistées en base. Le cache local
+  /// sert uniquement de repli hors-ligne (et est resynchronisé sur le backend
+  /// à chaque chargement réussi, ce qui élimine les anciennes données démo).
   Future<List<SavedAnalysis>> getAnalyses({
     String? status,
     String? cropType,
   }) async {
-    List<SavedAnalysis> backendAnalyses = const [];
     try {
-      backendAnalyses = await getAnalysesFromBackend(
+      final backendAnalyses = await getAnalysesFromBackend(
         status: status,
         cropType: cropType,
       );
-      print('DEBUG: Got ${backendAnalyses.length} analyses from backend');
-    } catch (e) {
-      print('DEBUG: Backend fetch failed: $e - using local only');
-    }
-
-    // Toujours inclure les analyses locales (sauvegardées par l'utilisateur).
-    final localAnalyses = await getLocalAnalyses();
-
-    // Filtres optionnels appliqués au local (le backend filtre déjà côté API).
-    final filteredLocal = localAnalyses.where((a) {
-      if (status != null && a.healthStatus != status) return false;
-      if (cropType != null &&
-          a.cropType.toLowerCase() != cropType.toLowerCase()) {
-        return false;
+      // Resynchronise le cache local sur le backend (purge les entrées démo)
+      // uniquement quand on charge la liste complète (sans filtre).
+      if (status == null && cropType == null) {
+        await _saveLocalAnalyses(backendAnalyses);
       }
-      return true;
-    }).toList();
-
-    // Déduplication par id (backend gagne en cas de conflit — données fraîches
-    // canoniques + recommandations enrichies serveur).
-    final merged = <String, SavedAnalysis>{};
-    for (final a in filteredLocal) {
-      merged[a.id] = a;
+      backendAnalyses.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      print('DEBUG: History = ${backendAnalyses.length} (backend)');
+      return backendAnalyses;
+    } catch (e) {
+      // Hors-ligne / backend KO : repli sur le cache local (analyses déjà vues).
+      print('DEBUG: Backend fetch failed: $e - using local cache');
+      final localAnalyses = await getLocalAnalyses();
+      return localAnalyses.where((a) {
+        if (status != null && a.healthStatus != status) return false;
+        if (cropType != null &&
+            a.cropType.toLowerCase() != cropType.toLowerCase()) {
+          return false;
+        }
+        return true;
+      }).toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     }
-    for (final a in backendAnalyses) {
-      merged[a.id] = a;
-    }
-
-    final result = merged.values.toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    print(
-      'DEBUG: History = ${result.length} '
-      '(backend=${backendAnalyses.length}, local=${filteredLocal.length})',
-    );
-    return result;
   }
 
   /// Clear all local analyses (to remove auto-generated demo data)
@@ -467,19 +440,18 @@ class AnalysisHistoryService {
     await deleteAnalysisFromBackend(analysisId);
   }
 
-  /// Delete ALL analyses from backend.
-  /// VPS does not expose a bulk-delete endpoint — clear only the local store.
+  /// Delete ALL analyses (backend MongoDB + cache local).
   Future<bool> deleteAllAnalyses() async {
+    bool backendOk = false;
     try {
-      await clearLocalAnalyses();
-      return true;
-      // ignore: dead_code
       final response = await _api.delete('/predictions');
-      return response['success'] == true;
+      backendOk = response['success'] == true;
     } catch (e) {
-      print('DEBUG: Failed to delete all analyses: $e');
-      return false;
+      print('DEBUG: Failed to delete all analyses on backend: $e');
     }
+    // Toujours purger le cache local (supprime aussi d'éventuelles entrées démo).
+    await clearLocalAnalyses();
+    return backendOk;
   }
 
   // ============ Local Storage Methods ============

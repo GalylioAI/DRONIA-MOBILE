@@ -4,6 +4,7 @@ Handles user registration, login, and profile management
 """
 
 from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
@@ -12,7 +13,10 @@ from jose import JWTError, jwt
 import bcrypt
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
+import asyncio
+import hashlib
 import os
+import secrets
 
 # Initialize router
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -302,6 +306,201 @@ async def register(request: RegisterRequest):
     }
 
 
+# ============ Password reset (3-step OTP flow) ============
+
+# The legacy VPS backend (Next.js, dronia-tunisie.tn) has SMTP configured and
+# shares the same MongoDB users collection: the 3 OTP steps are proxied to it
+# so the code reaches the user by email. The local flow (OTP printed to the
+# Space logs) remains as fallback when the VPS is unreachable.
+VPS_AUTH_BASE_URL = os.getenv("VPS_AUTH_BASE_URL", "https://dronia-tunisie.tn/api/auth")
+
+OTP_TTL_MINUTES = 15
+OTP_MAX_ATTEMPTS = 5
+
+
+async def _proxy_vps_otp(path: str, payload: dict) -> Optional[JSONResponse]:
+    """Relay an OTP request to the VPS backend; None means the caller
+    should fall back to the local flow."""
+    import httpx
+    try:
+        async with httpx.AsyncClient(timeout=20) as client:
+            resp = await client.post(f"{VPS_AUTH_BASE_URL}{path}", json=payload)
+        if resp.status_code >= 500:
+            raise RuntimeError(f"HTTP {resp.status_code}")
+        return JSONResponse(status_code=resp.status_code, content=resp.json())
+    except Exception as e:
+        print(f"⚠️ VPS OTP injoignable ({path}): {e} — repli sur le flux local")
+        return None
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+class VerifyOtpRequest(BaseModel):
+    email: str
+    otp: str
+
+
+class ResetPasswordRequest(BaseModel):
+    email: str
+    newPassword: str
+
+
+def _hash_otp(otp: str) -> str:
+    return hashlib.sha256(otp.encode("utf-8")).hexdigest()
+
+
+async def _send_otp_email(email: str, otp: str) -> None:
+    """Send the OTP by SMTP when configured; otherwise print it to the logs
+    so the Space owner can read it (dev mode, no SMTP_HOST set)."""
+    host = os.getenv("SMTP_HOST")
+    if not host:
+        print(
+            f"🔐 [DEV] Code OTP pour {email}: {otp} "
+            f"(valide {OTP_TTL_MINUTES} min) — définissez SMTP_HOST pour l'envoi par email"
+        )
+        return
+
+    import smtplib
+    from email.mime.text import MIMEText
+
+    def _send():
+        msg = MIMEText(
+            f"Votre code de réinitialisation DronIA est : {otp}\n"
+            f"Il est valide {OTP_TTL_MINUTES} minutes.\n\n"
+            "Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.",
+            _charset="utf-8",
+        )
+        msg["Subject"] = "DronIA — Code de réinitialisation du mot de passe"
+        msg["From"] = os.getenv("SMTP_FROM", os.getenv("SMTP_USER", "no-reply@dronia.app"))
+        msg["To"] = email
+        port = int(os.getenv("SMTP_PORT", "587"))
+        with smtplib.SMTP(host, port, timeout=15) as server:
+            server.starttls()
+            smtp_user = os.getenv("SMTP_USER")
+            if smtp_user:
+                server.login(smtp_user, os.getenv("SMTP_PASS", ""))
+            server.send_message(msg)
+
+    await asyncio.to_thread(_send)
+
+
+@router.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    """Step 1 — always returns 200; never reveals whether the email exists."""
+    email = request.email.strip().lower()
+
+    proxied = await _proxy_vps_otp("/forgot-password", {"email": email})
+    if proxied is not None:
+        return proxied
+
+    database = await get_database()
+
+    user = await database.users.find_one({"email": email})
+    if user:
+        otp = f"{secrets.randbelow(1_000_000):06d}"
+        await database.password_resets.update_one(
+            {"email": email},
+            {"$set": {
+                "otpHash": _hash_otp(otp),
+                "expiresAt": datetime.utcnow() + timedelta(minutes=OTP_TTL_MINUTES),
+                "verified": False,
+                "attempts": 0,
+            }},
+            upsert=True,
+        )
+        try:
+            await _send_otp_email(email, otp)
+        except Exception as e:
+            print(f"❌ Envoi OTP échoué pour {email}: {e}")
+
+    return {
+        "success": True,
+        "message": "Si un compte existe pour cet email, un code a été envoyé",
+    }
+
+
+@router.post("/verify-otp")
+async def verify_otp(request: VerifyOtpRequest):
+    """Step 2 — validate the 6-digit code."""
+    email = request.email.strip().lower()
+
+    proxied = await _proxy_vps_otp("/verify-otp", {"email": email, "otp": request.otp.strip()})
+    if proxied is not None:
+        return proxied
+
+    database = await get_database()
+    invalid = HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Code invalide ou expiré",
+    )
+
+    record = await database.password_resets.find_one({"email": email})
+    if (
+        not record
+        or record.get("expiresAt", datetime.min) < datetime.utcnow()
+        or record.get("attempts", 0) >= OTP_MAX_ATTEMPTS
+    ):
+        raise invalid
+
+    if _hash_otp(request.otp.strip()) != record.get("otpHash"):
+        await database.password_resets.update_one(
+            {"email": email}, {"$inc": {"attempts": 1}}
+        )
+        raise invalid
+
+    await database.password_resets.update_one(
+        {"email": email}, {"$set": {"verified": True}}
+    )
+    return {"success": True}
+
+
+@router.post("/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    """Step 3 — only allowed after a successful verify-otp call."""
+    email = request.email.strip().lower()
+
+    proxied = await _proxy_vps_otp(
+        "/reset-password", {"email": email, "newPassword": request.newPassword}
+    )
+    if proxied is not None:
+        return proxied
+
+    database = await get_database()
+
+    record = await database.password_resets.find_one({"email": email})
+    if (
+        not record
+        or not record.get("verified")
+        or record.get("expiresAt", datetime.min) < datetime.utcnow()
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Veuillez d'abord vérifier le code reçu par email",
+        )
+
+    if len(request.newPassword) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Le mot de passe doit contenir au moins 6 caractères",
+        )
+
+    result = await database.users.update_one(
+        {"email": email},
+        {"$set": {"password": get_password_hash(request.newPassword)}},
+    )
+    await database.password_resets.delete_one({"email": email})
+
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilisateur introuvable",
+        )
+
+    return {"success": True, "message": "Mot de passe réinitialisé avec succès"}
+
+
 @router.get("/me")
 async def get_profile(current_user: dict = Depends(get_current_user)):
     """Get current user profile"""
@@ -357,33 +556,36 @@ class DeleteAccountRequest(BaseModel):
     confirmationName: str = Field(..., description="User must type their first name to confirm deletion")
 
 
-@router.delete("/me")
+@router.delete("/delete-account")
+@router.delete("/me")  # legacy path used by older app builds
 async def delete_account(
-    request: DeleteAccountRequest,
+    request: Optional[DeleteAccountRequest] = None,
     current_user: dict = Depends(get_current_user)
 ):
     """Delete current user account permanently"""
     database = await get_database()
-    
-    # Get user's first name for confirmation
-    user_first_name = current_user.get("firstName", "").strip().lower()
-    confirmation_name = request.confirmationName.strip().lower()
-    
-    # Verify the confirmation name matches
-    if not user_first_name or confirmation_name != user_first_name:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Le nom de confirmation ne correspond pas. Veuillez saisir votre prénom exactement."
-        )
-    
+
+    # The mobile app confirms the first name in its UI and sends no body;
+    # only verify server-side when a body is provided (legacy clients).
+    if request is not None:
+        user_first_name = current_user.get("firstName", "").strip().lower()
+        confirmation_name = request.confirmationName.strip().lower()
+        if not user_first_name or confirmation_name != user_first_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Le nom de confirmation ne correspond pas. Veuillez saisir votre prénom exactement."
+            )
+
     user_id = current_user["_id"]
-    
-    # Delete all user's regions
-    try:
-        await database.regions.delete_many({"userId": str(user_id)})
-    except Exception:
-        pass  # Regions collection might not exist
-    
+    # userId is stored as str in regions, as ObjectId in interventions/analyses
+    user_id_filter = {"$in": [user_id, str(user_id)]}
+
+    for collection in ("regions", "interventions", "analyses", "insect_analyses", "predictions"):
+        try:
+            await database[collection].delete_many({"userId": user_id_filter})
+        except Exception:
+            pass  # collection might not exist
+
     # Delete the user account
     result = await database.users.delete_one({"_id": user_id})
     
@@ -523,3 +725,73 @@ async def admin_delete_user(
         raise HTTPException(status_code=404, detail="Utilisateur introuvable")
 
     return {"success": True, "message": "Utilisateur supprimé"}
+
+
+def _iso(v):
+    """Sérialise une date (datetime ou str) en ISO, ou None."""
+    try:
+        return v.isoformat()
+    except AttributeError:
+        return str(v) if v else None
+
+
+@router.get("/admin/users/{user_id}/analyses")
+async def admin_user_analyses(user_id: str, _: dict = Depends(require_admin)):
+    """Toutes les analyses (maladies) d'un utilisateur — réservé admin."""
+    database = await get_database()
+    try:
+        oid = ObjectId(user_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Identifiant utilisateur invalide")
+
+    items = []
+    # Collection 'analyses' (app mobile)
+    async for a in database.analyses.find({"userId": oid}).sort("createdAt", -1).limit(100):
+        results = a.get("results", []) or []
+        primary = results[0] if results else {}
+        items.append({
+            "id": str(a["_id"]),
+            "cropType": a.get("cropType", ""),
+            "disease": primary.get("diseaseNameFr") or primary.get("diseaseName") or a.get("suspectedDisease"),
+            "healthStatus": a.get("healthStatus", ""),
+            "confidence": primary.get("confidence"),
+            "affectedSurface": a.get("affectedSurface"),
+            "createdAt": _iso(a.get("createdAt")),
+            "source": "analyses",
+        })
+    # Collection 'predictions' (héritage web)
+    async for p in database.predictions.find({"userId": oid}).sort("createdAt", -1).limit(100):
+        res = p.get("result", {}) or {}
+        items.append({
+            "id": str(p["_id"]),
+            "cropType": res.get("plantType") or p.get("region") or "",
+            "disease": res.get("disease"),
+            "healthStatus": "Saine" if res.get("generalStatus") == "Saine" else "Malade",
+            "confidence": res.get("confidence"),
+            "affectedSurface": res.get("affectedSurface"),
+            "createdAt": _iso(p.get("createdAt")),
+            "source": "predictions",
+        })
+
+    items.sort(key=lambda x: x.get("createdAt") or "", reverse=True)
+    return {"success": True, "data": items, "count": len(items)}
+
+
+@router.get("/admin/users/{user_id}/regions")
+async def admin_user_regions(user_id: str, _: dict = Depends(require_admin)):
+    """Toutes les parcelles/régions d'un utilisateur — réservé admin."""
+    database = await get_database()
+    # Les régions stockent userId sous forme de chaîne
+    items = []
+    async for r in database.regions.find({"userId": user_id}).limit(100):
+        items.append({
+            "id": str(r["_id"]),
+            "name": r.get("name", ""),
+            "hectares": r.get("hectares", 0),
+            "cropType": r.get("cropType") or r.get("plantType"),
+            "latitude": r.get("latitude"),
+            "longitude": r.get("longitude"),
+            "createdAt": _iso(r.get("createdAt")),
+        })
+    total_ha = sum(float(i.get("hectares") or 0) for i in items)
+    return {"success": True, "data": items, "count": len(items), "totalHectares": total_ha}

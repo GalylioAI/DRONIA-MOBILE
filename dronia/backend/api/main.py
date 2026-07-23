@@ -58,11 +58,18 @@ from api.regions import router as regions_router
 from api.interventions import router as interventions_router
 from api.analyses import router as analyses_router
 from api.dataset import router as dataset_router
+from api.field_monitoring import router as field_monitoring_router
 app.include_router(auth_router)
 app.include_router(regions_router)
 app.include_router(interventions_router)
-app.include_router(analyses_router)
+# Historique d'analyses : exposé sous /analyses ET /predictions (l'app mobile
+# appelle /predictions, héritage du nommage Next.js). Même persistance MongoDB.
+app.include_router(analyses_router, prefix="/analyses")
+app.include_router(analyses_router, prefix="/predictions")
 app.include_router(dataset_router)
+# Surveillance des cultures : proxy Copernicus Sentinel Hub + Open-Meteo
+# (remplace l'ancien proxy Next.js /api/field-monitoring du VPS).
+app.include_router(field_monitoring_router)
 
 # Startup/shutdown events for database
 @app.on_event("startup")
@@ -239,6 +246,37 @@ pest_detection_model_path: str = None
 # LOCAL_MODE=true active le ViT local + YOLO pest detection
 LOCAL_MODE = os.getenv("LOCAL_MODE", "false").lower() == "true"
 DISABLE_YOLO = not LOCAL_MODE  # activé en mode local, désactivé sur Render
+
+# Dépôt HuggingFace Hub hébergeant TOUS les poids (efficientnet, yolo, vit).
+# Sur HF Spaces, les .pth/.pt ne sont pas commités : ils sont téléchargés au
+# démarrage depuis ce dépôt (comme le ViT). Override via la variable HF_MODELS_REPO.
+HF_MODELS_REPO = os.getenv("HF_MODELS_REPO", "aladinhabibi/vit-plantdoc")
+
+
+def ensure_hf_model(filename: str, dest_dir: Path) -> Path:
+    """
+    Garantit la présence d'un fichier de modèle localement.
+    S'il est absent, le télécharge depuis HF_MODELS_REPO (HuggingFace Hub).
+    Retourne le chemin local, ou None en cas d'échec.
+    """
+    local_path = dest_dir / filename
+    if local_path.exists():
+        return local_path
+    try:
+        from huggingface_hub import hf_hub_download
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"📥 Téléchargement {filename} depuis {HF_MODELS_REPO}...")
+        downloaded = hf_hub_download(
+            repo_id=HF_MODELS_REPO,
+            filename=filename,
+            local_dir=str(dest_dir),
+            token=os.getenv("HF_TOKEN") or None,
+        )
+        logger.info(f"✅ {filename} téléchargé → {downloaded}")
+        return Path(downloaded)
+    except Exception as e:
+        logger.error(f"❌ Échec téléchargement {filename} depuis {HF_MODELS_REPO} : {e}")
+        return None
 
 # In your predict functions, modify the ensure_model_loaded function:
 def ensure_model_loaded():
@@ -615,7 +653,14 @@ def load_classification_model(path: str = None):
         if path is None:
             models_dir = Path(__file__).parent.parent / "models"
             model_files = list(models_dir.glob("efficientnet_*.pth"))
-            
+
+            # Aucun modèle local → téléchargement depuis HuggingFace Hub (HF Spaces)
+            if not model_files:
+                logger.info("Aucun modèle EfficientNet local — tentative de téléchargement HF...")
+                downloaded = ensure_hf_model("efficientnet_plantvillage_olive_best.pth", models_dir)
+                if downloaded is not None:
+                    model_files = [downloaded]
+
             if not model_files:
                 logger.warning("No EfficientNet model found. Classification will be disabled.")
                 return
@@ -798,20 +843,23 @@ def ensure_classification_model_loaded():
 
 @app.on_event("startup")
 async def startup_event():
-    """Load models on startup. En LOCAL_MODE charge aussi ViT + YOLO pest detection."""
-    mode_label = "LOCAL (EfficientNet + ViT + YOLO)" if LOCAL_MODE else "PRODUCTION (EfficientNet uniquement)"
-    logger.info(f"🚀 Starting DronIA API — mode: {mode_label}")
+    """Load models on startup. DronIA = 2 modèles : ViT (maladies) + YOLO11s (insectes).
+    EfficientNet est désactivable via ENABLE_EFFICIENTNET=false (cas HF Spaces)."""
+    logger.info(f"🚀 Starting DronIA API — LOCAL_MODE={LOCAL_MODE}")
 
-    # EfficientNet (toujours)
-    logger.info("📦 Chargement EfficientNet...")
-    try:
-        load_classification_model()
-        if classification_model is not None:
-            logger.info("✅ EfficientNet prêt — POST /classify/base64")
-        else:
-            logger.error("❌ EfficientNet échoué")
-    except Exception as e:
-        logger.error(f"❌ EfficientNet : {e}")
+    # EfficientNet (optionnel — désactivé par défaut côté HF, ViT le remplace)
+    if os.getenv("ENABLE_EFFICIENTNET", "true").lower() == "true":
+        logger.info("📦 Chargement EfficientNet...")
+        try:
+            load_classification_model()
+            if classification_model is not None:
+                logger.info("✅ EfficientNet prêt — POST /classify/base64")
+            else:
+                logger.error("❌ EfficientNet échoué")
+        except Exception as e:
+            logger.error(f"❌ EfficientNet : {e}")
+    else:
+        logger.info("⏭️  EfficientNet désactivé (ENABLE_EFFICIENTNET=false) — ViT utilisé pour les maladies")
 
     if LOCAL_MODE:
         # ViT PlantDoc
@@ -1563,7 +1611,13 @@ def load_pest_detection_model():
             model_path_pest = path
             logger.info(f"Found pest detection model at: {path}")
             break
-    
+
+    # Introuvable localement → téléchargement depuis HuggingFace Hub (HF Spaces)
+    if model_path_pest is None:
+        logger.info(f"YOLO11s introuvable localement — tentative de téléchargement HF...")
+        models_dir = Path(__file__).parent.parent / "models"
+        model_path_pest = ensure_hf_model(model_name, models_dir)
+
     if model_path_pest is None:
         logger.error(f"❌ Pest detection model not found: {model_name}")
         logger.error(f"Searched paths: {[str(p) for p in possible_paths]}")
@@ -1861,21 +1915,264 @@ async def analyze_insects(image: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Pest detection failed: {str(e)}")
 
 
+# ==================== SURVEILLANCE VIDÉO — analyse combinée ====================
+
+class _FrameReq(BaseModel):
+    image: str
+    # Modèle à exécuter selon l'onglet de surveillance actif côté app :
+    #   "disease" → onglet Maladies : ViT uniquement (points de symptômes)
+    #   "insect"  → onglet Insectes : YOLO11s uniquement (rectangle ravageur)
+    #   "both"    → exécute les deux (compatibilité ascendante)
+    mode: str = "both"
+
+
+@app.post("/analyze/frame")
+async def analyze_frame(req: _FrameReq):
+    """
+    Analyse d'une frame vidéo drone (DronIA) ciblée selon l'onglet actif :
+      - mode="disease" → ViT PlantDoc : classification maladie des feuilles
+      - mode="insect"  → YOLO11s      : détection insectes ravageurs (IP102)
+      - mode="both"    → les deux modèles (défaut, rétro-compatible)
+    Accepte une image base64 (PNG/JPEG) en JSON {"image": "...", "mode": "..."}
+    — pas de limite de taille de champ form (les frames peuvent dépasser 1 Mo).
+    """
+    image = req.image
+    mode = (req.mode or "both").lower()
+    run_disease = mode in ("disease", "both")
+    run_insect = mode in ("insect", "both")
+    result = {
+        "disease": None,
+        "insects": {"detections": [], "total_count": 0, "danger_level": "Aucun"},
+        "hasDetection": False,
+    }
+
+    # Décodage de l'image
+    try:
+        img_data = image.split(",")[1] if image.startswith("data:image") else image
+        img_bytes = base64.b64decode(img_data)
+        pil_image = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+        image_width, image_height = pil_image.size
+        logger.info(f"🎬 Frame reçue : {image_width}x{image_height}")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Image invalide : {e}")
+
+    # ── 1. Classification maladie (ViT PlantDoc) ──────────────────────────────
+    # Chargé/exécuté uniquement pour l'onglet Maladies (mode disease/both).
+    if run_disease and vit_model is None:
+        try:
+            load_vit_model()
+        except Exception as e:
+            logger.warning(f"⚠️  ViT indisponible pour /analyze/frame : {e}")
+
+    if run_disease and vit_model is not None:
+        try:
+            with torch.no_grad():
+                x = vit_transform(pil_image).unsqueeze(0)
+                logits = vit_model(x).logits[0]
+                probs = torch.softmax(logits, dim=0)
+                top_prob, top_idx = torch.max(probs, 0)
+
+            id2label = {int(k): v for k, v in vit_classes["id2label"].items()}
+            class_name = id2label.get(int(top_idx), f"class_{int(top_idx)}")
+            raw_conf = float(top_prob)
+            healthy = _vit_is_healthy(class_name)
+
+            # Analyse visuelle : surface affectée + zones de symptômes.
+            # Le ViT combiné a ~100 classes → probabilité brute faible (~5%),
+            # donc on s'appuie sur l'analyse visuelle (comme /classify/vit).
+            visual = analyze_leaf_health(pil_image)
+            vsurf = float(visual.get("affected_surface", 0) or 0)
+            areas = visual.get("symptom_areas", []) or []
+            logger.info(f"   ViT → {class_name} raw={raw_conf:.1%} healthy={healthy} | visuel={vsurf:.0f}%")
+
+            # Déclenche si feuille non saine ET symptômes visuels significatifs.
+            if not healthy and vsurf >= 12:
+                display_conf = max(int(raw_conf * 100), int(vsurf))
+                sev = "Élevée" if vsurf > 40 else ("Modérée" if vsurf > 20 else "Légère")
+                disease = {
+                    "label": _vit_disease_fr(class_name),
+                    "labelClass": class_name,
+                    "confidence": display_conf / 100.0,
+                    "severity": sev,
+                    "recommendations": {},
+                    "box": None,
+                    "points": [],
+                }
+                if areas:
+                    a = max(areas, key=lambda z: z.get("area_percentage", 0))
+                    disease["box"] = {
+                        "x1": round(a["x"] / image_width * 100, 2),
+                        "y1": round(a["y"] / image_height * 100, 2),
+                        "x2": round((a["x"] + a["width"]) / image_width * 100, 2),
+                        "y2": round((a["y"] + a["height"]) / image_height * 100, 2),
+                    }
+                    # Points des foyers de symptômes (centres en % 0-100) : l'app
+                    # affiche des pastilles sur la maladie, PAS un rectangle.
+                    # On ne garde QUE les foyers les plus marqués (gros amas
+                    # nécrosés) et on écarte les petites taches dispersées du
+                    # fond (feuilles sèches, sol) → points concentrés sur la
+                    # zone réellement malade. `areas` est trié par taille.
+                    disease["points"] = [
+                        {
+                            "x": round((z["x"] + z.get("width", 0) / 2)
+                                       / image_width * 100, 2),
+                            "y": round((z["y"] + z.get("height", 0) / 2)
+                                       / image_height * 100, 2),
+                        }
+                        for z in areas[:6]
+                        if z.get("area_percentage", 0) >= 2.0
+                    ]
+                    # Repli : si tout est dispersé (<2%), garder le plus gros foyer.
+                    if not disease["points"] and areas:
+                        z = areas[0]
+                        disease["points"] = [{
+                            "x": round((z["x"] + z.get("width", 0) / 2)
+                                       / image_width * 100, 2),
+                            "y": round((z["y"] + z.get("height", 0) / 2)
+                                       / image_height * 100, 2),
+                        }]
+                result["disease"] = disease
+                result["hasDetection"] = True
+
+        except Exception as e:
+            logger.error(f"❌ ViT frame error : {e}")
+    elif run_disease:
+        logger.warning("⚠️  ViT non chargé — classification maladie ignorée")
+
+    # ── 2. Détection insectes (YOLO11s) ──────────────────────────────────────
+    # Exécuté uniquement pour l'onglet Insectes (mode insect/both).
+    # Activé par défaut (ENABLE_YOLO). Chargement paresseux + auto-download HF.
+    enable_yolo = run_insect and os.getenv("ENABLE_YOLO", "true").lower() == "true"
+    if enable_yolo and pest_detection_model is None:
+        try:
+            load_pest_detection_model()
+        except Exception as e:
+            logger.warning(f"⚠️  YOLO11s indisponible pour /analyze/frame : {e}")
+
+    if enable_yolo and pest_detection_model is not None:
+        try:
+            yolo_results = pest_detection_model(pil_image, conf=0.15, verbose=False)
+            detections = []
+
+            for yolo_result in yolo_results:
+                if yolo_result.boxes is None:
+                    continue
+                for box in yolo_result.boxes:
+                    class_id = int(box.cls[0])
+                    conf = float(box.conf[0])
+                    pest_name = IP102_CLASS_NAMES.get(class_id, f"Insecte #{class_id}")
+                    x1, y1, x2, y2 = box.xyxy[0].tolist()
+                    pest_info = get_pest_info(pest_name)
+                    detections.append({
+                        "class": pest_name,
+                        "confidence": conf,
+                        "bbox": {
+                            "x1": (x1 / image_width) * 100,
+                            "y1": (y1 / image_height) * 100,
+                            "x2": (x2 / image_width) * 100,
+                            "y2": (y2 / image_height) * 100,
+                        },
+                        "danger_level": pest_info["danger"],
+                        "treatment": pest_info["treatment"],
+                    })
+
+            detections.sort(key=lambda d: d["confidence"], reverse=True)
+            danger = (
+                "Élevé" if any(d["danger_level"] == "Élevé" for d in detections)
+                else "Modéré" if any(d["danger_level"] == "Modéré" for d in detections)
+                else "Faible" if detections
+                else "Aucun"
+            )
+            result["insects"] = {
+                "detections": detections,
+                "total_count": len(detections),
+                "danger_level": danger,
+            }
+            if detections:
+                result["hasDetection"] = True
+            logger.info(f"   YOLO11s → {len(detections)} ravageur(s), danger={danger}")
+
+        except Exception as e:
+            logger.error(f"❌ YOLO frame error : {e}")
+
+    logger.info(f"✅ /analyze/frame → hasDetection={result['hasDetection']}")
+    return JSONResponse(content=result)
+
+
+def _remap_vit_keys(state_dict: dict) -> dict:
+    """Remap old HuggingFace ViT key names to the current transformers format."""
+    import re
+    if not any(k.startswith("vit.encoder.layer") for k in state_dict.keys()):
+        return state_dict
+    new_sd = {}
+    for k, v in state_dict.items():
+        nk = k.replace("vit.encoder.layer.", "vit.layers.")
+        nk = re.sub(r"(vit\.layers\.\d+)\.attention\.attention\.query\.", r"\1.attention.q_proj.", nk)
+        nk = re.sub(r"(vit\.layers\.\d+)\.attention\.attention\.key\.",   r"\1.attention.k_proj.", nk)
+        nk = re.sub(r"(vit\.layers\.\d+)\.attention\.attention\.value\.", r"\1.attention.v_proj.", nk)
+        nk = re.sub(r"(vit\.layers\.\d+)\.attention\.output\.dense\.",    r"\1.attention.o_proj.", nk)
+        nk = re.sub(r"(vit\.layers\.\d+)\.intermediate\.dense\.",         r"\1.mlp.fc1.", nk)
+        nk = re.sub(r"(vit\.layers\.\d+)\.output\.dense\.",               r"\1.mlp.fc2.", nk)
+        new_sd[nk] = v
+    return new_sd
+
+
 def load_vit_model():
-    """Load ViT PlantDoc model (from local .pth or HuggingFace Hub)"""
+    """Load ViT combined model (from local .pth or HuggingFace Hub)."""
     global vit_model, vit_classes, vit_transform
     import json
     from transformers import ViTForImageClassification
 
-    models_dir = Path(__file__).parent.parent / "models"
-    # Prefer combined model if available
-    pth_path   = models_dir / "combined" / "vit_combined_best.pth"
-    json_path  = models_dir / "combined" / "vit_combined_classes.json"
-    if not pth_path.exists():
-        pth_path  = models_dir / "vit_plantdoc_best.pth"
-        json_path = models_dir / "vit_plantdoc_classes.json"
+    models_dir   = Path(__file__).parent.parent / "models"
+    combined_dir = models_dir / "combined"
+    combined_pth  = combined_dir / "vit_combined_best.pth"
+    combined_json = combined_dir / "vit_combined_classes.json"
+    plantdoc_pth  = models_dir / "vit_plantdoc_best.pth"
+    plantdoc_json = models_dir / "vit_plantdoc_classes.json"
 
-    # ── Classes metadata (embedded fallback so Render works without the JSON) ──
+    # ── Step 1: resolve which .pth to load (download if neither is local) ──
+    if combined_pth.exists():
+        pth_path  = combined_pth
+        json_path = combined_json if combined_json.exists() else plantdoc_json
+    elif plantdoc_pth.exists():
+        pth_path  = plantdoc_pth
+        json_path = plantdoc_json
+    else:
+        pth_path  = None
+        # Keep combined json if already present in the image
+        json_path = combined_json if combined_json.exists() else plantdoc_json
+
+        logger.info("📥 Downloading vit_combined_best.pth from HuggingFace Hub...")
+        try:
+            from huggingface_hub import hf_hub_download
+            combined_dir.mkdir(exist_ok=True)
+            pth_path = Path(hf_hub_download(
+                repo_id="aladinhabibi/vit-plantdoc",
+                filename="vit_combined_best.pth",
+                local_dir=str(combined_dir),
+            ))
+            if not combined_json.exists():
+                hf_hub_download(
+                    repo_id="aladinhabibi/vit-plantdoc",
+                    filename="vit_combined_classes.json",
+                    local_dir=str(combined_dir),
+                )
+            json_path = combined_json if combined_json.exists() else plantdoc_json
+            logger.info(f"✅ Downloaded to {pth_path}")
+        except Exception as e:
+            logger.warning(f"⚠️  Could not download combined model: {e} — trying PlantDoc fallback")
+            try:
+                from huggingface_hub import hf_hub_download
+                pth_path  = Path(hf_hub_download(
+                    repo_id="aladinhabibi/vit-plantdoc",
+                    filename="vit_plantdoc_best.pth",
+                    local_dir=str(models_dir),
+                ))
+                json_path = plantdoc_json
+            except Exception as e2:
+                logger.warning(f"⚠️  Fallback also failed: {e2}")
+
+    # ── Step 2: load class metadata ──
     FALLBACK_CLASSES = [
         "Apple_Scab_Leaf","Apple_leaf","Apple_rust_leaf","Bell_pepper_leaf",
         "Bell_pepper_leaf_spot","Blueberry_leaf","Cherry_leaf","Corn_Gray_leaf_spot",
@@ -1888,22 +2185,23 @@ def load_vit_model():
         "grape_leaf_black_rot",
     ]
 
-    if json_path.exists():
+    if json_path and json_path.exists():
         with open(json_path, "r") as f:
             meta = json.load(f)
-        classes = meta["classes"]
+        classes    = meta["classes"]
         num_classes = meta["num_classes"]
-        id2label = {int(k): v for k, v in meta["id2label"].items()}
+        id2label   = {int(k): v for k, v in meta["id2label"].items()}
     else:
-        logger.warning("vit_plantdoc_classes.json not found — using fallback class list")
-        classes = FALLBACK_CLASSES
+        logger.warning("No classes JSON found — using fallback class list (28 classes)")
+        classes     = FALLBACK_CLASSES
         num_classes = len(classes)
-        id2label = {i: c for i, c in enumerate(classes)}
-        meta = {"classes": classes, "num_classes": num_classes,
-                "id2label": {str(k): v for k, v in id2label.items()}}
+        id2label    = {i: c for i, c in enumerate(classes)}
+        meta        = {"classes": classes, "num_classes": num_classes,
+                       "id2label": {str(k): v for k, v in id2label.items()}}
 
     label2id = {v: k for k, v in id2label.items()}
 
+    # ── Step 3: build model with correct class count ──
     vit_model = ViTForImageClassification.from_pretrained(
         "google/vit-base-patch16-224-in21k",
         num_labels=num_classes,
@@ -1912,45 +2210,20 @@ def load_vit_model():
         ignore_mismatched_sizes=True,
     )
 
-    if not pth_path.exists():
-        logger.info("📥 Downloading vit_combined_best.pth from HuggingFace Hub...")
-        try:
-            from huggingface_hub import hf_hub_download
-            combined_dir = models_dir / "combined"
-            combined_dir.mkdir(exist_ok=True)
-            downloaded = hf_hub_download(
-                repo_id="aladinhabibi/vit-plantdoc",
-                filename="vit_combined_best.pth",
-                local_dir=str(combined_dir),
-            )
-            pth_path = Path(downloaded)
-            # Also download classes json
-            hf_hub_download(
-                repo_id="aladinhabibi/vit-plantdoc",
-                filename="vit_combined_classes.json",
-                local_dir=str(combined_dir),
-            )
-            json_path = combined_dir / "vit_combined_classes.json"
-            logger.info(f"✅ Downloaded to {pth_path}")
-        except Exception as e:
-            logger.warning(f"⚠️  Could not download combined model: {e} — trying PlantDoc fallback")
-            try:
-                from huggingface_hub import hf_hub_download
-                downloaded = hf_hub_download(
-                    repo_id="aladinhabibi/vit-plantdoc",
-                    filename="vit_plantdoc_best.pth",
-                    local_dir=str(models_dir),
-                )
-                pth_path  = Path(downloaded)
-                json_path = models_dir / "vit_plantdoc_classes.json"
-            except Exception as e2:
-                logger.warning(f"⚠️  Fallback also failed: {e2}")
-
-    if pth_path.exists():
-        vit_model.load_state_dict(torch.load(str(pth_path), map_location="cpu"))
-        logger.info(f"✅ ViT fine-tuned weights loaded from {pth_path.name}")
+    # ── Step 4: load fine-tuned weights (with key remapping for old transformers format) ──
+    if pth_path and pth_path.exists():
+        state_dict = torch.load(str(pth_path), map_location="cpu")
+        state_dict = _remap_vit_keys(state_dict)
+        missing, unexpected = vit_model.load_state_dict(state_dict, strict=False)
+        ignored = [k for k in unexpected if k.startswith("pooler.")]
+        real_unexpected = [k for k in unexpected if not k.startswith("pooler.")]
+        if real_unexpected:
+            logger.warning(f"⚠️  Unexpected keys after remap: {real_unexpected[:5]}...")
+        if missing:
+            logger.warning(f"⚠️  Missing keys: {missing[:5]}...")
+        logger.info(f"✅ ViT weights loaded from {pth_path.name} — {num_classes} classes")
     else:
-        logger.warning("vit_plantdoc_best.pth not found — using base ViT weights (not fine-tuned)")
+        logger.warning("No .pth found — using base ViT weights (not fine-tuned)")
 
     vit_model.eval()
     for p in vit_model.parameters():
@@ -1967,43 +2240,165 @@ def load_vit_model():
 
 # Mapping PlantDoc class names → French disease type (sans préfixe plante, sans underscores)
 VIT_PLANTDOC_FR = {
-    "Apple_Scab_Leaf":                        "Tavelure",
+    # ── PlantDoc format (underscore) ─────────────────────────────────────────
+    "Apple_Scab_Leaf":                        "Tavelure (Pomme)",
     "Apple_leaf":                             "Saine",
-    "Apple_rust_leaf":                        "Rouille",
+    "Apple_rust_leaf":                        "Rouille (Pomme)",
     "Bell_pepper_leaf":                       "Saine",
-    "Bell_pepper_leaf_spot":                  "Tache foliaire",
+    "Bell_pepper_leaf_spot":                  "Tache foliaire (Poivron)",
     "Blueberry_leaf":                         "Saine",
     "Cherry_leaf":                            "Saine",
-    "Corn_Gray_leaf_spot":                    "Tache grise des feuilles",
-    "Corn_leaf_blight":                       "Brûlure foliaire",
-    "Corn_rust_leaf":                         "Rouille",
+    "Corn_Gray_leaf_spot":                    "Tache grise (Maïs)",
+    "Corn_leaf_blight":                       "Brûlure foliaire (Maïs)",
+    "Corn_rust_leaf":                         "Rouille (Maïs)",
     "Peach_leaf":                             "Saine",
-    "Potato_leaf_early_blight":               "Alternariose",
-    "Potato_leaf_late_blight":               "Mildiou",
+    "Potato_leaf_early_blight":               "Alternariose (Pomme de terre)",
+    "Potato_leaf_late_blight":                "Mildiou (Pomme de terre)",
     "Raspberry_leaf":                         "Saine",
     "Soyabean_leaf":                          "Saine",
-    "Squash_Powdery_mildew_leaf":             "Oïdium",
+    "Squash_Powdery_mildew_leaf":             "Oïdium (Courge)",
     "Strawberry_leaf":                        "Saine",
-    "Tomato_Early_blight_leaf":               "Alternariose",
-    "Tomato_Septoria_leaf_spot":              "Septoriose",
+    "Tomato_Early_blight_leaf":               "Alternariose (Tomate)",
+    "Tomato_Septoria_leaf_spot":              "Septoriose (Tomate)",
     "Tomato_leaf":                            "Saine",
-    "Tomato_leaf_bacterial_spot":             "Tache bactérienne",
-    "Tomato_leaf_late_blight":               "Mildiou",
-    "Tomato_leaf_mosaic_virus":              "Mosaïque virale",
-    "Tomato_leaf_yellow_virus":              "Virus de l'enroulement jaune",
-    "Tomato_mold_leaf":                       "Moisissure foliaire",
-    "Tomato_two_spotted_spider_mites_leaf":   "Acariens (tétranyques)",
+    "Tomato_leaf_bacterial_spot":             "Tache bactérienne (Tomate)",
+    "Tomato_leaf_late_blight":                "Mildiou (Tomate)",
+    "Tomato_leaf_mosaic_virus":               "Mosaïque virale (Tomate)",
+    "Tomato_leaf_yellow_virus":               "Virus enroulement jaune (Tomate)",
+    "Tomato_mold_leaf":                       "Moisissure foliaire (Tomate)",
+    "Tomato_two_spotted_spider_mites_leaf":   "Acariens (Tomate)",
     "grape_leaf":                             "Saine",
-    "grape_leaf_black_rot":                   "Pourriture noire",
+    "grape_leaf_black_rot":                   "Pourriture noire (Raisin)",
+    # ── PlantSeg format (lowercase) ──────────────────────────────────────────
+    "apple black rot":                        "Pourriture noire (Pomme)",
+    "apple mosaic virus":                     "Mosaïque virale (Pomme)",
+    "apple rust":                             "Rouille (Pomme)",
+    "apple scab":                             "Tavelure (Pomme)",
+    "banana anthracnose":                     "Anthracnose (Banane)",
+    "banana black leaf streak":               "Strie noire (Banane)",
+    "banana bunchy top":                      "Maladie du sommet en bouquet (Banane)",
+    "banana cigar end rot":                   "Pourriture terminale (Banane)",
+    "banana cordana leaf spot":               "Tache de Cordana (Banane)",
+    "banana panama disease":                  "Maladie de Panama (Banane)",
+    "basil downy mildew":                     "Mildiou (Basilic)",
+    "bean halo blight":                       "Brûlure à halo (Haricot)",
+    "bean mosaic virus":                      "Mosaïque virale (Haricot)",
+    "bean rust":                              "Rouille (Haricot)",
+    "bell pepper bacterial spot":             "Tache bactérienne (Poivron)",
+    "bell pepper blossom end rot":            "Pourriture apicale (Poivron)",
+    "bell pepper frogeye leaf spot":          "Tache œil de grenouille (Poivron)",
+    "bell pepper powdery mildew":             "Oïdium (Poivron)",
+    "blueberry anthracnose":                  "Anthracnose (Myrtille)",
+    "blueberry botrytis blight":              "Pourriture grise (Myrtille)",
+    "blueberry mummy berry":                  "Momification (Myrtille)",
+    "blueberry rust":                         "Rouille (Myrtille)",
+    "blueberry scorch":                       "Brûlure virale (Myrtille)",
+    "broccoli alternaria leaf spot":          "Alternariose (Brocoli)",
+    "broccoli downy mildew":                  "Mildiou (Brocoli)",
+    "broccoli ring spot":                     "Tache annulaire (Brocoli)",
+    "cabbage alternaria leaf spot":           "Alternariose (Chou)",
+    "cabbage black rot":                      "Pourriture noire (Chou)",
+    "cabbage downy mildew":                   "Mildiou (Chou)",
+    "carrot alternaria leaf blight":          "Alternariose (Carotte)",
+    "carrot cavity spot":                     "Tache cavitaire (Carotte)",
+    "carrot cercospora leaf blight":          "Cercosporiose (Carotte)",
+    "cauliflower alternaria leaf spot":       "Alternariose (Chou-fleur)",
+    "cauliflower bacterial soft rot":         "Pourriture molle (Chou-fleur)",
+    "celery anthracnose":                     "Anthracnose (Céleri)",
+    "celery early blight":                    "Brûlure précoce (Céleri)",
+    "cherry leaf spot":                       "Tache foliaire (Cerise)",
+    "cherry powdery mildew":                  "Oïdium (Cerise)",
+    "citrus canker":                          "Chancre citrique",
+    "citrus greening disease":                "Verdissement des agrumes",
+    "coffee berry blotch":                    "Tache des baies (Café)",
+    "coffee black rot":                       "Pourriture noire (Café)",
+    "coffee brown eye spot":                  "Tache œil brun (Café)",
+    "coffee leaf rust":                       "Rouille foliaire (Café)",
+    "corn gray leaf spot":                    "Tache grise (Maïs)",
+    "corn northern leaf blight":              "Brûlure septentrionale (Maïs)",
+    "corn rust":                              "Rouille (Maïs)",
+    "corn smut":                              "Charbon (Maïs)",
+    "cucumber angular leaf spot":             "Tache angulaire (Concombre)",
+    "cucumber bacterial wilt":                "Flétrissement bactérien (Concombre)",
+    "cucumber powdery mildew":                "Oïdium (Concombre)",
+    "eggplant cercospora leaf spot":          "Cercosporiose (Aubergine)",
+    "eggplant phomopsis fruit rot":           "Pourriture à Phomopsis (Aubergine)",
+    "eggplant phytophthora blight":           "Mildiou (Aubergine)",
+    "garlic leaf blight":                     "Brûlure foliaire (Ail)",
+    "garlic rust":                            "Rouille (Ail)",
+    "ginger leaf spot":                       "Tache foliaire (Gingembre)",
+    "ginger sheath blight":                   "Brûlure de la gaine (Gingembre)",
+    "grape black rot":                        "Pourriture noire (Vigne)",
+    "grape downy mildew":                     "Mildiou (Vigne)",
+    "grape leaf spot":                        "Tache foliaire (Vigne)",
+    "grapevine leafroll disease":             "Enroulement viral (Vigne)",
+    "lettuce downy mildew":                   "Mildiou (Laitue)",
+    "lettuce mosaic virus":                   "Mosaïque virale (Laitue)",
+    "maple tar spot":                         "Tache goudronneuse (Érable)",
+    "peach anthracnose":                      "Anthracnose (Pêche)",
+    "peach brown rot":                        "Pourriture brune (Pêche)",
+    "peach leaf curl":                        "Cloque du pêcher",
+    "peach rust":                             "Rouille (Pêche)",
+    "peach scab":                             "Tavelure (Pêche)",
+    "plum bacterial spot":                    "Tache bactérienne (Prune)",
+    "plum brown rot":                         "Pourriture brune (Prune)",
+    "plum pocket disease":                    "Poche de la prune",
+    "plum pox virus":                         "Sharka (Prune)",
+    "plum rust":                              "Rouille (Prune)",
+    "potato early blight":                    "Alternariose (Pomme de terre)",
+    "potato late blight":                     "Mildiou (Pomme de terre)",
+    "raspberry fire blight":                  "Feu bactérien (Framboise)",
+    "raspberry gray mold":                    "Pourriture grise (Framboise)",
+    "raspberry leaf spot":                    "Tache foliaire (Framboise)",
+    "raspberry yellow rust":                  "Rouille jaune (Framboise)",
+    "rice blast":                             "Pyriculariose (Riz)",
+    "rice sheath blight":                     "Rhizoctone (Riz)",
+    "soybean bacterial blight":               "Brûlure bactérienne (Soja)",
+    "soybean brown spot":                     "Tache brune (Soja)",
+    "soybean downy mildew":                   "Mildiou (Soja)",
+    "soybean frog eye leaf spot":             "Cercosporiose (Soja)",
+    "soybean mosaic":                         "Mosaïque (Soja)",
+    "squash powdery mildew":                  "Oïdium (Courge)",
+    "strawberry anthracnose":                 "Anthracnose (Fraise)",
+    "strawberry leaf scorch":                 "Brûlure des feuilles (Fraise)",
+    "tobacco blue mold":                      "Mildiou bleu (Tabac)",
+    "tobacco brown spot":                     "Tache brune (Tabac)",
+    "tobacco frogeye leaf spot":              "Tache œil de grenouille (Tabac)",
+    "tobacco mosaic virus":                   "Mosaïque virale (Tabac)",
+    "tomato bacterial leaf spot":             "Tache bactérienne (Tomate)",
+    "tomato early blight":                    "Alternariose (Tomate)",
+    "tomato late blight":                     "Mildiou (Tomate)",
+    "tomato leaf mold":                       "Moisissure foliaire (Tomate)",
+    "tomato mosaic virus":                    "Mosaïque virale (Tomate)",
+    "tomato septoria leaf spot":              "Septoriose (Tomate)",
+    "tomato yellow leaf curl virus":          "Virus enroulement jaune (Tomate)",
+    "wheat bacterial leaf streak (black chaff)": "Brûlure bactérienne (Blé)",
+    "wheat head scab":                        "Fusariose de l'épi (Blé)",
+    "wheat leaf rust":                        "Rouille brune (Blé)",
+    "wheat loose smut":                       "Charbon nu (Blé)",
+    "wheat powdery mildew":                   "Oïdium (Blé)",
+    "wheat septoria blotch":                  "Septoriose (Blé)",
+    "wheat stem rust":                        "Rouille noire (Blé)",
+    "wheat stripe rust":                      "Rouille jaune (Blé)",
+    "zucchini bacterial wilt":                "Flétrissement bactérien (Courgette)",
+    "zucchini downy mildew":                  "Mildiou (Courgette)",
+    "zucchini powdery mildew":                "Oïdium (Courgette)",
+    "zucchini yellow mosaic virus":           "Mosaïque jaune (Courgette)",
+}
+
+_HEALTHY_CLASSES = {
+    "Apple_leaf", "Bell_pepper_leaf", "Blueberry_leaf", "Cherry_leaf",
+    "Peach_leaf", "Raspberry_leaf", "Soyabean_leaf", "Strawberry_leaf",
+    "Tomato_leaf", "grape_leaf",
 }
 
 def _vit_is_healthy(class_name: str) -> bool:
     fr = VIT_PLANTDOC_FR.get(class_name, "")
-    return fr == "Saine" or is_healthy_class(class_name)
+    return fr == "Saine" or class_name in _HEALTHY_CLASSES or is_healthy_class(class_name)
 
 def _vit_disease_fr(class_name: str) -> str:
-    """Retourne le nom français de la maladie, sans underscores ni préfixe plante."""
-    return VIT_PLANTDOC_FR.get(class_name, class_name.replace("_", " ").title())
+    """Retourne le nom français de la maladie pour toutes les 142 classes."""
+    return VIT_PLANTDOC_FR.get(class_name) or VIT_PLANTDOC_FR.get(class_name.lower()) or class_name.replace("_", " ").title()
 
 
 @app.post("/classify/vit")
@@ -2082,12 +2477,31 @@ async def classify_vit(image: str = Form(...)):
         if not is_healthy:
             status = "Critique" if severity in ("Élevée", "Modérée") else "Attention"
 
+        # ── Calibration de la confiance affichée ──────────────────────────
+        # Le ViT combiné (~100 classes) est fortement SOUS-CONFIANT : la proba
+        # brute top-1 vaut souvent 5–30 % même quand la prédiction est juste.
+        # On reconstruit une confiance lisible et monotone à partir de :
+        #   1. la proba brute remontée par calibration puissance (racine),
+        #   2. la marge top1–top2 (le modèle préfère-t-il nettement sa classe ?),
+        #   3. l'évidence visuelle (surface affectée) comme plancher maladie.
+        raw_conf = float(primary["confidence"])
+        margin = raw_conf - (float(top3[1]["confidence"]) if len(top3) > 1 else 0.0)
+        if not is_healthy:
+            calibrated = raw_conf ** 0.4            # 0.05→0.30 · 0.20→0.53 · 0.40→0.70
+            calibrated += min(max(margin, 0.0) * 1.5, 0.25)   # marge nette = bonus
+            display_conf = int(
+                min(0.97, max(calibrated, affected_surface / 100.0, 0.60)) * 100
+            )
+        else:
+            # Plante saine : confiance également remontée (plancher 85 %).
+            display_conf = int(min(0.98, max(raw_conf ** 0.4, 0.85)) * 100)
+
         return JSONResponse({
             "success":         True,
             "disease":         disease_fr,
             "diseaseClass":    primary["class"],
             "diseaseType":     disease_fr,
-            "confidence":      int(primary["confidence"] * 100),
+            "confidence":      display_conf,
             "isHealthy":       is_healthy,
             "generalStatus":   "Saine" if is_healthy else "Malade",
             "severity":        severity,
@@ -2119,13 +2533,21 @@ async def classify_vit(image: str = Form(...)):
     headers = {"Authorization": f"Bearer {hf_token}"}
 
     try:
+        import asyncio
+        resp = None
         async with httpx.AsyncClient(timeout=120) as client:
-            resp = await client.post(hf_url, headers=headers, content=image_bytes,
-                                     params={"wait_for_model": "true"})
+            for attempt in range(6):
+                resp = await client.post(hf_url, headers=headers, content=image_bytes,
+                                         params={"wait_for_model": "true"})
+                logger.info(f"HF attempt {attempt+1}: status={resp.status_code}")
+                if resp.status_code != 503:
+                    break
+                logger.info(f"HF model loading, waiting 20s... ({resp.text[:100]})")
+                await asyncio.sleep(20)
 
         if resp.status_code == 503:
             raise HTTPException(status_code=503,
-                detail="ViT model is loading on HuggingFace, réessayez dans 20 secondes.")
+                detail=f"ViT model unavailable after retries: {resp.text[:200]}")
         if resp.status_code == 401:
             raise HTTPException(status_code=503,
                 detail="HF_TOKEN invalide ou expiré — vérifiez la variable d'environnement sur Render.")
@@ -2163,6 +2585,187 @@ async def classify_vit(image: str = Form(...)):
             status_code=503,
             detail="Impossible de joindre HuggingFace API. Vérifiez la connexion réseau de Render."
         )
+
+
+# ==================== CONSEILLER IA (chat DeepSeek) ====================
+
+from typing import List as _List
+
+class _AdvCtx(BaseModel):
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    cropType: Optional[str] = None
+    concerns: Optional[str] = None
+
+class _AdvMsg(BaseModel):
+    role: Optional[str] = "user"
+    content: str = ""
+
+class _AdvReq(BaseModel):
+    message: str
+    context: Optional[_AdvCtx] = None
+    conversationHistory: Optional[_List[_AdvMsg]] = None
+
+
+@app.post("/agricultural-advisor/chat")
+async def advisor_chat(req: _AdvReq):
+    """Conseiller agronomique IA via DeepSeek (clé DEEPSEEK_API_KEY)."""
+    import httpx
+
+    # Fournisseur LLM : Groq (gratuit) prioritaire, sinon DeepSeek. APIs OpenAI-compatibles.
+    groq_key = os.getenv("GROQ_API_KEY", "")
+    if groq_key:
+        api_key = groq_key
+        base = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1").rstrip("/")
+        model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    else:
+        api_key = os.getenv("DEEPSEEK_API_KEY", "")
+        base = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/")
+        model = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+
+    if not api_key:
+        return {"success": True, "response": "Le conseiller IA n'est pas configuré (aucune clé GROQ_API_KEY/DEEPSEEK_API_KEY côté serveur)."}
+
+    ctx = req.context or _AdvCtx()
+
+    sys = ("Tu es DronIA, un conseiller agronomique expert en agriculture de précision. "
+           "Tu réponds EXCLUSIVEMENT aux questions liées à l'agriculture : cultures, sols, "
+           "maladies des plantes, ravageurs/insectes, irrigation, fertilisation, météo agricole, "
+           "rendement, drones agricoles, agronomie. "
+           "Si la question n'a AUCUN rapport avec l'agriculture (politique, code, célébrités, etc.), "
+           "tu refuses poliment en UNE phrase et tu invites l'utilisateur à poser une question agricole. "
+           "Ne donne jamais d'information hors du domaine agricole. "
+           "Réponds en français, de façon claire, concise et pratique (conseils actionnables). ")
+    if ctx.cropType:
+        sys += f"Culture concernée : {ctx.cropType}. "
+    if ctx.concerns:
+        sys += f"Préoccupations de l'agriculteur : {ctx.concerns}. "
+    if ctx.lat is not None and ctx.lng is not None:
+        sys += f"Localisation : {ctx.lat:.3f}, {ctx.lng:.3f}. "
+
+    messages = [{"role": "system", "content": sys}]
+    for m in (req.conversationHistory or [])[-10:]:
+        role = "assistant" if (m.role or "").lower() == "assistant" else "user"
+        if m.content:
+            messages.append({"role": role, "content": m.content})
+    # S'assurer que le message courant est bien présent en dernier
+    if not messages or messages[-1].get("content") != req.message:
+        messages.append({"role": "user", "content": req.message})
+
+    try:
+        async with httpx.AsyncClient(timeout=60) as client:
+            r = await client.post(
+                f"{base}/chat/completions",
+                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                json={
+                    "model": model,
+                    "messages": messages,
+                    "temperature": 0.7,
+                    "max_tokens": 800,
+                },
+            )
+        if r.status_code != 200:
+            logger.error(f"❌ DeepSeek {r.status_code}: {r.text[:200]}")
+            # Dégradation gracieuse (ex. 402 crédit épuisé) → bulle de chat lisible
+            if r.status_code == 402:
+                msg = ("Le conseiller IA est momentanément indisponible (crédit DeepSeek épuisé). "
+                       "Recharge le solde sur platform.deepseek.com pour réactiver les réponses.")
+            else:
+                msg = "Le conseiller IA est momentanément indisponible. Réessaie dans un instant."
+            return {"success": True, "response": msg}
+        data = r.json()
+        answer = data["choices"][0]["message"]["content"].strip()
+        return {"success": True, "response": answer}
+    except Exception as e:
+        logger.error(f"❌ Advisor chat error : {e}")
+        return {"success": True, "response": "Le conseiller IA est momentanément indisponible. Réessaie dans un instant."}
+
+
+@app.get("/agricultural-advisor")
+async def advisor_advisories(lat: float = None, lng: float = None, crop: str = None):
+    """Liste de conseils — vide pour l'instant (évite le 404 de l'écran conseiller)."""
+    return []
+
+
+# ==================== INSECTES — alias /predict/insects (champ 'file') ====================
+
+@app.post("/predict/insects")
+async def predict_insects(file: UploadFile = File(...)):
+    """
+    Alias de /analyze/insects attendu par l'app mobile (upload multipart champ 'file').
+    Ajoute image_width/image_height au niveau racine pour l'écran insectes.
+    """
+    global pest_detection_model
+    if pest_detection_model is None:
+        try:
+            load_pest_detection_model()
+        except Exception as e:
+            raise HTTPException(status_code=503, detail=f"Modèle insectes indisponible : {e}")
+
+    try:
+        contents = await file.read()
+        pil_image = Image.open(io.BytesIO(contents)).convert("RGB")
+        image_width, image_height = pil_image.size
+
+        results = pest_detection_model(pil_image, conf=0.25, verbose=False)
+        detections = []
+        danger_counts = {"Faible": 0, "Modéré": 0, "Élevé": 0}
+
+        for result in results:
+            if result.boxes is None:
+                continue
+            for box in result.boxes:
+                class_id = int(box.cls[0])
+                confidence = float(box.conf[0])
+                class_name = IP102_CLASS_NAMES.get(class_id, f"Insecte #{class_id}")
+                x1, y1, x2, y2 = box.xyxy[0].tolist()
+                info = get_pest_info(class_name)
+                danger_counts[info["danger"]] += 1
+                detections.append({
+                    "class": class_name,
+                    "class_id": class_id,
+                    "confidence": confidence,
+                    "bbox": {
+                        "x1": (x1 / image_width) * 100,
+                        "y1": (y1 / image_height) * 100,
+                        "x2": (x2 / image_width) * 100,
+                        "y2": (y2 / image_height) * 100,
+                        "width": ((x2 - x1) / image_width) * 100,
+                        "height": ((y2 - y1) / image_height) * 100,
+                    },
+                    "danger_level": info["danger"],
+                    "impact": info["impact"],
+                    "treatment": info["treatment"],
+                    "prevention": info["prevention"],
+                })
+
+        detections.sort(key=lambda d: d["confidence"], reverse=True)
+        overall = (
+            "Élevé" if danger_counts["Élevé"] > 0
+            else "Modéré" if danger_counts["Modéré"] > 0
+            else "Faible" if detections
+            else "Aucun"
+        )
+
+        return JSONResponse(content={
+            "success": True,
+            "model": "YOLO11s Pest Detection",
+            "dataset": "IP102 (102 espèces)",
+            "image_width": image_width,
+            "image_height": image_height,
+            "image_size": {"width": image_width, "height": image_height},
+            "detections": detections,
+            "total_count": len(detections),
+            "danger_level": overall,
+            "danger_breakdown": danger_counts,
+            "message": f"{len(detections)} ravageur(s) détecté(s)" if detections else "Aucun ravageur détecté - Culture saine",
+        })
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ predict_insects error : {e}")
+        raise HTTPException(status_code=500, detail=f"Pest detection failed: {e}")
 
 
 if __name__ == "__main__":

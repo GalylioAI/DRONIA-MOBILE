@@ -1631,49 +1631,59 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                   children: [
                     // Image preview
                     if (imageBase64 != null && imageBase64.isNotEmpty) ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Stack(
-                          children: [
-                            Image.memory(
-                              base64Decode(imageBase64),
-                              height: 200,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
-                                height: 200,
-                                color: context.colors.bg,
-                                child: Center(
-                                  child: Icon(
-                                    Icons.image_not_supported,
-                                    color: context.colors.textSecondary,
-                                    size: 48,
+                      Builder(builder: (_) {
+                        // Dimensions SOURCE de l'image (sauvegardées avec
+                        // l'analyse) pour caler le ratio et aligner les boîtes.
+                        final srcW = ((analysis['imageWidth'] ??
+                                analysis['image_width']) as num?)
+                            ?.toDouble();
+                        final srcH = ((analysis['imageHeight'] ??
+                                analysis['image_height']) as num?)
+                            ?.toDouble();
+                        final aspect = (srcW != null &&
+                                srcH != null &&
+                                srcW > 0 &&
+                                srcH > 0)
+                            ? srcW / srcH
+                            : 4 / 3;
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: AspectRatio(
+                            aspectRatio: aspect,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Image.memory(
+                                  base64Decode(imageBase64),
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    color: context.colors.bg,
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.image_not_supported,
+                                        color: context.colors.textSecondary,
+                                        size: 48,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
+                                // Bounding boxes overlay — vraies dimensions
+                                // source passées au painter (pas le canvas).
+                                if (detections.isNotEmpty)
+                                  CustomPaint(
+                                    painter: _BoundingBoxPainter(
+                                      detections: detections
+                                          .map((d) => d as Map<String, dynamic>)
+                                          .toList(),
+                                      imageWidth: srcW ?? 0,
+                                      imageHeight: srcH ?? 0,
+                                    ),
+                                  ),
+                              ],
                             ),
-                            // Bounding boxes overlay
-                            if (detections.isNotEmpty)
-                              Positioned.fill(
-                                child: LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    return CustomPaint(
-                                      painter: _BoundingBoxPainter(
-                                        detections: detections
-                                            .map(
-                                              (d) => d as Map<String, dynamic>,
-                                            )
-                                            .toList(),
-                                        imageWidth: constraints.maxWidth,
-                                        imageHeight: constraints.maxHeight,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      }),
                       SizedBox(height: 20),
                     ],
 
@@ -2462,45 +2472,35 @@ class _InsectAnalysisScreenState extends State<InsectAnalysisScreen> {
                       // Fall through to the raw image + painter overlay.
                     }
                   }
-                  return Stack(
-                    children: [
-                      // contain (not cover) so the source image isn't cropped
-                      // — bbox coordinates from the VPS are relative to the
-                      // FULL image, so cropping would misalign the rectangles.
-                      Image.file(
-                        _selectedImage!,
-                        height: 180,
-                        width: double.infinity,
-                        fit: BoxFit.contain,
-                      ),
-                      Positioned.fill(
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            // Pass the SOURCE image dimensions (from the VPS
-                            // response) so the painter can scale pixel-bbox
-                            // detections to the canvas. Falls back to 0 when
-                            // absent — the painter then assumes normalized.
-                            final srcW = (_analysisResult?['image_width']
-                                        as num?)
-                                    ?.toDouble() ??
-                                0;
-                            final srcH = (_analysisResult?['image_height']
-                                        as num?)
-                                    ?.toDouble() ??
-                                0;
-                            return CustomPaint(
-                              painter: _BoundingBoxPainter(
-                                detections: detections
-                                    .map((d) => d as Map<String, dynamic>)
-                                    .toList(),
-                                imageWidth: srcW,
-                                imageHeight: srcH,
-                              ),
-                            );
-                          },
+                  // On cale le conteneur sur le ratio de l'image SOURCE : plus
+                  // aucun letterbox/pillarbox, donc le canvas du painter
+                  // coïncide pixel pour pixel avec l'image affichée et les
+                  // rectangles rouges tombent exactement sur les insectes
+                  // (parité avec la version web).
+                  final srcW =
+                      (_analysisResult?['image_width'] as num?)?.toDouble() ??
+                          0;
+                  final srcH =
+                      (_analysisResult?['image_height'] as num?)?.toDouble() ??
+                          0;
+                  final aspect = (srcW > 0 && srcH > 0) ? srcW / srcH : 4 / 3;
+                  return AspectRatio(
+                    aspectRatio: aspect,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.file(_selectedImage!, fit: BoxFit.cover),
+                        CustomPaint(
+                          painter: _BoundingBoxPainter(
+                            detections: detections
+                                .map((d) => d as Map<String, dynamic>)
+                                .toList(),
+                            imageWidth: srcW,
+                            imageHeight: srcH,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   );
                 }),
               ),
@@ -3302,35 +3302,39 @@ class _BoundingBoxPainter extends CustomPainter {
 
       if (x1 == null) {
         final bbox = detection['bbox'];
+        double? px1, py1, px2, py2;
         if (bbox is Map<String, dynamic>) {
-          final px1 = (bbox['x1'] as num?)?.toDouble();
-          final py1 = (bbox['y1'] as num?)?.toDouble();
-          final px2 = (bbox['x2'] as num?)?.toDouble();
-          final py2 = (bbox['y2'] as num?)?.toDouble();
-          if (px1 != null && py1 != null && px2 != null && py2 != null) {
-            if (imageWidth > 0 && imageHeight > 0 &&
-                (px2 > 1.0 || py2 > 1.0)) {
-              x1 = offX + px1 / imageWidth * dispW;
-              y1 = offY + py1 / imageHeight * dispH;
-              x2 = offX + px2 / imageWidth * dispW;
-              y2 = offY + py2 / imageHeight * dispH;
-            } else {
-              x1 = px1 / 100 * size.width;
-              y1 = py1 / 100 * size.height;
-              x2 = px2 / 100 * size.width;
-              y2 = py2 / 100 * size.height;
-            }
-          }
+          px1 = (bbox['x1'] as num?)?.toDouble();
+          py1 = (bbox['y1'] as num?)?.toDouble();
+          px2 = (bbox['x2'] as num?)?.toDouble();
+          py2 = (bbox['y2'] as num?)?.toDouble();
         } else if (bbox is List && bbox.length >= 4) {
-          final px1 = (bbox[0] as num).toDouble();
-          final py1 = (bbox[1] as num).toDouble();
-          final px2 = (bbox[2] as num).toDouble();
-          final py2 = (bbox[3] as num).toDouble();
-          if (imageWidth > 0 && imageHeight > 0 && (px2 > 1.0 || py2 > 1.0)) {
+          px1 = (bbox[0] as num).toDouble();
+          py1 = (bbox[1] as num).toDouble();
+          px2 = (bbox[2] as num).toDouble();
+          py2 = (bbox[3] as num).toDouble();
+        }
+
+        if (px1 != null && py1 != null && px2 != null && py2 != null) {
+          // Le backend DronIA (`/predict/insects`) renvoie le bbox en
+          // POURCENTAGE (0..100) de l'image — PAS en pixels ni en 0..1.
+          // Une coordonnée ne peut donc dépasser 100 que si la source est
+          // legacy/pixel : dans ce cas seulement on divise par la taille px.
+          final looksLikePixels = imageWidth > 0 &&
+              imageHeight > 0 &&
+              (px1 > 100 || py1 > 100 || px2 > 100 || py2 > 100);
+          if (looksLikePixels) {
             x1 = offX + px1 / imageWidth * dispW;
             y1 = offY + py1 / imageHeight * dispH;
             x2 = offX + px2 / imageWidth * dispW;
             y2 = offY + py2 / imageHeight * dispH;
+          } else {
+            // Pourcentages 0..100 → fraction de l'image AFFICHÉE (avec les
+            // offsets de letterbox éventuels). C'est le cas nominal.
+            x1 = offX + px1 / 100 * dispW;
+            y1 = offY + py1 / 100 * dispH;
+            x2 = offX + px2 / 100 * dispW;
+            y2 = offY + py2 / 100 * dispH;
           }
         }
       }
@@ -3347,7 +3351,7 @@ class _BoundingBoxPainter extends CustomPainter {
       final borderPaint = Paint()
         ..color = boxColor
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.5;
+        ..strokeWidth = 3.0;
       canvas.drawRect(rect, borderPaint);
 
       // Draw semi-transparent fill

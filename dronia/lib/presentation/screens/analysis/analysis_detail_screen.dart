@@ -282,24 +282,32 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
         ),
         onPressed: () => Navigator.pop(context),
       ),
+      titleSpacing: 4,
       title: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Analyse: ${analysis.region ?? analysis.cropType}',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: context.colors.textPrimary,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Analyse: ${analysis.region ?? analysis.cropType}',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: context.colors.textPrimary,
+              ),
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
-          Text(
-            _formattedDate,
-            style: TextStyle(
-              fontSize: 11,
-              color: context.colors.textSecondary,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              _formattedDate,
+              style: TextStyle(
+                fontSize: 11,
+                color: context.colors.textSecondary,
+              ),
             ),
           ),
         ],
@@ -456,14 +464,16 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
                 size: 20,
               ),
               SizedBox(width: 8),
-              Text(
-                isHealthy
-                    ? 'Détails de l\'État Sain'
-                    : 'Maladie Détectée: $_diseaseName',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isHealthy ? AppColors.success : AppColors.error,
-                  fontSize: 14,
+              Expanded(
+                child: Text(
+                  isHealthy
+                      ? 'Détails de l\'État Sain'
+                      : 'Maladie Détectée: $_diseaseName',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: isHealthy ? AppColors.success : AppColors.error,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ],

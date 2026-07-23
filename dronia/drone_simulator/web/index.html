@@ -1,0 +1,1032 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DronIA — Vue du drone en direct</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<style>
+  :root {
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --raised: #232322;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --hairline: rgba(255, 255, 255, 0.10);
+    --accent: #3987e5;
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  header h1 { font-size: 16px; font-weight: 650; margin: 0; }
+  header .sub { color: var(--muted); font-size: 12px; }
+  .pill {
+    margin-left: auto;
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 5px 12px; border-radius: 999px;
+    border: 1px solid var(--hairline);
+    background: var(--surface);
+    font-size: 12px; color: var(--ink-2);
+  }
+  .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--critical); }
+  .pill.on .dot { background: var(--good); }
+
+  main { padding: 16px 20px 24px; max-width: 1240px; margin: 0 auto; }
+
+  /* ── Tuiles de télémétrie ─────────────────────────────── */
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+  }
+  .tile {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 12px 14px;
+    min-width: 0;
+  }
+  .tile .label { font-size: 11px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+  .tile .value { font-size: 26px; font-weight: 600; margin-top: 2px; }
+  .tile .value .unit { font-size: 13px; font-weight: 500; color: var(--ink-2); margin-left: 3px; }
+  .tile .subtle { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    margin-top: 7px; padding: 5px 11px;
+    border-radius: 999px; font-size: 13px; font-weight: 600;
+    border: 1px solid var(--hairline); background: var(--raised);
+  }
+  .meter { margin-top: 12px; height: 8px; border-radius: 4px; overflow: hidden; }
+  .meter .fill { height: 100%; border-radius: 4px; transition: width .25s; }
+  .compass { display: inline-block; transition: transform .15s linear; font-size: 20px; }
+  .latlng { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 8px; line-height: 1.5; }
+  .latlng span { color: var(--muted); font-size: 11px; font-weight: 400; }
+
+  /* ── Scène 3D + vue du dessus ─────────────────────────── */
+  .viewrow {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .card h2 {
+    margin: 0 0 10px;
+    font-size: 11px; font-weight: 650; color: var(--muted);
+    letter-spacing: .06em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card h2 .hint { margin-left: auto; font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+  .stage { position: relative; }
+  #scene3d { width: 100%; height: 460px; display: block; border-radius: 8px; cursor: grab; }
+  #scene3d:active { cursor: grabbing; }
+  .loading {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    color: var(--muted); font-size: 13px;
+    background: radial-gradient(ellipse at 50% 65%, #21211f 0%, #141413 70%);
+    border-radius: 8px;
+  }
+
+  /* Commande reçue — flash au-dessus du drone 3D */
+  .cmd-flash {
+    position: absolute; top: 14px; left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 18px;
+    border-radius: 999px;
+    background: rgba(13, 13, 13, 0.55);
+    border: 1px solid var(--accent);
+    color: var(--ink);
+    font-size: 14px; font-weight: 650;
+    letter-spacing: .02em;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s;
+    backdrop-filter: blur(4px);
+  }
+  .cmd-flash.show { opacity: 1; }
+
+  /* Zoom + attribution sur la scène 3D */
+  .zoombtns {
+    position: absolute; right: 12px; bottom: 12px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .zoombtns button {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--hairline);
+    background: rgba(13, 13, 13, 0.55);
+    color: var(--ink);
+    font: 600 19px/1 system-ui, sans-serif;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+  }
+  .zoombtns button:hover { border-color: var(--accent); }
+  .attribution {
+    position: absolute; left: 10px; bottom: 10px;
+    font-size: 10px; color: rgba(255, 255, 255, 0.75);
+    background: rgba(13, 13, 13, 0.45);
+    padding: 2px 7px; border-radius: 6px;
+    pointer-events: none;
+  }
+
+  #map { width: 100%; height: 460px; display: block; border-radius: 8px; cursor: crosshair; }
+
+  /* ── Commandes reçues (journal) ───────────────────────── */
+  .logcard { margin-top: 10px; }
+  #log { list-style: none; margin: 0; padding: 0; max-height: 190px; overflow-y: auto; }
+  #log li {
+    display: flex; align-items: baseline; gap: 12px;
+    padding: 6px 2px; font-size: 13px; color: var(--ink-2);
+    border-bottom: 1px solid var(--grid);
+  }
+  #log .t { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  #log .cmd { color: var(--ink); font-weight: 650; min-width: 130px; }
+  #log .msg { color: var(--muted); }
+  #log li.new { animation: rowin .5s ease-out; }
+  @keyframes rowin { from { background: rgba(57, 135, 229, .18); } to { background: transparent; } }
+  .empty { color: var(--muted); font-size: 13px; padding: 10px 2px; }
+
+  @media (max-width: 980px) {
+    .tiles { grid-template-columns: repeat(3, 1fr); }
+    .viewrow { grid-template-columns: 1fr; }
+    #scene3d, #map { height: 340px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🚁 DronIA — Vue du drone en direct</h1>
+  <span class="sub">Le drone est piloté depuis l'application mobile</span>
+  <span class="pill" id="connPill"><span class="dot"></span><span id="connText">Déconnecté</span></span>
+</header>
+
+<main>
+  <!-- Télémétrie -->
+  <section class="tiles">
+    <div class="tile">
+      <div class="label">État</div>
+      <div><span class="badge" id="stateBadge">● Au sol</span></div>
+    </div>
+    <div class="tile">
+      <div class="label">Batterie</div>
+      <div class="value" id="battery">–<span class="unit">%</span></div>
+      <div class="meter" id="batteryTrack"><div class="fill" id="batteryFill"></div></div>
+    </div>
+    <div class="tile">
+      <div class="label">Altitude</div>
+      <div class="value" id="altitude">–<span class="unit">m</span></div>
+      <div class="subtle" id="vspeed">&nbsp;</div>
+    </div>
+    <div class="tile">
+      <div class="label">Vitesse</div>
+      <div class="value" id="speed">–<span class="unit">m/s</span></div>
+      <div class="subtle" id="speedKmh">&nbsp;</div>
+    </div>
+    <div class="tile">
+      <div class="label">Cap</div>
+      <div class="value"><span class="compass" id="compass">➤</span> <span id="yaw">–</span><span class="unit">°</span></div>
+      <div class="subtle" id="attitude">pitch 0° · roll 0°</div>
+    </div>
+    <div class="tile">
+      <div class="label">Position GPS</div>
+      <div class="latlng">
+        <span>lat</span> <span id="lat">–</span><br>
+        <span>lng</span> <span id="lng">–</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="viewrow">
+    <!-- Scène 3D : le drone au-dessus de la zone réelle -->
+    <div class="card">
+      <h2>Drone en vol <span class="hint">zone réelle (imagerie satellite) · glisser pour orbiter</span></h2>
+      <div class="stage">
+        <canvas id="scene3d"></canvas>
+        <div class="loading" id="loading3d">Chargement du drone 3D…</div>
+        <div class="cmd-flash" id="cmdFlash"></div>
+        <div class="zoombtns">
+          <button id="zoomIn" title="Zoom avant">+</button>
+          <button id="zoomOut" title="Zoom arrière">−</button>
+        </div>
+        <span class="attribution" id="mapAttribution"></span>
+      </div>
+    </div>
+
+    <!-- Vue du dessus -->
+    <div class="card">
+      <h2>Vue du dessus <span class="hint" id="cursorPos">position relative au point de départ</span></h2>
+      <canvas id="map"></canvas>
+    </div>
+  </div>
+
+  <!-- Commandes reçues depuis l'app mobile -->
+  <div class="card logcard">
+    <h2>Commandes reçues</h2>
+    <ul id="log"><li class="empty" id="logEmpty">En attente de commandes depuis l'application mobile…</li></ul>
+  </div>
+</main>
+
+<script>
+'use strict';
+
+// ── Constantes ────────────────────────────────────────────────────────
+const METERS_PER_DEG_LAT = 111320;
+const STATE_BADGES = {
+  Idle:    { icon: '●', label: 'Au sol',       color: 'var(--ink-2)' },
+  Flying:  { icon: '▲', label: 'En vol',       color: 'var(--good)' },
+  Landing: { icon: '▼', label: 'Atterrissage', color: 'var(--warning)' },
+  Stopped: { icon: '■', label: 'Stationnaire', color: 'var(--serious)' },
+};
+const COMMAND_LABELS = {
+  TAKEOFF: '🛫 Décollage', LAND: '🛬 Atterrissage',
+  UP: '⤒ Monter', DOWN: '⤓ Descendre',
+  FORWARD: '▲ Avancer', BACKWARD: '▼ Reculer',
+  LEFT: '◀ Gauche', RIGHT: '▶ Droite',
+  ROTATE_LEFT: '⟲ Pivoter à gauche', ROTATE_RIGHT: '⟳ Pivoter à droite',
+  STOP: '■ Stop', RETURN_HOME: '⌂ Retour base',
+};
+
+const $ = (id) => document.getElementById(id);
+
+// ── Connexion WebSocket (spectateur — n'envoie jamais de commande) ────
+let ws = null;
+let home = null; // {lat, lng} — origine des vues
+let last = null; // dernière télémétrie
+let prevAlt = null;
+const trail = []; // positions [est, nord] en mètres depuis le départ
+let regions = []; // parcelles agricoles envoyées par l'app mobile
+
+function connect() {
+  ws = new WebSocket(`ws://${location.host}`);
+  ws.onopen = () => setConnected(true);
+  ws.onclose = () => { setConnected(false); setTimeout(connect, 2000); };
+  ws.onerror = () => ws.close();
+  ws.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
+    if (msg.type === 'command') onCommand(msg);
+    else if (msg.type === 'regions') onRegions(msg);
+    else if (msg.type === 'telemetry' || 'battery' in msg) onTelemetry(msg);
+  };
+}
+
+// Conversion lat/lng → mètres (est, nord) par rapport au point d'origine.
+function toLocalMeters(lat, lng, origin) {
+  return {
+    east: (lng - origin.lng) * METERS_PER_DEG_LAT * Math.cos((origin.lat * Math.PI) / 180),
+    north: (lat - origin.lat) * METERS_PER_DEG_LAT,
+  };
+}
+
+// Couleur ARGB (int Flutter) → CSS hex.
+function argbToCss(argb) {
+  return `#${((argb ?? 0xff4caf50) & 0xffffff).toString(16).padStart(6, '0')}`;
+}
+
+function onRegions(msg) {
+  regions = Array.isArray(msg.regions) ? msg.regions : [];
+  draw();
+  // Le module 3D peut ne pas être encore chargé (CDN) : les parcelles
+  // restent dans window.pendingRegions, il les lit à son démarrage.
+  window.pendingRegions = regions;
+  window.droneScene?.setRegions(regions);
+}
+
+function setConnected(on) {
+  $('connPill').classList.toggle('on', on);
+  $('connText').textContent = on ? 'Connecté' : 'Déconnecté';
+}
+
+// ── Télémétrie → tuiles + scènes ──────────────────────────────────────
+function onTelemetry(t) {
+  const badge = STATE_BADGES[t.state] ?? STATE_BADGES.Idle;
+  const badgeEl = $('stateBadge');
+  badgeEl.textContent = `${badge.icon} ${badge.label}`;
+  badgeEl.style.color = badge.color;
+
+  $('battery').firstChild.textContent = t.battery;
+  const batteryColor =
+    t.battery > 40 ? 'var(--good)' : t.battery > 15 ? 'var(--warning)' : 'var(--critical)';
+  const fill = $('batteryFill');
+  fill.style.width = `${t.battery}%`;
+  fill.style.background = batteryColor;
+  $('batteryTrack').style.background = 'color-mix(in srgb, ' + batteryColor + ' 22%, transparent)';
+
+  $('altitude').firstChild.textContent = t.altitude.toFixed(1);
+  if (prevAlt !== null) {
+    const dz = t.altitude - prevAlt;
+    $('vspeed').textContent =
+      Math.abs(dz) < 0.05 ? ' ' : (dz > 0 ? '↑ montée' : '↓ descente');
+  }
+  prevAlt = t.altitude;
+
+  $('speed').firstChild.textContent = t.speed.toFixed(1);
+  $('speedKmh').textContent = `≈ ${(t.speed * 3.6).toFixed(0)} km/h`;
+  $('yaw').textContent = Math.round(t.yaw);
+  $('compass').style.transform = `rotate(${t.yaw - 90}deg)`;
+  $('attitude').textContent = `pitch ${t.pitch.toFixed(0)}° · roll ${t.roll.toFixed(0)}°`;
+  $('lat').textContent = t.latitude.toFixed(6);
+  $('lng').textContent = t.longitude.toFixed(6);
+
+  // Position en mètres par rapport au point de départ.
+  if (!home) home = { lat: t.latitude, lng: t.longitude };
+  let { east, north } = toLocalMeters(t.latitude, t.longitude, home);
+  // Saut de position au sol = drone déplacé sur une parcelle → on recale
+  // l'origine, la trace et le sol satellite sur la nouvelle zone.
+  if (t.altitude <= 0 && Math.hypot(east, north) > 400) {
+    home = { lat: t.latitude, lng: t.longitude };
+    trail.length = 0;
+    east = 0;
+    north = 0;
+    window.droneScene?.resetWorld();
+  }
+  const lastPt = trail[trail.length - 1];
+  if (!lastPt || Math.hypot(east - lastPt[0], north - lastPt[1]) > 0.03) {
+    trail.push([east, north]);
+    if (trail.length > 900) trail.shift();
+  }
+  last = { ...t, east, north };
+  draw();
+
+  // Scène 3D (module chargé en asynchrone)
+  window.droneScene?.setTelemetry(t, east, north, home);
+}
+
+// ── Commandes reçues depuis l'app mobile ──────────────────────────────
+let flashTimer = null;
+
+function onCommand(msg) {
+  const label = COMMAND_LABELS[msg.command] ?? msg.command;
+
+  // Flash au-dessus du drone 3D
+  const flash = $('cmdFlash');
+  flash.textContent = label;
+  flash.classList.add('show');
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => flash.classList.remove('show'), 1600);
+
+  // Journal
+  $('logEmpty')?.remove();
+  const li = document.createElement('li');
+  li.className = 'new';
+  const time = new Date(msg.timestamp ?? Date.now()).toLocaleTimeString('fr-FR');
+  li.innerHTML =
+    `<span class="t">${time}</span>` +
+    `<span class="cmd">${label}</span>` +
+    `<span class="msg">${msg.message ?? ''}</span>`;
+  const log = $('log');
+  log.prepend(li);
+  while (log.children.length > 30) log.lastChild.remove();
+}
+
+// ── Vue du dessus (canvas 2D) ─────────────────────────────────────────
+const canvas = $('map');
+const ctx = canvas.getContext('2d');
+let view = { scale: 1, cx: 0, cy: 0, w: 0, h: 0 };
+
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  view.w = rect.width;
+  view.h = rect.height;
+  draw();
+}
+window.addEventListener('resize', resizeCanvas);
+
+// Monde (est, nord) en mètres → écran (px). Le nord pointe vers le haut.
+function toScreen([e, n]) {
+  return [view.cx + e * view.scale, view.cy - n * view.scale];
+}
+
+function gridStep(scale) {
+  for (const step of [1, 2, 5, 10, 20, 50, 100, 200]) {
+    if (step * scale >= 46) return step;
+  }
+  return 500;
+}
+
+function draw() {
+  const { w, h } = view;
+  if (!w) return;
+  ctx.clearRect(0, 0, w, h);
+
+  // Échelle auto : cadre la trace et les parcelles, demi-étendue min. 12 m.
+  let extent = 12;
+  for (const [e, n] of trail) extent = Math.max(extent, Math.abs(e), Math.abs(n));
+  if (home) {
+    for (const region of regions) {
+      for (const p of region.points ?? []) {
+        const m = toLocalMeters(p.lat, p.lng, home);
+        extent = Math.max(extent, Math.abs(m.east), Math.abs(m.north));
+      }
+    }
+  }
+  extent *= 1.2;
+  view.scale = Math.min(w, h) / (2 * extent);
+  view.cx = w / 2;
+  view.cy = h / 2;
+
+  // Grille
+  const step = gridStep(view.scale);
+  ctx.strokeStyle = '#2c2c2a';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  const half = Math.ceil(Math.max(w, h) / 2 / (step * view.scale)) * step;
+  for (let m = -half; m <= half; m += step) {
+    const [x] = toScreen([m, 0]);
+    const [, y] = toScreen([0, m]);
+    ctx.moveTo(x, 0); ctx.lineTo(x, h);
+    ctx.moveTo(0, y); ctx.lineTo(w, y);
+  }
+  ctx.stroke();
+
+  // Indicateur nord + échelle de la grille
+  ctx.fillStyle = '#898781';
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.fillText('N ↑', w - 30, 18);
+  ctx.fillText(`grille : ${step} m`, 10, h - 10);
+
+  // Parcelles agricoles (remplissage translucide + contour + nom)
+  if (home) {
+    for (const region of regions) {
+      const pts = (region.points ?? []).map((p) => {
+        const m = toLocalMeters(p.lat, p.lng, home);
+        return toScreen([m.east, m.north]);
+      });
+      if (pts.length < 3) continue;
+      const color = argbToCss(region.color);
+      ctx.beginPath();
+      ctx.moveTo(...pts[0]);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(...pts[i]);
+      ctx.closePath();
+      ctx.fillStyle = color + '30';
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      const cx = pts.reduce((a, p) => a + p[0], 0) / pts.length;
+      const cy = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '600 11px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(region.name ?? '', cx, cy);
+      ctx.textAlign = 'left';
+      ctx.font = '11px system-ui, sans-serif';
+    }
+  }
+
+  // Point de départ (home)
+  const [hx, hy] = toScreen([0, 0]);
+  ctx.strokeStyle = '#898781';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(hx, hy, 7, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.fillStyle = '#c3c2b7';
+  ctx.font = '10px system-ui, sans-serif';
+  ctx.fillText('départ', hx + 10, hy + 3);
+
+  // Trace du vol — 2 px, accent, plus ancienne = plus estompée
+  if (trail.length > 1) {
+    for (let i = 1; i < trail.length; i++) {
+      const alpha = 0.15 + 0.85 * (i / trail.length);
+      ctx.strokeStyle = `rgba(57, 135, 229, ${alpha.toFixed(2)})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(...toScreen(trail[i - 1]));
+      ctx.lineTo(...toScreen(trail[i]));
+      ctx.stroke();
+    }
+  }
+
+  // Drone : triangle orienté selon le cap, anneau de 2 px sur la surface
+  if (last) {
+    const [dx, dy] = toScreen([last.east, last.north]);
+    const angle = ((last.yaw - 90) * Math.PI) / 180; // 0° = nord = haut
+    ctx.save();
+    ctx.translate(dx, dy);
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.moveTo(11, 0);
+    ctx.lineTo(-7, 6.5);
+    ctx.lineTo(-3.5, 0);
+    ctx.lineTo(-7, -6.5);
+    ctx.closePath();
+    ctx.fillStyle = '#3987e5';
+    ctx.strokeStyle = '#1a1a19';
+    ctx.lineWidth = 2;
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+
+    // Altitude affichée à côté du drone
+    ctx.fillStyle = '#c3c2b7';
+    ctx.font = '11px system-ui, sans-serif';
+    ctx.fillText(`${last.altitude.toFixed(1)} m`, dx + 14, dy - 10);
+  }
+}
+
+// Position du curseur en mètres (survol)
+canvas.addEventListener('mousemove', (event) => {
+  const rect = canvas.getBoundingClientRect();
+  const e = (event.clientX - rect.left - view.cx) / view.scale;
+  const n = (view.cy - (event.clientY - rect.top)) / view.scale;
+  $('cursorPos').textContent = `est ${e.toFixed(1)} m · nord ${n.toFixed(1)} m`;
+});
+canvas.addEventListener('mouseleave', () => {
+  $('cursorPos').textContent = 'position relative au point de départ';
+});
+
+resizeCanvas();
+connect();
+</script>
+
+<script type="module">
+// ══════════════════════════════════════════════════════════════════════
+// Scène 3D : le drone (vrai modèle DJI) survole la zone réelle.
+//  - sol = tuiles satellite ESRI World Imagery centrées sur le GPS ;
+//  - hélices = disques de flou en rotation quand le drone vole ;
+//  - caméra qui suit le drone (glisser pour changer l'angle).
+// Monde : x = est, y = altitude, z = -nord (mètres).
+// ══════════════════════════════════════════════════════════════════════
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const canvas3d = document.getElementById('scene3d');
+const renderer = new THREE.WebGLRenderer({ canvas: canvas3d, antialias: true });
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9ec2e0); // ciel
+scene.fog = new THREE.Fog(0x9ec2e0, 250, 900);
+
+const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 2000);
+camera.position.set(3.2, 2.4, 3.2);
+
+const controls = new OrbitControls(camera, canvas3d);
+controls.enablePan = false;
+controls.minDistance = 1.5;
+controls.maxDistance = 80;
+controls.maxPolarAngle = Math.PI / 2 - 0.05; // jamais sous le sol
+
+// Lumières
+scene.add(new THREE.HemisphereLight(0xdfeaf5, 0x5a5142, 1.1));
+const sun = new THREE.DirectionalLight(0xfff2dd, 2.2);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+sun.shadow.camera.left = sun.shadow.camera.bottom = -4;
+sun.shadow.camera.right = sun.shadow.camera.top = 4;
+sun.shadow.camera.far = 200;
+scene.add(sun, sun.target);
+
+// ── Sol : imagerie satellite réelle centrée sur la position GPS ──────
+// ESRI World Imagery : gratuit, sans clé — le même fournisseur que la
+// carte satellite de l'app Flutter (field_monitoring_screen).
+const provider = {
+  attribution: 'Images © Esri — World Imagery',
+  zoom: 18,
+  grid: 5, // 5×5 tuiles ≈ 600 m de côté
+  url: (z, x, y) =>
+    `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`,
+};
+let groundBuilt = false;
+
+// Groupes réinitialisables : sol satellite + parcelles agricoles
+// (reconstruits quand le drone est déplacé sur une parcelle).
+const groundGroup = new THREE.Group();
+const regionsGroup = new THREE.Group();
+scene.add(groundGroup, regionsGroup);
+let worldHome = null; // origine {lat, lng} des conversions en mètres
+// Parcelles reçues de l'app mobile (y compris avant le chargement du module).
+let sceneRegions = window.pendingRegions ?? [];
+
+function buildGround(lat, lng) {
+  if (groundBuilt) return;
+  groundBuilt = true;
+  document.getElementById('mapAttribution').textContent = provider.attribution;
+
+  const n = 2 ** provider.zoom;
+  const latRad = (lat * Math.PI) / 180;
+  const xf = ((lng + 180) / 360) * n;
+  const yf = ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n;
+  const tx0 = Math.floor(xf);
+  const ty0 = Math.floor(yf);
+  const metersPerTile = ((156543.03392 * Math.cos(latRad)) / n) * 256;
+
+  const loader = new THREE.TextureLoader();
+  loader.crossOrigin = 'anonymous';
+  const half = Math.floor(provider.grid / 2);
+  for (let dx = -half; dx <= half; dx++) {
+    for (let dy = -half; dy <= half; dy++) {
+      const tx = tx0 + dx;
+      const ty = ty0 + dy;
+      // Repli : sol vert uni si la tuile ne charge pas (hors ligne).
+      const material = new THREE.MeshLambertMaterial({ color: 0x4a6b3f });
+      loader.load(provider.url(provider.zoom, tx, ty), (texture) => {
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        material.map = texture;
+        material.color.set(0xffffff);
+        material.needsUpdate = true;
+      });
+      const tile = new THREE.Mesh(
+        new THREE.PlaneGeometry(metersPerTile, metersPerTile),
+        material,
+      );
+      tile.rotation.x = -Math.PI / 2;
+      tile.position.set(
+        (tx + 0.5 - xf) * metersPerTile, // est
+        0,
+        (ty + 0.5 - yf) * metersPerTile, // -nord (y tuile croît vers le sud)
+      );
+      groundGroup.add(tile);
+    }
+  }
+
+  // Plan qui ne fait que recevoir l'ombre du drone (au-dessus des tuiles).
+  const shadowPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(400, 400),
+    new THREE.ShadowMaterial({ opacity: 0.35 }),
+  );
+  shadowPlane.rotation.x = -Math.PI / 2;
+  shadowPlane.position.y = 0.02;
+  shadowPlane.receiveShadow = true;
+  groundGroup.add(shadowPlane);
+}
+
+// ── Parcelles agricoles en 3D (remplissage, contour, étiquette) ───────
+function makeLabelSprite(text) {
+  const c = document.createElement('canvas');
+  let g = c.getContext('2d');
+  g.font = '600 30px system-ui, sans-serif';
+  const width = Math.ceil(g.measureText(text).width) + 30;
+  c.width = width;
+  c.height = 46;
+  g = c.getContext('2d'); // le redimensionnement réinitialise le contexte
+  g.font = '600 30px system-ui, sans-serif';
+  g.fillStyle = 'rgba(13, 13, 13, 0.6)';
+  if (g.roundRect) {
+    g.beginPath();
+    g.roundRect(0, 0, width, 46, 12);
+    g.fill();
+  } else {
+    g.fillRect(0, 0, width, 46);
+  }
+  g.fillStyle = '#ffffff';
+  g.textBaseline = 'middle';
+  g.fillText(text, 15, 24);
+  const texture = new THREE.CanvasTexture(c);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const sprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true,
+      depthTest: false,
+      sizeAttenuation: false, // taille constante à l'écran, comme sur une carte
+    }),
+  );
+  const screenHeight = 0.05; // ≈ 5 % de la hauteur de la vue
+  sprite.scale.set((width / 46) * screenHeight, screenHeight, 1);
+  return sprite;
+}
+
+function renderRegions() {
+  regionsGroup.clear();
+  if (!worldHome) return;
+  for (const region of sceneRegions) {
+    const pts = (region.points ?? []).map((p) =>
+      toLocalMeters(p.lat, p.lng, worldHome),
+    );
+    if (pts.length < 3) continue;
+    const color = new THREE.Color(argbToCss(region.color));
+
+    const shape = new THREE.Shape(
+      pts.map((m) => new THREE.Vector2(m.east, m.north)),
+    );
+    const fill = new THREE.Mesh(
+      new THREE.ShapeGeometry(shape),
+      new THREE.MeshBasicMaterial({
+        color,
+        transparent: true,
+        opacity: 0.25,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+      }),
+    );
+    fill.rotation.x = -Math.PI / 2; // le plan XY de la forme → sol XZ
+    fill.position.y = 0.06;
+
+    const outline = new THREE.LineLoop(
+      new THREE.BufferGeometry().setFromPoints(
+        pts.map((m) => new THREE.Vector3(m.east, 0.1, -m.north)),
+      ),
+      new THREE.LineBasicMaterial({ color }),
+    );
+
+    const cEast = pts.reduce((a, m) => a + m.east, 0) / pts.length;
+    const cNorth = pts.reduce((a, m) => a + m.north, 0) / pts.length;
+    const hectares = region.hectares ? ` · ${region.hectares} ha` : '';
+    const label = makeLabelSprite(`${region.name ?? 'Parcelle'}${hectares}`);
+    label.position.set(cEast, 2.4, -cNorth);
+
+    regionsGroup.add(fill, outline, label);
+  }
+}
+
+// ── Drone : modèle 3D + disques de flou d'hélices ─────────────────────
+const droneGroup = new THREE.Group(); // position monde
+const attitude = new THREE.Group(); // yaw / pitch / roll
+attitude.rotation.order = 'YXZ';
+droneGroup.add(attitude);
+scene.add(droneGroup);
+
+const propDiscs = [];
+let throttle = 0; // 0 = hélices arrêtées, 1 = plein régime
+
+// Texture "flou d'hélice" : anneau sombre translucide + traînées claires.
+function makePropTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const g = c.getContext('2d');
+  g.translate(128, 128);
+  g.fillStyle = 'rgba(30, 30, 30, 0.30)';
+  g.beginPath();
+  g.arc(0, 0, 122, 0, Math.PI * 2);
+  g.fill();
+  for (let i = 0; i < 3; i++) {
+    g.rotate((Math.PI * 2) / 3);
+    g.fillStyle = 'rgba(235, 235, 235, 0.35)';
+    g.beginPath();
+    g.ellipse(66, 0, 56, 9, 0, 0, Math.PI * 2);
+    g.fill();
+  }
+  g.fillStyle = 'rgba(20, 20, 20, 0.8)';
+  g.beginPath();
+  g.arc(0, 0, 12, 0, Math.PI * 2);
+  g.fill();
+  const texture = new THREE.CanvasTexture(c);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+new GLTFLoader().load(
+  '/drone.glb',
+  (gltf) => {
+    const model = gltf.scene;
+
+    // Normalisation : centré en XZ, posé à y = 0, envergure ≈ 1,7 m.
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const scale = 1.7 / Math.max(size.x, size.z);
+    model.scale.setScalar(scale);
+    box.setFromObject(model);
+    const center = box.getCenter(new THREE.Vector3());
+    model.position.x -= center.x;
+    model.position.z -= center.z;
+    model.position.y -= box.min.y;
+    model.traverse((o) => {
+      if (o.isMesh) o.castShadow = true;
+    });
+    attitude.add(model);
+
+    // Hauteur du plan des hélices : maillages plats et larges du haut
+    // (les pales sont fusionnées dans le .glb → impossible de les faire
+    // tourner une à une, d'où les disques de flou par-dessus).
+    attitude.updateMatrixWorld(true);
+    const mb = new THREE.Box3();
+    const s = new THREE.Vector3();
+    const layerYs = [];
+    model.traverse((o) => {
+      if (!o.isMesh) return;
+      mb.setFromObject(o);
+      mb.getSize(s);
+      if (s.y < 0.06 && Math.max(s.x, s.z) > 1.2) {
+        layerYs.push((mb.min.y + mb.max.y) / 2);
+      }
+    });
+    box.setFromObject(model);
+    const propY = layerYs.length
+      ? layerYs.reduce((a, b) => a + b, 0) / layerYs.length + 0.015
+      : box.max.y - 0.05;
+    const halfSpan = Math.max(box.max.x, box.max.z);
+    const motorRadius = 0.66 * halfSpan;
+    const discRadius = 0.31 * halfSpan;
+
+    const texture = makePropTexture();
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      const disc = new THREE.Mesh(
+        new THREE.CircleGeometry(discRadius, 32),
+        new THREE.MeshBasicMaterial({
+          map: texture,
+          transparent: true,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+        }),
+      );
+      disc.rotation.x = -Math.PI / 2;
+      disc.position.set(
+        Math.cos(angle) * motorRadius,
+        propY,
+        Math.sin(angle) * motorRadius,
+      );
+      disc.visible = false;
+      attitude.add(disc);
+      propDiscs.push(disc);
+    }
+
+    document.getElementById('loading3d').remove();
+  },
+  undefined,
+  () => {
+    document.getElementById('loading3d').textContent =
+      'Modèle 3D indisponible (vérifier le serveur et la connexion)';
+  },
+);
+
+// Repère au sol sous le drone : anneau + ligne d'altitude.
+const groundRing = new THREE.Mesh(
+  new THREE.RingGeometry(0.55, 0.7, 40),
+  new THREE.MeshBasicMaterial({
+    color: 0x3987e5,
+    transparent: true,
+    opacity: 0.75,
+    side: THREE.DoubleSide,
+  }),
+);
+groundRing.rotation.x = -Math.PI / 2;
+groundRing.position.y = 0.04;
+scene.add(groundRing);
+
+const altitudeLine = new THREE.Line(
+  new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(),
+    new THREE.Vector3(),
+  ]),
+  new THREE.LineDashedMaterial({
+    color: 0x3987e5,
+    transparent: true,
+    opacity: 0.55,
+    dashSize: 0.4,
+    gapSize: 0.25,
+  }),
+);
+scene.add(altitudeLine);
+
+// ── Télémétrie → cibles de la scène (lissées à chaque frame) ─────────
+const target = {
+  pos: new THREE.Vector3(0, 0, 0),
+  yaw: 0,
+  pitch: 0,
+  roll: 0,
+  flying: false,
+};
+
+window.droneScene = {
+  setTelemetry(t, east, north, homePos) {
+    const firstHome = !worldHome;
+    worldHome = homePos;
+    buildGround(homePos.lat, homePos.lng);
+    if (firstHome) renderRegions();
+    target.pos.set(east, t.altitude, -north);
+    target.yaw = -THREE.MathUtils.degToRad(t.yaw);
+    target.pitch = THREE.MathUtils.degToRad(t.pitch);
+    target.roll = -THREE.MathUtils.degToRad(t.roll);
+    target.flying = t.state !== 'Idle';
+  },
+
+  setRegions(regionList) {
+    sceneRegions = regionList;
+    renderRegions();
+  },
+
+  /// Le drone a été déplacé (nouvelle parcelle) : sol et parcelles
+  /// sont reconstruits autour de la nouvelle origine au prochain tick.
+  resetWorld() {
+    groundGroup.clear();
+    regionsGroup.clear();
+    groundBuilt = false;
+    worldHome = null;
+    droneGroup.position.set(0, 0, 0);
+    target.pos.set(0, 0, 0);
+  },
+};
+
+// ── Zoom avant / arrière (boutons + molette via OrbitControls) ────────
+function zoomBy(factor) {
+  const offset = camera.position.clone().sub(controls.target);
+  const length = THREE.MathUtils.clamp(
+    offset.length() * factor,
+    controls.minDistance,
+    controls.maxDistance,
+  );
+  offset.setLength(length);
+  camera.position.copy(controls.target).add(offset);
+  controls.update();
+}
+document.getElementById('zoomIn').addEventListener('click', () => zoomBy(0.7));
+document.getElementById('zoomOut').addEventListener('click', () => zoomBy(1.45));
+
+// ── Boucle de rendu ───────────────────────────────────────────────────
+function resize3d() {
+  const rect = canvas3d.getBoundingClientRect();
+  if (canvas3d.width !== Math.round(rect.width * devicePixelRatio)) {
+    renderer.setSize(rect.width, rect.height, false);
+    renderer.setPixelRatio(devicePixelRatio);
+    camera.aspect = rect.width / rect.height;
+    camera.updateProjectionMatrix();
+  }
+}
+
+let lastTime = performance.now();
+const lerpAngle = (a, b, k) => {
+  let d = (b - a) % (Math.PI * 2);
+  if (d > Math.PI) d -= Math.PI * 2;
+  if (d < -Math.PI) d += Math.PI * 2;
+  return a + d * k;
+};
+
+function animate(now) {
+  requestAnimationFrame(animate);
+  const dt = Math.min((now - lastTime) / 1000, 0.1);
+  lastTime = now;
+  resize3d();
+
+  // Lissage position + attitude (la télémétrie arrive à 10 Hz).
+  const k = 1 - Math.exp(-8 * dt);
+  const prev = droneGroup.position.clone();
+  droneGroup.position.lerp(target.pos, k);
+  attitude.rotation.y = lerpAngle(attitude.rotation.y, target.yaw, k);
+  attitude.rotation.x += (target.pitch - attitude.rotation.x) * k;
+  attitude.rotation.z += (target.roll - attitude.rotation.z) * k;
+
+  // Hélices : régime qui monte/descend progressivement.
+  throttle += ((target.flying ? 1 : 0) - throttle) * Math.min(1, 2.5 * dt);
+  for (let i = 0; i < propDiscs.length; i++) {
+    const disc = propDiscs[i];
+    disc.visible = throttle > 0.03;
+    disc.material.opacity = 0.9 * throttle;
+    disc.rotation.z += (i % 2 ? 1 : -1) * (18 + 22 * throttle) * throttle * dt;
+  }
+
+  // Repères : anneau + ligne d'altitude sous le drone.
+  groundRing.position.x = droneGroup.position.x;
+  groundRing.position.z = droneGroup.position.z;
+  const lineGeo = altitudeLine.geometry;
+  lineGeo.setFromPoints([
+    new THREE.Vector3(droneGroup.position.x, 0.05, droneGroup.position.z),
+    droneGroup.position,
+  ]);
+  altitudeLine.computeLineDistances();
+
+  // Soleil + ombre qui suivent le drone.
+  sun.position.copy(droneGroup.position).add(new THREE.Vector3(15, 35, 8));
+  sun.target.position.copy(droneGroup.position).setY(0);
+
+  // La caméra suit le drone en conservant l'angle choisi par l'utilisateur.
+  const offset = camera.position.clone().sub(controls.target);
+  controls.target.add(droneGroup.position.clone().sub(prev));
+  controls.target.lerp(droneGroup.position, k * 0.6);
+  camera.position.copy(controls.target).add(offset);
+  controls.update();
+
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>

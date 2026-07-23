@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../data/models/models.dart';
 import '../../../data/services/service_locator.dart';
+import 'admin_user_detail_screen.dart';
 
 /// Lists every registered user and lets the admin change their plan or remove them.
 class AdminUsersScreen extends StatefulWidget {
@@ -170,6 +171,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           '${user.email}\n${user.role.displayName} · ${user.plan.displayName}',
                         ),
                         isThreeLine: true,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AdminUserDetailScreen(user: user),
+                          ),
+                        ),
                         trailing: PopupMenuButton<String>(
                           onSelected: (value) {
                             if (value == 'plan') _changePlan(user);

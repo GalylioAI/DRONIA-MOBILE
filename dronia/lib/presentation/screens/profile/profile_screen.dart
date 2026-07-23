@@ -151,6 +151,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       SizedBox(height: 16),
                       _buildLocationSection(),
                       SizedBox(height: 16),
+                      if (_user?.isAdmin == true) ...[
+                        _buildAdminSection(),
+                        SizedBox(height: 16),
+                      ],
                       _buildAccountSection(),
                       SizedBox(height: 32),
                     ],
@@ -391,6 +395,114 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Section Administration — visible uniquement pour les comptes admin.
+  Widget _buildAdminSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.colors.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.warning.withOpacity(0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.admin_panel_settings,
+                  color: AppColors.warning,
+                  size: 20,
+                ),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Administration',
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Gestion des utilisateurs et plans',
+                      style: TextStyle(
+                        color: context.colors.textSecondary,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          _buildAdminTile(
+            Icons.dashboard,
+            'Tableau de bord admin',
+            () => Navigator.pushNamed(context, AppRoutes.adminDashboard),
+          ),
+          SizedBox(height: 8),
+          _buildAdminTile(
+            Icons.group,
+            'Utilisateurs',
+            () => Navigator.pushNamed(context, AppRoutes.adminUsers),
+          ),
+          SizedBox(height: 8),
+          _buildAdminTile(
+            Icons.workspace_premium,
+            'Plans & abonnements',
+            () => Navigator.pushNamed(context, AppRoutes.adminPlans),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdminTile(IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: context.colors.bg,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.warning, size: 20),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: context.colors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: context.colors.textSecondary,
+              size: 20,
+            ),
+          ],
+        ),
       ),
     );
   }

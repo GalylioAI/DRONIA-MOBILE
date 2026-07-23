@@ -63,6 +63,8 @@ class ApiEndpoints {
   static const String adminUsers = '/auth/admin/users';
   static String adminUserPlan(String userId) => '/auth/admin/users/$userId/plan';
   static String adminUser(String userId) => '/auth/admin/users/$userId';
+  static String adminUserAnalyses(String userId) => '/auth/admin/users/$userId/analyses';
+  static String adminUserRegions(String userId) => '/auth/admin/users/$userId/regions';
 
   // Crops
   static const String crops = '/crops';

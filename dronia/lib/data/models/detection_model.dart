@@ -10,6 +10,15 @@ class Detection {
   final DetectionType type;
   final String? frameImagePath;
 
+  /// Localisation de la detection dans la frame, en pourcentages [x1, y1, x2, y2]
+  /// (0-100). null = pas de boite (classification globale sans position).
+  /// Utilisé pour les INSECTES (rectangle rouge).
+  final List<double>? boxPct;
+
+  /// Foyers de symptômes d'une MALADIE, chacun [x, y] en % (0-100). Affichés
+  /// comme pastilles/points (pas de rectangle). null = aucun foyer localisé.
+  final List<List<double>>? pointsPct;
+
   Detection({
     required this.id,
     required this.label,
@@ -18,6 +27,8 @@ class Detection {
     required this.zone,
     required this.type,
     this.frameImagePath,
+    this.boxPct,
+    this.pointsPct,
   });
 
   /// Create from JSON
@@ -33,6 +44,13 @@ class Detection {
         orElse: () => DetectionType.healthy,
       ),
       frameImagePath: json['frameImagePath'] as String?,
+      boxPct: (json['boxPct'] as List<dynamic>?)
+          ?.map((e) => (e as num).toDouble())
+          .toList(),
+      pointsPct: (json['pointsPct'] as List<dynamic>?)
+          ?.map((p) =>
+              (p as List<dynamic>).map((e) => (e as num).toDouble()).toList())
+          .toList(),
     );
   }
 
@@ -46,6 +64,8 @@ class Detection {
       'zone': zone,
       'type': type.name,
       'frameImagePath': frameImagePath,
+      'boxPct': boxPct,
+      'pointsPct': pointsPct,
     };
   }
 
@@ -58,6 +78,8 @@ class Detection {
     String? zone,
     DetectionType? type,
     String? frameImagePath,
+    List<double>? boxPct,
+    List<List<double>>? pointsPct,
   }) {
     return Detection(
       id: id ?? this.id,
@@ -67,6 +89,8 @@ class Detection {
       zone: zone ?? this.zone,
       type: type ?? this.type,
       frameImagePath: frameImagePath ?? this.frameImagePath,
+      boxPct: boxPct ?? this.boxPct,
+      pointsPct: pointsPct ?? this.pointsPct,
     );
   }
 

@@ -839,15 +839,24 @@ class _WeatherHistoryScreenState extends State<WeatherHistoryScreen> {
       initialDate: isStart ? _startDate : _endDate,
       firstDate: DateTime.now().subtract(Duration(days: 365)),
       lastDate: maxDate,
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: ColorScheme.dark(
-            primary: AppColors.primaryGreen,
-            surface: context.colors.card,
+      // Schéma adapté au thème : en mode clair, un ColorScheme.dark forcé
+      // rendait les jours blancs sur fond blanc (dates illisibles).
+      builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Theme(
+          data: (isDark ? ThemeData.dark() : ThemeData.light()).copyWith(
+            colorScheme:
+                (isDark ? const ColorScheme.dark() : const ColorScheme.light())
+                    .copyWith(
+                      primary: AppColors.primaryGreen,
+                      onPrimary: Colors.white,
+                      surface: context.colors.card,
+                      onSurface: context.colors.textPrimary,
+                    ),
           ),
-        ),
-        child: child!,
-      ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
       setState(() {

@@ -24,3 +24,9 @@ scripts/
 .vscode/
 .idea/
 
+# Poids des modèles : téléchargés depuis HF Hub au démarrage (jamais dans l'image)
+models/*.pth
+models/*.pt
+models/combined/
+models/vit-base-patch16-224-in21k/
+
